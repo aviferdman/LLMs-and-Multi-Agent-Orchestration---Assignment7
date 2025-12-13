@@ -936,16 +936,28 @@ This checklist consolidates ALL requirements from Assignments 1-6. Each item mus
 - [ ] ✅ **NO API keys in source code**
 - [ ] ✅ API keys only in `.env` (gitignored)
 - [ ] ✅ Use environment variables for all secrets
-- [ ] ✅ `.gitignore` includes:
-  - [ ] `.env`
-  - [ ] `*.pyc`, `__pycache__/`
-  - [ ] `.pytest_cache/`
-  - [ ] `.coverage`, `htmlcov/`
-  - [ ] `*.log`
-  - [ ] Virtual environment directories
-  - [ ] IDE-specific files
+- [ ] ✅ **Comprehensive `.gitignore` file** includes:
+  - [ ] `.env` and `.env.*` (environment files)
+  - [ ] `*.pyc`, `__pycache__/` (Python bytecode)
+  - [ ] `.pytest_cache/`, `.tox/` (test caches)
+  - [ ] `.coverage`, `htmlcov/`, `.coverage.*` (coverage files)
+  - [ ] `*.log`, `logs/` (log files)
+  - [ ] Virtual environment directories (`venv/`, `env/`, `.venv/`)
+  - [ ] IDE-specific files (`.vscode/`, `.idea/`, `*.swp`, `*~`)
+  - [ ] **Temporary files**: `*.tmp`, `*.temp`, `*.bak`, `*.swp`, `*~`
+  - [ ] **Progress files**: `checkpoint_*.pkl`, `*.ckpt`, `model_*.pth`
+  - [ ] **Output directories**: `outputs/`, `results/`, `experiments/`
+  - [ ] **Data directories**: `data/raw/`, `data/processed/` (if large)
+  - [ ] **Build artifacts**: `build/`, `dist/`, `*.egg-info/`
+  - [ ] **OS files**: `.DS_Store`, `Thumbs.db`, `desktop.ini`
+  - [ ] **Jupyter**: `.ipynb_checkpoints/`, `*.ipynb_checkpoints`
+  - [ ] **Cache directories**: `.cache/`, `__pycache__/`, `.mypy_cache/`
 - [ ] ✅ No sensitive data in logs
 - [ ] ✅ No credentials in configuration files committed to git
+- [ ] ✅ **Git status check before commits**: Verify no unwanted files staged
+- [ ] ✅ **Pre-commit hooks** (optional but recommended):
+  - [ ] Check for secrets/API keys
+  - [ ] Check for large files (>10MB)
 
 #### Configuration Documentation
 - [ ] All configuration parameters documented in README
