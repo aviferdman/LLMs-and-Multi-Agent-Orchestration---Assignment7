@@ -1,25 +1,190 @@
-# Assignment 7 - AI Agent League Competition
+# Assignment 7 - AI Agent League Competition with MCP Protocol
 
 **Course**: LLMs and Multi-Agent Orchestration  
-**Assignment Type**: Competitive Multi-Agent System  
-**Version**: 1.0.0  
-**Protocol**: league.v1  
-**Last Updated**: December 13, 2025
+**Assignment Type**: Competitive Multi-Agent System using Model Context Protocol  
+**Version**: 2.0.0  
+**Protocol**: league.v1 (Based on MCP Standards)   
+**Last Updated**: December 14, 2025
 
 ---
 
 ## 📋 Table of Contents
 
-1. [Assignment Overview](#assignment-overview)
-2. [System Architecture](#system-architecture)
-3. [Three-Layer Architecture](#three-layer-architecture)
-4. [Protocol Specification](#protocol-specification)
-5. [Message Types & Schemas](#message-types--schemas)
-6. [Game Rules: Even-Odd](#game-rules-even-odd)
-7. [Agent Implementation Requirements](#agent-implementation-requirements)
-8. [Assignment Phases](#assignment-phases)
-9. [Grading Criteria](#grading-criteria)
-10. [Critical Requirements](#critical-requirements)
+1. [MCP Protocol Introduction](#mcp-protocol-introduction)
+2. [Assignment Overview](#assignment-overview)
+3. [MCP Client-Server Architecture](#mcp-client-server-architecture)
+4. [System Architecture](#system-architecture)
+5. [Three-Layer Architecture](#three-layer-architecture)
+6. [Protocol Components](#protocol-components)
+7. [Client Architecture](#client-architecture)
+8. [Working with Multiple Servers](#working-with-multiple-servers)
+9. [Information Security](#information-security)
+10. [Protocol Specification](#protocol-specification)
+11. [Message Types & Schemas](#message-types--schemas)
+12. [Game Rules: Even-Odd](#game-rules-even-odd)
+13. [Agent Implementation Requirements](#agent-implementation-requirements)
+14. [Assignment Phases](#assignment-phases)
+15. [Grading Criteria](#grading-criteria)
+16. [Critical Requirements](#critical-requirements)
+
+---
+
+## 🌟 MCP Protocol Introduction
+
+### Development Background
+
+The Model Context Protocol (MCP) is a unified communication protocol developed by Anthropic to enable standardized communication between Language Model (LLM) agents and external services. This protocol represents a revolution in the AI ecosystem.
+
+**Historical Development:**
+- **First communication method** - Files
+- **Internet protocol** - HTTP for standard data transfer  
+- **Physical data transfer** - USB standard protocol
+- **AI agent communication** - MCP protocol
+
+### The Problem MCP Solves
+
+**Before MCP**: Each agent required unique integration for each service:
+- **Complex integrations**: O(n×m) complexity - For example, 5 agents × 5 services = 25 integrations
+- **Maintenance difficulties**
+- **Scalability issues**
+
+**With MCP**: Complexity reduces to O(n+m) - For example, 5 agents + 5 services = only 10 connections
+- **Unified communication standard**
+- **Simplified architecture** 
+- **Enhanced scalability**
+
+---
+
+## 🔄 MCP Client-Server Architecture
+
+### Basic Definitions
+
+**Client**:
+- Initiates requests to server
+- Contains the Language Model (LLM)
+- Manages sessions, messages, tools, and resources
+- Acts as the "brain" of the system
+
+**Server**: 
+- Responds to requests - passive behavior
+- Provides Tools and Resources
+- Acts as the "hands and feet" of the system
+- Performs deterministic operations
+
+**Important Note**: In MCP, the client is not truly a pure client and the server is not truly a pure server - both can send and receive requests.
+
+### Connection Lifecycle
+
+1. **Initialize Phase**: Connection establishment between client and server
+2. **Operation Phase**: Client sends requests, server returns list of tools and capabilities  
+3. **Close Phase**: Orderly closure and resource cleanup
+
+---
+
+## 🧩 Protocol Components
+
+### 3.1 Tools
+
+Tools are functions that enable the model to perform active operations or calculations.
+
+**Tool Definition Structure**:
+- **name**: Unique identifier for the tool
+- **description**: Explains to the model what the tool does
+- **input_schema**: Parameter definitions in JSON Schema format
+
+**Example**: Calculator tool that accepts operands and operator, performs operation, and returns result.
+
+### 3.2 Resources
+
+Resources are information sources that the model can read but not modify (Read-Only).
+
+**Examples**:
+- Database content
+- Internet pages
+- PDF files  
+- Images
+
+### 3.3 Prompts
+
+Prompts are prepared templates for guiding the model to perform specific tasks.
+
+---
+
+## 🏛️ Client Architecture
+
+### Client Layers
+
+1. **Language Model (LLM)**: Initiates operations and makes decisions
+2. **Client Interface**: The API through which users interact with the model
+3. **System Core**: Manages tool registration and sessions
+4. **Message Processing**: Handles JSON message conversion
+5. **Communication Layer**: Translates to STDIO and HTTP protocols
+
+### Required Modules
+
+#### 4.2.1 Session Manager
+- Manages connection lifecycles
+- Performs successful connection verification (Handshake)
+- Handles periodic checks (Heartbeat)
+- Manages automatic reconnection with Retry Logic
+
+#### 4.2.2 Tool Registry  
+- Maintains list of available tools from each server
+- Centralizes information for LLM usage
+- Handles name conflicts between different servers
+
+#### 4.2.3 Message Queue
+- Manages incoming and outgoing message queues
+- Handles priorities
+- Prevents overflow
+
+### Error Handling
+
+**Error Types**:
+- **Transient**: Temporary errors worth retrying (load, network)
+- **Permanent**: Fixed errors not worth retrying (permissions, missing file)
+- **Timeout**: Time overruns - can increase wait time
+
+**Exponential Backoff Strategy**:
+Wait time between attempts grows exponentially:
+- 1st attempt: Short wait
+- 2nd attempt: Double wait  
+- 3rd attempt: 4x wait
+- And so on...
+
+**Important**: Add Jitter (random noise) to prevent synchronized processes that trigger simultaneously.
+
+---
+
+## 🌐 Working with Multiple Servers
+
+### Star Topology
+The client centralizes communication with multiple servers:
+- Presents unified tool list to LLM
+- Manages name conflicts in namespaces
+- Routes requests to appropriate server
+
+### Load Balancing
+**Distribution Strategies**:
+- **Round Robin**: Equal circular distribution
+- **Least Connections**: Route to least busy server
+- **Weighted**: Priority to stronger servers
+
+---
+
+## 🔒 Information Security
+
+### Common Threats
+**Prompt Injection attacks via internet content**:
+- Attackers insert malicious instructions into innocent internet pages
+- LLM reads the content and executes the instructions
+- Currently no complete solution to this problem
+
+### Recommended Defenses
+- Work within Sandbox environments or Docker containers
+- Limit file access permissions
+- Set damage boundaries in advance
+- Complete logging of all operations
 
 ---
 
@@ -390,11 +555,10 @@ Protocol: league.v1
   "timestamp": "2025-12-13T22:05:02.000Z",
   "game_state": {
     "game_type": "even_odd",
-    "current_turn": "player_001",
-    "turn_number": 1,
+    "current_player": "player_001",
     "rules": {
-      "max_turns": 10,
-      "timeout_per_turn": 30
+      "single_round": true,
+      "timeout_per_move": 30
     }
   }
 }
@@ -402,16 +566,16 @@ Protocol: league.v1
 
 ---
 
-### 5. Move Execution
+### 5. Play Execution
 
-#### MOVE_REQUEST
+#### PLAY_REQUEST
 
 **Direction**: Referee → Player (whose turn it is)
 
 ```json
 {
   "protocol": "league.v1",
-  "message_type": "MOVE_REQUEST",
+  "message_type": "PLAY_REQUEST",
   "league_id": "550e8400-e29b-41d4-a716-446655440000",
   "round_id": 1,
   "match_id": "R1M1",
@@ -422,27 +586,27 @@ Protocol: league.v1
     "turn_number": 1,
     "timeout_seconds": 30,
     "game_specific_state": {
-      "previous_moves": []
+      "previous_plays": []
     }
   }
 }
 ```
 
-#### MOVE_RESPONSE
+#### PLAY_RESPONSE
 
 **Direction**: Player → Referee
 
 ```json
 {
   "protocol": "league.v1",
-  "message_type": "MOVE_RESPONSE",
+  "message_type": "PLAY_RESPONSE",
   "league_id": "550e8400-e29b-41d4-a716-446655440000",
   "round_id": 1,
   "match_id": "R1M1",
   "conversation_id": "880e8400-e29b-41d4-a716-446655440003",
   "sender": "player_001",
   "timestamp": "2025-12-13T22:05:05.000Z",
-  "move": {
+  "play": {
     "action": "choose",
     "value": "even",
     "reasoning": "Strategic choice based on opponent history"
@@ -450,23 +614,23 @@ Protocol: league.v1
 }
 ```
 
-**Move Structure for Even-Odd**:
+**Play Structure for Even-Odd**:
 - `action`: Always "choose"
 - `value`: "even" or "odd"
 - `reasoning`: Optional string explaining decision
 
 ---
 
-### 6. Move Validation
+### 6. Play Validation
 
-#### MOVE_VALIDATION
+#### PLAY_VALIDATION
 
 **Direction**: Referee → Both Players
 
 ```json
 {
   "protocol": "league.v1",
-  "message_type": "MOVE_VALIDATION",
+  "message_type": "PLAY_VALIDATION",
   "league_id": "550e8400-e29b-41d4-a716-446655440000",
   "round_id": 1,
   "match_id": "R1M1",
@@ -475,7 +639,7 @@ Protocol: league.v1
   "timestamp": "2025-12-13T22:05:06.000Z",
   "validation": {
     "player_id": "player_001",
-    "move": {"action": "choose", "value": "even"},
+    "play": {"action": "choose", "value": "even"},
     "status": "VALID",
     "error": null
   }
@@ -483,8 +647,8 @@ Protocol: league.v1
 ```
 
 **Status Values**:
-- `VALID`: Move accepted
-- `INVALID`: Move rejected
+- `VALID`: Play accepted
+- `INVALID`: Play rejected
 
 **Error Reasons**:
 - "Invalid choice format"
@@ -512,17 +676,14 @@ Protocol: league.v1
   "timestamp": "2025-12-13T22:06:00.000Z",
   "result": {
     "winner": "player_001",
-    "loser": "player_002",
+    "loser": "player_002", 
     "outcome": "WIN",
-    "final_score": {
-      "player_001": 6,
-      "player_002": 4
-    },
-    "total_turns": 10,
     "game_summary": {
-      "moves": [
-        {"turn": 1, "player_001": "even", "player_002": "odd", "number": 7, "winner": "player_002"}
-      ]
+      "player_001_choice": "even",
+      "player_002_choice": "odd",
+      "random_number": 42,
+      "number_parity": "even",
+      "winner_reason": "player_001 correct, player_002 wrong"
     }
   }
 }
@@ -607,51 +768,61 @@ Protocol: league.v1
 
 ### Game Description
 
-A simultaneous-move game where two players compete over multiple rounds.
+A simultaneous-move game where two players compete over multiple rounds, as specified in PDF section 7.2.
 
-### Rules
+### Rules (Per PDF Section 7.2)
 
 1. **Setup**:
-   - 10 turns per game
-   - Each turn, both players simultaneously choose "even" or "odd"
+   - Single round per game
+   - Both players simultaneously choose "even" or "odd"
 
-2. **Turn Execution**:
+2. **Game Execution**:
    - Referee requests moves from both players
    - Both players submit their choice
-   - Referee generates a random number (0-99)
+   - **Referee generates a random number** (judge generates number per PDF)
    - Winner determined by parity match
 
-3. **Winning Condition**:
-   - If number is even AND player chose "even" → Player wins the turn
-   - If number is odd AND player chose "odd" → Player wins the turn
-   - Otherwise → Opponent wins the turn
+3. **Winning Condition (Exact PDF Rules)**:
+   - **If both players are correct OR both are wrong** → **TIE**
+   - **If one player is correct and one is wrong** → **The correct player wins**
+   - Example: Number is 7 (odd), Player1 chose "odd", Player2 chose "even" → Player1 wins
 
-4. **Game Winner**:
-   - Player who wins more turns (out of 10) wins the game
-   - If tied after 10 turns → DRAW
+4. **Timeout Rules (Per PDF Section 7.2)**:
+   - **30 seconds to respond**
+   - **3 attempts before disqualification**
 
-### Example Turn
+5. **Game Result**:
+   - Winner determined after single round
+   - Result can be WIN, LOSS, or TIE
+
+### Example Games (Following PDF Rules)
 
 ```
-Turn 1:
+Game 1 (Player 1 vs Player 2):
   Player 1 chooses: "even"
-  Player 2 chooses: "odd"
+  Player 2 chooses: "odd"  
   Random number: 42 (even)
-  Winner: Player 1 (matched parity)
-  
-Turn 2:
-  Player 1 chooses: "odd"
-  Player 2 chooses: "even"
+  Result: Player 1 correct, Player 2 wrong → Player 1 WINS THE GAME
+
+Game 2 (Player 1 vs Player 3):
+  Player 1 chooses: "even"
+  Player 3 chooses: "even"
   Random number: 17 (odd)
-  Winner: Player 1 (matched parity)
+  Result: Both players wrong → GAME ENDS IN TIE
+
+Game 3 (Player 2 vs Player 4):
+  Player 2 chooses: "odd"
+  Player 4 chooses: "even"
+  Random number: 33 (odd)
+  Result: Player 2 correct, Player 4 wrong → Player 2 WINS THE GAME
 ```
 
 ### Game-Specific Message Fields
 
-#### In MOVE_RESPONSE:
+#### In PLAY_RESPONSE:
 ```json
 {
-  "move": {
+  "play": {
     "action": "choose",
     "value": "even"  // or "odd"
   }
@@ -710,8 +881,8 @@ class AgentMCPServer:
             return await self.handle_registration(message)
         elif message_type == "GAME_INVITATION":
             return await self.handle_invitation(message)
-        elif message_type == "MOVE_REQUEST":
-            return await self.handle_move_request(message)
+        elif message_type == "PLAY_REQUEST":
+            return await self.handle_play_request(message)
         # ... etc
 ```
 
@@ -1124,9 +1295,9 @@ All messages must validate against these schemas:
         "GAME_INVITATION",
         "GAME_INVITATION_RESPONSE",
         "GAME_START",
-        "MOVE_REQUEST",
-        "MOVE_RESPONSE",
-        "MOVE_VALIDATION",
+        "PLAY_REQUEST",
+        "PLAY_RESPONSE",
+        "PLAY_VALIDATION",
         "GAME_RESULT",
         "ROUND_COMPLETE",
         "LEAGUE_COMPLETE"
@@ -1214,18 +1385,17 @@ timestamp = datetime.now(timezone.utc).isoformat()
 4. GAME START
    Referee → Both: GAME_START
 
-5. TURNS (×10)
-   For each turn:
-     Referee → Player1: MOVE_REQUEST
-     Player1 → Referee: MOVE_RESPONSE (value="even")
-     Referee → Both: MOVE_VALIDATION
-     
-     Referee → Player2: MOVE_REQUEST
-     Player2 → Referee: MOVE_RESPONSE (value="odd")
-     Referee → Both: MOVE_VALIDATION
-     
-     Referee generates random number
-     Referee determines turn winner
+5. SINGLE GAME
+   Referee → Player1: MOVE_REQUEST
+   Player1 → Referee: MOVE_RESPONSE (value="even")
+   Referee → Both: MOVE_VALIDATION
+   
+   Referee → Player2: MOVE_REQUEST
+   Player2 → Referee: MOVE_RESPONSE (value="odd")
+   Referee → Both: MOVE_VALIDATION
+   
+   Referee generates random number
+   Referee determines game winner immediately
 
 6. GAME END
    Referee → Both + League: GAME_RESULT
