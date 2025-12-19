@@ -316,15 +316,19 @@
   - [x] Test message utilities
   - [x] Test generic agent imports
   - [x] All tests passing (5/5 ✓)
-- [x] Create `tests/test_validation.py` (164 lines - over limit, needs refactoring)
-  - [x] Test message validation functions
-  - [x] Test timestamp validation
-  - [x] Test UUID validation
-  - [x] Test message type validation
-  - [x] Test required fields validation
-  - [x] Test protocol version validation
-  - [x] Test comprehensive error detection
-  - [x] All tests passing (7/7 ✓)
+- [x] Create validation tests (split into two files for compliance)
+  - [x] Create `tests/test_validation_basic.py` (109 lines ✓)
+    - [x] Test message validation functions
+    - [x] Test timestamp validation
+    - [x] Test UUID validation
+    - [x] All tests passing (3/3 ✓)
+  - [x] Create `tests/test_validation_advanced.py` (121 lines ✓)
+    - [x] Test message type validation
+    - [x] Test required fields validation
+    - [x] Test protocol version validation
+    - [x] Test comprehensive error detection
+    - [x] All tests passing (4/4 ✓)
+  - [x] Delete old `tests/test_validation.py` (184 lines - over limit)
 
 ### 6.1 Unit Tests - SDK ❌ NOT STARTED
 - [ ] Create `tests/test_config_loader.py`

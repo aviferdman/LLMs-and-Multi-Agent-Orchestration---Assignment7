@@ -48,6 +48,12 @@ class StrategyType:
     FREQUENCY = "frequency"
     PATTERN = "pattern"
 
+class AgentType:
+    """Agent type identifiers."""
+    LEAGUE_MANAGER = "league_manager"
+    REFEREE = "referee"
+    PLAYER = "player"
+
 class Directory:
     """Standard directory names."""
     CONFIG = "config"

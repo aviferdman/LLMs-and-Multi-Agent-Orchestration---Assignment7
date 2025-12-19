@@ -4,13 +4,13 @@ import subprocess
 import asyncio
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.http_client import send_message
-from SHARED.constants import LogEvent, Field, Endpoint, Timeout
+from SHARED.constants import LogEvent, Field, Endpoint, Timeout, AgentType
 
 async def start_agent(agent_type: str, agent_id: str, port: int, logger: LeagueLogger):
     """Start an agent process."""
-    if agent_type == LogEvent.LEAGUE_MANAGER:
+    if agent_type == AgentType.LEAGUE_MANAGER:
         script = "agents/league_manager/main.py"
-    elif agent_type == "referee":
+    elif agent_type == AgentType.REFEREE:
         script = f"agents/launch_referee_{agent_id[-2:]}.py"
     else:  # player
         script = f"agents/launch_player_{agent_id[-2:]}.py"
@@ -21,12 +21,12 @@ async def start_agent(agent_type: str, agent_id: str, port: int, logger: LeagueL
         stderr=subprocess.PIPE
     )
     
-    logger.log_message(LogEvent.STARTUP, {"agent_id": agent_id, "port": port})
+    logger.log_message(LogEvent.STARTUP, {Field.AGENT_ID: agent_id, "port": port})
     return proc
 
 async def wait_for_agents(timeout: int, logger: LeagueLogger):
     """Wait for all agents to be ready."""
-    logger.log_message("WAITING_FOR_AGENTS", {"timeout": timeout})
+    logger.log_message(LogEvent.STARTUP, {"timeout": timeout, "status": "waiting"})
     await asyncio.sleep(timeout)
 
 async def register_referee(referee_id: str, endpoint: str, logger: LeagueLogger):
@@ -52,17 +52,17 @@ async def start_all_agents(agents_config: dict, logger: LeagueLogger):
     processes = []
     
     # Start League Manager
-    lm_proc = await start_agent("league_manager", AgentID.LEAGUE_MANAGER, Port.LEAGUE_MANAGER, logger)
+    lm_proc = await start_agent(AgentType.LEAGUE_MANAGER, AgentID.LEAGUE_MANAGER, Port.LEAGUE_MANAGER, logger)
     processes.append(lm_proc)
     
     # Start Referees
     for referee in agents_config["referees"]:
-        ref_proc = await start_agent("referee", referee["referee_id"], referee["port"], logger)
+        ref_proc = await start_agent(AgentType.REFEREE, referee["referee_id"], referee["port"], logger)
         processes.append(ref_proc)
     
     # Start Players
     for player in agents_config["players"]:
-        player_proc = await start_agent("player", player["player_id"], player["port"], logger)
+        player_proc = await start_agent(AgentType.PLAYER, player["player_id"], player["port"], logger)
         processes.append(player_proc)
     
     return processes

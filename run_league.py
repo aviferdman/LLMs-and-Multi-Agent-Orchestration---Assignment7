@@ -1,7 +1,7 @@
 """League orchestrator - Run complete league tournament."""
 
 import asyncio
-from SHARED.league_sdk.config_loader import load_agents_config, load_league_config
+from SHARED.league_sdk.config_loader import load_agent_config, load_league_config
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.constants import LeagueID, LogEvent, Timeout
 from agents.league_manager.scheduler import get_match_schedule
@@ -18,7 +18,7 @@ async def run_league():
     logger.log_message("LEAGUE_START", {})
     
     # Load configurations
-    agents_config = load_agents_config()
+    agents_config = load_agent_config()
     league_config = load_league_config(LeagueID.EVEN_ODD_2025)
     
     # Start all agents

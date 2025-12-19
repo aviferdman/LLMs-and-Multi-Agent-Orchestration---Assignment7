@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unit tests for message validation module."""
+"""Advanced validation tests - message types, fields, protocol, errors."""
 
 import sys
 from pathlib import Path
@@ -7,63 +7,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from SHARED.league_sdk.validation import (
-    validate_message, validate_timestamp, validate_uuid,
     validate_message_type, validate_required_fields,
     validate_protocol_version, get_validation_errors
 )
 from SHARED.constants import Field, MessageType
-
-def test_validate_message():
-    """Test basic message validation."""
-    print("Testing validate_message...")
-    
-    # Valid message
-    valid_msg = {
-        Field.PROTOCOL: "league.v2",
-        Field.CONVERSATION_ID: "123e4567-e89b-12d3-a456-426614174000",
-        Field.TIMESTAMP: "2025-01-01T12:00:00Z",
-        Field.MESSAGE_TYPE: MessageType.GAME_INVITATION
-    }
-    assert validate_message(valid_msg), "Valid message should pass"
-    
-    # Missing field
-    invalid_msg = {Field.PROTOCOL: "league.v2"}
-    assert not validate_message(invalid_msg), "Incomplete message should fail"
-    
-    print("  ✓ validate_message works correctly")
-    return True
-
-def test_validate_timestamp():
-    """Test timestamp validation."""
-    print("Testing validate_timestamp...")
-    
-    # Valid timestamps
-    assert validate_timestamp("2025-01-01T12:00:00Z"), "Valid timestamp should pass"
-    assert validate_timestamp("2025-12-31T23:59:59Z"), "Valid timestamp should pass"
-    
-    # Invalid timestamps
-    assert not validate_timestamp("2025-01-01T12:00:00"), "Missing Z should fail"
-    assert not validate_timestamp("invalid"), "Invalid format should fail"
-    assert not validate_timestamp("2025-13-01T12:00:00Z"), "Invalid month should fail"
-    
-    print("  ✓ validate_timestamp works correctly")
-    return True
-
-def test_validate_uuid():
-    """Test UUID validation."""
-    print("Testing validate_uuid...")
-    
-    # Valid UUIDs
-    assert validate_uuid("123e4567-e89b-12d3-a456-426614174000"), "Valid UUID should pass"
-    assert validate_uuid("AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"), "Uppercase UUID should pass"
-    
-    # Invalid UUIDs
-    assert not validate_uuid("invalid"), "Invalid format should fail"
-    assert not validate_uuid("123e4567-e89b-12d3-a456"), "Incomplete UUID should fail"
-    assert not validate_uuid("123e4567e89b12d3a456426614174000"), "Missing dashes should fail"
-    
-    print("  ✓ validate_uuid works correctly")
-    return True
 
 def test_validate_message_type():
     """Test message type validation."""
@@ -140,19 +87,16 @@ def test_get_validation_errors():
     errors = get_validation_errors(incomplete_msg)
     assert len(errors) > 0, "Incomplete message should have errors"
     
-    print(f"  ✓ get_validation_errors works correctly (found {len(errors)} errors as expected)")
+    print(f"  ✓ get_validation_errors works correctly")
     return True
 
 def main():
-    """Run all validation tests."""
+    """Run advanced validation tests."""
     print("=" * 60)
-    print("VALIDATION MODULE TESTS")
+    print("ADVANCED VALIDATION TESTS")
     print("=" * 60)
     
     tests = [
-        test_validate_message,
-        test_validate_timestamp,
-        test_validate_uuid,
         test_validate_message_type,
         test_validate_required_fields,
         test_validate_protocol_version,
@@ -169,7 +113,7 @@ def main():
         print("=" * 60)
         
         if passed == total:
-            print("\n✅ ALL VALIDATION TESTS PASSED!")
+            print("\n✅ ALL ADVANCED VALIDATION TESTS PASSED!")
             return 0
         else:
             print(f"\n❌ {total - passed} tests failed")
