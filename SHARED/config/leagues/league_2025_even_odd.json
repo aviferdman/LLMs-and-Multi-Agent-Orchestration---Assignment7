@@ -1,0 +1,11 @@
+{
+  "league_id": "league_2025_even_odd",
+  "game_type": "even_odd",
+  "scoring": {
+    "win_points": 3,
+    "draw_points": 1,
+    "loss_points": 0
+  },
+  "total_rounds": 3,
+  "matches_per_round": 2
+}

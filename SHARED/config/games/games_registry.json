@@ -1,0 +1,14 @@
+{
+  "games": {
+    "even_odd": {
+      "game_name": "Even-Odd Game",
+      "rules_version": "1.0.0",
+      "max_players": 2,
+      "metadata": {
+        "description": "Players choose even or odd, referee draws number 1-10",
+        "draw_range": [1, 10],
+        "choices": ["even", "odd"]
+      }
+    }
+  }
+}

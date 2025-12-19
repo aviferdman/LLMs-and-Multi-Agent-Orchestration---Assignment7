@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "protocol_version": "league.v2",
+  "timeouts": {
+    "game_join_ack": 5,
+    "parity_choice": 30,
+    "league_register": 10,
+    "http_request": 30
+  },
+  "retry_policy": {
+    "max_retries": 3,
+    "retry_delay": 1
+  }
+}
