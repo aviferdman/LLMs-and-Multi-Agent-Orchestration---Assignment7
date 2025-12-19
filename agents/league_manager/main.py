@@ -79,4 +79,5 @@ async def startup():
     })
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=Port.LEAGUE_MANAGER)
+    from SHARED.constants import SERVER_HOST
+    uvicorn.run(app, host=SERVER_HOST, port=Port.LEAGUE_MANAGER)

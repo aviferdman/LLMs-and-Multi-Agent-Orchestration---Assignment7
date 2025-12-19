@@ -1,0 +1,21 @@
+{
+  "default_strategy": "random",
+  "logging_level": "INFO",
+  "response_timeouts": {
+    "game_join_ack": 5,
+    "parity_choice": 30
+  },
+  "strategy_settings": {
+    "random": {
+      "seed": null
+    },
+    "frequency": {
+      "min_history_size": 3,
+      "counter_bias": 0.8
+    },
+    "pattern": {
+      "pattern_length": 3,
+      "min_confidence": 0.6
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "default_timeout_seconds": 30,
+  "max_concurrent_matches": 5,
+  "logging_level": "INFO",
+  "auto_report_results": true,
+  "match_orchestration": {
+    "game_join_timeout": 5,
+    "parity_choice_timeout": 30,
+    "auto_forfeit_on_timeout": true
+  }
+}

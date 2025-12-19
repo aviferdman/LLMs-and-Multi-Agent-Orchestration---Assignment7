@@ -1,0 +1,78 @@
+"""League orchestration helper functions."""
+
+import subprocess
+import asyncio
+from SHARED.league_sdk.logger import LeagueLogger
+from SHARED.league_sdk.http_client import send_message
+from SHARED.constants import LogEvent, Field, Endpoint, Timeout
+
+async def start_agent(agent_type: str, agent_id: str, port: int, logger: LeagueLogger):
+    """Start an agent process."""
+    if agent_type == LogEvent.LEAGUE_MANAGER:
+        script = "agents/league_manager/main.py"
+    elif agent_type == "referee":
+        script = f"agents/launch_referee_{agent_id[-2:]}.py"
+    else:  # player
+        script = f"agents/launch_player_{agent_id[-2:]}.py"
+    
+    proc = subprocess.Popen(
+        ["python", script],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    
+    logger.log_message(LogEvent.STARTUP, {"agent_id": agent_id, "port": port})
+    return proc
+
+async def wait_for_agents(timeout: int, logger: LeagueLogger):
+    """Wait for all agents to be ready."""
+    logger.log_message("WAITING_FOR_AGENTS", {"timeout": timeout})
+    await asyncio.sleep(timeout)
+
+async def register_referee(referee_id: str, endpoint: str, logger: LeagueLogger):
+    """Register referee with league manager."""
+    from SHARED.contracts import build_referee_register_request
+    
+    message = build_referee_register_request(referee_id, endpoint)
+    response = await send_message(Endpoint.LEAGUE_MANAGER, message)
+    logger.log_message(LogEvent.REFEREE_REGISTERED, {Field.REFEREE_ID: referee_id, "response": response})
+
+async def register_player(player_id: str, endpoint: str, logger: LeagueLogger):
+    """Register player with league manager."""
+    from SHARED.contracts import build_league_register_request
+    
+    message = build_league_register_request(player_id, endpoint)
+    response = await send_message(Endpoint.LEAGUE_MANAGER, message)
+    logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: player_id, "response": response})
+
+async def start_all_agents(agents_config: dict, logger: LeagueLogger):
+    """Start all agents (league manager, referees, players)."""
+    from SHARED.constants import AgentID, Port
+    
+    processes = []
+    
+    # Start League Manager
+    lm_proc = await start_agent("league_manager", AgentID.LEAGUE_MANAGER, Port.LEAGUE_MANAGER, logger)
+    processes.append(lm_proc)
+    
+    # Start Referees
+    for referee in agents_config["referees"]:
+        ref_proc = await start_agent("referee", referee["referee_id"], referee["port"], logger)
+        processes.append(ref_proc)
+    
+    # Start Players
+    for player in agents_config["players"]:
+        player_proc = await start_agent("player", player["player_id"], player["port"], logger)
+        processes.append(player_proc)
+    
+    return processes
+
+async def register_all_agents(agents_config: dict, logger: LeagueLogger):
+    """Register all referees and players with league manager."""
+    # Register referees
+    for referee in agents_config["referees"]:
+        await register_referee(referee["referee_id"], referee["endpoint"], logger)
+    
+    # Register players
+    for player in agents_config["players"]:
+        await register_player(player["player_id"], player["endpoint"], logger)
