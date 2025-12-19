@@ -1,6 +1,6 @@
 """Match execution logic for referee."""
 
-from SHARED.league_sdk.http_client import send_message
+from SHARED.league_sdk.http_client import send_message, send_with_retry
 from SHARED.contracts import (
     build_game_invitation, build_choose_parity_call,
     build_game_over, build_match_result_report
@@ -125,8 +125,8 @@ async def notify_game_over(referee, league_id, round_id, match_id, winner,
 
 
 async def report_result(referee, league_id, round_id, match_id, player_a, player_b, winner):
-    """Report match result to League Manager."""
+    """Report match result to League Manager with retry."""
     msg = build_match_result_report(
         league_id, round_id, match_id, referee.referee_id, player_a, player_b, winner
     )
-    await send_message(Endpoint.LEAGUE_MANAGER, msg)
+    await send_with_retry(Endpoint.LEAGUE_MANAGER, msg, max_retries=3)

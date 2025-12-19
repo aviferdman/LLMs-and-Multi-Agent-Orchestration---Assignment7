@@ -11,7 +11,7 @@ import asyncio
 import argparse
 
 from SHARED.league_sdk.logger import LeagueLogger
-from SHARED.league_sdk.http_client import send_message
+from SHARED.league_sdk.http_client import send_with_retry
 from SHARED.contracts import build_referee_register_request
 from SHARED.constants import (
     MessageType, Field, Status, LogEvent, Endpoint, MCP_PATH, SERVER_HOST, LOCALHOST, HTTP_PROTOCOL
@@ -68,11 +68,11 @@ class GenericReferee:
             asyncio.create_task(self.register_with_league_manager())
     
     async def register_with_league_manager(self):
-        """Register this referee with the League Manager."""
+        """Register this referee with the League Manager with retry."""
         await asyncio.sleep(2)
         register_msg = build_referee_register_request(self.referee_id, self.endpoint)
         self.logger.log_message("REGISTERING", {"endpoint": Endpoint.LEAGUE_MANAGER})
-        response = await send_message(Endpoint.LEAGUE_MANAGER, register_msg)
+        response = await send_with_retry(Endpoint.LEAGUE_MANAGER, register_msg, max_retries=3)
         if response and response.get(Field.STATUS) == Status.REGISTERED:
             self.auth_token = response.get(Field.AUTH_TOKEN)
             self.logger.log_message(LogEvent.REFEREE_REGISTERED, {Field.REFEREE_ID: self.referee_id})

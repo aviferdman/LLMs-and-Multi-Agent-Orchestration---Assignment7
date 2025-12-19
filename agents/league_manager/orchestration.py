@@ -15,10 +15,12 @@ async def start_agent(agent_type: str, agent_id: str, port: int, logger: LeagueL
     else:  # player
         script = f"agents/launch_player_{agent_id[-2:]}.py"
     
+    # Use CREATE_NEW_PROCESS_GROUP to prevent signals from propagating
     proc = subprocess.Popen(
         ["python", script],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
     )
     
     logger.log_message(LogEvent.STARTUP, {"agent_id": agent_id, "port": port})

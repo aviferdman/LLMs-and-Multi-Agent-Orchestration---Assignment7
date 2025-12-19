@@ -19,6 +19,9 @@ Execution Flow:
 """
 
 import asyncio
+import time
+import signal
+import sys
 from SHARED.league_sdk.config_loader import load_agent_config, load_league_config
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.http_client import send_message
@@ -30,9 +33,21 @@ from agents.league_manager.orchestration import (
 )
 
 logger = LeagueLogger("LAUNCHER")
+_processes = []
+
+def signal_handler(signum, frame):
+    """Handle shutdown signals gracefully."""
+    logger.log_message(LogEvent.SHUTDOWN, {"reason": "signal", "signal": signum})
+    for proc in _processes:
+        try:
+            proc.terminate()
+        except Exception:
+            pass
+    sys.exit(0)
 
 async def run_league():
     """Main launcher function."""
+    global _processes
     logger.log_message("LAUNCHER_START", {})
     
     # Load configurations
@@ -41,15 +56,16 @@ async def run_league():
     
     # Step 1: Start all agent processes
     logger.log_message("STARTING_AGENTS", {})
-    processes = await start_all_agents(agents_config, logger)
+    _processes = await start_all_agents(agents_config, logger)
     
     # Step 2: Wait for agents to initialize and self-register
     # Agents register themselves with LM on startup
     await wait_for_agents(Timeout.AGENT_STARTUP, logger)
     
     # Additional wait for self-registration to complete
+    # Agents wait 2s after startup, so we need at least 5-7s for all registrations
     logger.log_message("WAITING_FOR_REGISTRATIONS", {})
-    await asyncio.sleep(5)
+    time.sleep(10)  # Synchronous sleep to avoid asyncio cancellation
     
     # Step 3: Send START_LEAGUE to LM
     logger.log_message("TRIGGERING_LEAGUE_START", {
@@ -64,18 +80,29 @@ async def run_league():
     # Step 4: Keep processes running until league completes
     logger.log_message("WAITING_FOR_LEAGUE_COMPLETION", {})
     
-    try:
-        # Wait for league to complete (poll status or just wait)
-        await asyncio.sleep(30)  # Wait for matches to complete
-        
-        logger.log_message("LAUNCHER_COMPLETE", {})
-        
-    except KeyboardInterrupt:
-        logger.log_message(LogEvent.SHUTDOWN, {"reason": "user_interrupt"})
-    finally:
-        # Terminate all processes
-        for proc in processes:
+    # Synchronous sleep to avoid asyncio cancellation issues
+    time.sleep(30)  # Wait for matches to complete
+    
+    logger.log_message("LAUNCHER_COMPLETE", {})
+    
+    # Terminate all processes
+    for proc in _processes:
+        try:
             proc.terminate()
+        except Exception:
+            pass
 
 if __name__ == "__main__":
-    asyncio.run(run_league())
+    # Setup signal handlers
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
+    try:
+        asyncio.run(run_league())
+    except KeyboardInterrupt:
+        logger.log_message(LogEvent.SHUTDOWN, {"reason": "user_interrupt"})
+        for proc in _processes:
+            try:
+                proc.terminate()
+            except Exception:
+                pass

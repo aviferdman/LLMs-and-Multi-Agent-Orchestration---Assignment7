@@ -6,7 +6,7 @@ from datetime import datetime
 
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.config_models import LeagueConfig
-from SHARED.league_sdk.repositories import StandingsRepository
+from SHARED.league_sdk.repositories import StandingsRepository, MatchRepository
 from SHARED.contracts import (
     build_referee_register_response,
     build_league_register_response,
@@ -98,6 +98,17 @@ def handle_match_result_report(
     logger.log_message(LogEvent.MATCH_RESULT, {
         Field.MATCH_ID: match_id,
         Field.WINNER: winner
+    })
+    
+    # Save match data
+    match_repo = MatchRepository(league_config.league_id)
+    match_repo.save_match(match_id, {
+        Field.MATCH_ID: match_id,
+        Field.PLAYER_A: player_a,
+        Field.PLAYER_B: player_b,
+        Field.WINNER: winner,
+        "round_id": message.get("round_id"),
+        "timestamp": message.get("timestamp")
     })
     
     # Update standings

@@ -11,6 +11,7 @@ from typing import Dict, Any
 
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.config_loader import load_system_config, load_league_config
+from SHARED.league_sdk.repositories import StandingsRepository
 from SHARED.constants import (
     MessageType, Field, AgentID, Port, LogEvent, LeagueID, MCP_PATH, Status, GameStatus
 )
@@ -48,6 +49,20 @@ async def mcp_endpoint(request: Request, background_tasks: BackgroundTasks) -> J
         elif msg_type == MessageType.LEAGUE_REGISTER_REQUEST:
             response = handle_league_register(message, registered_players, league_config, logger)
         elif msg_type == MessageType.START_LEAGUE:
+            # Reset standings for fresh league start
+            standings_repo = StandingsRepository(league_config.league_id)
+            standings = standings_repo.load()
+            for player in standings.get("standings", []):
+                player["wins"] = 0
+                player["losses"] = 0
+                player["draws"] = 0
+                player["points"] = 0
+                player["games_played"] = 0
+                player["rank"] = 0
+            standings_repo.save(standings)
+            league_state["matches_completed"] = 0
+            league_state["current_round"] = 0
+            
             background_tasks.add_task(
                 run_league_matches, league_config, registered_players,
                 registered_referees, logger, league_state

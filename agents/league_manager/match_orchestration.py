@@ -3,8 +3,8 @@
 import asyncio
 from typing import Dict, Any
 
-from SHARED.league_sdk.http_client import send_message
-from SHARED.league_sdk.repositories import StandingsRepository
+from SHARED.league_sdk.http_client import send_with_retry
+from SHARED.league_sdk.repositories import StandingsRepository, MatchRepository
 from SHARED.constants import Field, LogEvent, Timeout, GameStatus
 from SHARED.contracts import build_run_match
 from scheduler import get_match_schedule
@@ -94,9 +94,10 @@ async def execute_match_via_referee(
         Field.REFEREE_ID: referee_id
     })
     
-    response = await send_message(
+    response = await send_with_retry(
         referee_info[Field.ENDPOINT],
         run_match_msg,
+        max_retries=3,
         timeout=Timeout.HTTP_REQUEST
     )
     

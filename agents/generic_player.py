@@ -12,7 +12,7 @@ import asyncio
 
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.repositories import PlayerHistoryRepository
-from SHARED.league_sdk.http_client import send_message
+from SHARED.league_sdk.http_client import send_with_retry
 from SHARED.contracts import build_game_join_ack, build_parity_choice, build_league_register_request
 from SHARED.constants import (
     MessageType, Field, Status, LogEvent, StrategyType, SERVER_HOST, Endpoint, LOCALHOST, HTTP_PROTOCOL, MCP_PATH
@@ -66,11 +66,11 @@ class GenericPlayer:
             asyncio.create_task(self._register_with_lm())
     
     async def _register_with_lm(self):
-        """Register this player with the League Manager."""
+        """Register this player with the League Manager with retry."""
         await asyncio.sleep(2)
         msg = build_league_register_request(self.player_id, self.endpoint)
         self.logger.log_message("REGISTERING", {"endpoint": Endpoint.LEAGUE_MANAGER})
-        resp = await send_message(Endpoint.LEAGUE_MANAGER, msg)
+        resp = await send_with_retry(Endpoint.LEAGUE_MANAGER, msg, max_retries=3)
         if resp and resp.get(Field.STATUS) == Status.REGISTERED:
             self.auth_token = resp.get(Field.AUTH_TOKEN)
             self.logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: self.player_id})
