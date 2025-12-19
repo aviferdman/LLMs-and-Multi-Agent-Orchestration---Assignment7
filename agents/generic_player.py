@@ -77,7 +77,7 @@ class GenericPlayer:
     def handle_choose_parity_call(self, message: dict) -> dict:
         """Handle parity choice request."""
         history_repo = PlayerHistoryRepository(self.player_id)
-        history = history_repo.load()
+        history = history_repo.load_history()
         opponent_history = history.get("opponent_choices", [])
         choice = self.strategy.choose_parity(opponent_history)
         
@@ -98,6 +98,11 @@ class GenericPlayer:
     def run(self):
         """Run the player server."""
         uvicorn.run(self.app, host=SERVER_HOST, port=self.port)
+
+def create_app(player_id: str, port: int, strategy_name: str) -> FastAPI:
+    """Factory function to create player FastAPI app."""
+    player = GenericPlayer(player_id, strategy_name, port)
+    return player.app
 
 def main():
     """Main entry point."""

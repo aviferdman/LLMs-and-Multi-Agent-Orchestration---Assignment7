@@ -108,6 +108,11 @@ class GenericReferee:
         """Run the referee server."""
         uvicorn.run(self.app, host=SERVER_HOST, port=self.port)
 
+def create_app(referee_id: str, port: int) -> FastAPI:
+    """Factory function to create referee FastAPI app."""
+    referee = GenericReferee(referee_id, port)
+    return referee.app
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser()
