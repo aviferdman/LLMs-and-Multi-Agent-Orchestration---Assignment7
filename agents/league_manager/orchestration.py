@@ -21,7 +21,7 @@ async def start_agent(agent_type: str, agent_id: str, port: int, logger: LeagueL
         stderr=subprocess.PIPE
     )
     
-    logger.log_message(LogEvent.STARTUP, {Field.AGENT_ID: agent_id, "port": port})
+    logger.log_message(LogEvent.STARTUP, {"agent_id": agent_id, "port": port})
     return proc
 
 async def wait_for_agents(timeout: int, logger: LeagueLogger):
@@ -35,7 +35,7 @@ async def register_referee(referee_id: str, endpoint: str, logger: LeagueLogger)
     
     message = build_referee_register_request(referee_id, endpoint)
     response = await send_message(Endpoint.LEAGUE_MANAGER, message)
-    logger.log_message(LogEvent.REFEREE_REGISTERED, {Field.REFEREE_ID: referee_id, "response": response})
+    logger.log_message(LogEvent.REFEREE_REGISTERED, {Field.REFEREE_ID: referee_id, "response": str(response)})
 
 async def register_player(player_id: str, endpoint: str, logger: LeagueLogger):
     """Register player with league manager."""
@@ -43,7 +43,7 @@ async def register_player(player_id: str, endpoint: str, logger: LeagueLogger):
     
     message = build_league_register_request(player_id, endpoint)
     response = await send_message(Endpoint.LEAGUE_MANAGER, message)
-    logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: player_id, "response": response})
+    logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: player_id, "response": str(response)})
 
 async def start_all_agents(agents_config: dict, logger: LeagueLogger):
     """Start all agents (league manager, referees, players)."""

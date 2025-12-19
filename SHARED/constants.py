@@ -13,7 +13,7 @@ from SHARED.protocol_constants import (
 # Re-export all agent and game constants
 from SHARED.agent_constants import (
     AgentID, LeagueID, GameID, GameStatus, ParityChoice, Winner,
-    EVEN_ODD_MIN_NUMBER, EVEN_ODD_MAX_NUMBER, StrategyType,
+    EVEN_ODD_MIN_NUMBER, EVEN_ODD_MAX_NUMBER, StrategyType, AgentType,
     Directory, FileName, LogEvent, Points
 )
 
@@ -23,6 +23,6 @@ __all__ = [
     'MessageType', 'Port', 'Endpoint', 'Timeout', 'Status', 'Field',
     # Agent constants
     'AgentID', 'LeagueID', 'GameID', 'GameStatus', 'ParityChoice', 'Winner',
-    'EVEN_ODD_MIN_NUMBER', 'EVEN_ODD_MAX_NUMBER', 'StrategyType',
+    'EVEN_ODD_MIN_NUMBER', 'EVEN_ODD_MAX_NUMBER', 'StrategyType', 'AgentType',
     'Directory', 'FileName', 'LogEvent', 'Points'
 ]
