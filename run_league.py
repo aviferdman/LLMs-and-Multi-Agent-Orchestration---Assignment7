@@ -1,57 +1,79 @@
-"""League orchestrator - Run complete league tournament."""
+"""League launcher - Start all agents and trigger league execution.
+
+Execution Flow:
+1. Launcher starts all agent processes (LM, Referees, Players)
+2. Agents register themselves with LM on startup:
+   - Referees send REFEREE_REGISTER_REQUEST to LM
+   - Players send LEAGUE_REGISTER_REQUEST to LM
+3. Launcher sends START_LEAGUE to LM
+4. LM orchestrates the league:
+   - LM sends RUN_MATCH to Referees for each match
+   - Referee sends GAME_INVITATION to Players
+   - Players respond with GAME_JOIN_ACK
+   - Referee sends CHOOSE_PARITY_CALL to Players
+   - Players respond with PARITY_CHOICE
+   - Referee determines winner, sends GAME_OVER to Players
+   - Referee sends MATCH_RESULT_REPORT to LM
+   - LM updates standings
+5. LM completes all rounds and finalizes standings
+"""
 
 import asyncio
 from SHARED.league_sdk.config_loader import load_agent_config, load_league_config
 from SHARED.league_sdk.logger import LeagueLogger
-from SHARED.constants import LeagueID, LogEvent, Timeout
-from agents.league_manager.scheduler import get_match_schedule
+from SHARED.league_sdk.http_client import send_message
+from SHARED.constants import LeagueID, LogEvent, Timeout, Endpoint
+from SHARED.contracts import build_start_league
 from agents.league_manager.orchestration import (
     start_all_agents,
-    wait_for_agents,
-    register_all_agents
+    wait_for_agents
 )
 
-logger = LeagueLogger("ORCHESTRATOR")
+logger = LeagueLogger("LAUNCHER")
 
 async def run_league():
-    """Main orchestrator function."""
-    logger.log_message("LEAGUE_START", {})
+    """Main launcher function."""
+    logger.log_message("LAUNCHER_START", {})
     
     # Load configurations
     agents_config = load_agent_config()
     league_config = load_league_config(LeagueID.EVEN_ODD_2025)
     
-    # Start all agents
+    # Step 1: Start all agent processes
+    logger.log_message("STARTING_AGENTS", {})
     processes = await start_all_agents(agents_config, logger)
     
-    # Wait for agents to initialize
+    # Step 2: Wait for agents to initialize and self-register
+    # Agents register themselves with LM on startup
     await wait_for_agents(Timeout.AGENT_STARTUP, logger)
     
-    # Register all agents
-    await register_all_agents(agents_config, logger)
-    
+    # Additional wait for self-registration to complete
+    logger.log_message("WAITING_FOR_REGISTRATIONS", {})
     await asyncio.sleep(5)
     
-    # Get match schedule
-    schedule = get_match_schedule()
-    
-    logger.log_message("SCHEDULE_LOADED", {
-        "total_rounds": len(schedule),
-        "total_matches": sum(len(r) for r in schedule)
+    # Step 3: Send START_LEAGUE to LM
+    logger.log_message("TRIGGERING_LEAGUE_START", {
+        "league_id": league_config.league_id
     })
     
-    # Execute matches
-    # Note: Actual match execution would be triggered here
-    # For now, this is a placeholder for the orchestration logic
+    start_msg = build_start_league(league_config.league_id, "LAUNCHER")
+    response = await send_message(Endpoint.LEAGUE_MANAGER, start_msg)
     
-    logger.log_message("LEAGUE_COMPLETE", {})
+    logger.log_message("LEAGUE_STARTED", {"response": response})
     
-    # Keep processes running
+    # Step 4: Keep processes running until league completes
+    logger.log_message("WAITING_FOR_LEAGUE_COMPLETION", {})
+    
     try:
-        while True:
-            await asyncio.sleep(10)
+        # Wait for league to complete (poll status or just wait)
+        await asyncio.sleep(30)  # Wait for matches to complete
+        
+        logger.log_message("LAUNCHER_COMPLETE", {})
+        
     except KeyboardInterrupt:
-        logger.log_message(LogEvent.SHUTDOWN, {})
+        logger.log_message(LogEvent.SHUTDOWN, {"reason": "user_interrupt"})
+    finally:
+        # Terminate all processes
         for proc in processes:
             proc.terminate()
 

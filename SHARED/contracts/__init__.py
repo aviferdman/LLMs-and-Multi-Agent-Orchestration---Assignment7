@@ -10,7 +10,11 @@ from .league_manager_contracts import (
     build_referee_register_response,
     build_league_register_request,
     build_league_register_response,
-    build_match_result_ack
+    build_match_result_ack,
+    build_start_league,
+    build_league_status,
+    build_run_match,
+    build_run_match_ack
 )
 from .referee_contracts import (
     build_game_invitation,
@@ -32,6 +36,10 @@ __all__ = [
     "build_league_register_request",
     "build_league_register_response",
     "build_match_result_ack",
+    "build_start_league",
+    "build_league_status",
+    "build_run_match",
+    "build_run_match_ack",
     "build_game_invitation",
     "build_choose_parity_call",
     "build_game_over",

@@ -9,15 +9,24 @@ HTTP_PROTOCOL = "http"
 
 class MessageType:
     """All protocol message types."""
+    # Registration messages
     REFEREE_REGISTER_REQUEST = "REFEREE_REGISTER_REQUEST"
     REFEREE_REGISTER_RESPONSE = "REFEREE_REGISTER_RESPONSE"
     LEAGUE_REGISTER_REQUEST = "LEAGUE_REGISTER_REQUEST"
     LEAGUE_REGISTER_RESPONSE = "LEAGUE_REGISTER_RESPONSE"
+    # League control messages (Launcher → LM)
+    START_LEAGUE = "START_LEAGUE"
+    LEAGUE_STATUS = "LEAGUE_STATUS"
+    # Match assignment messages (LM → Referee)
+    RUN_MATCH = "RUN_MATCH"
+    RUN_MATCH_ACK = "RUN_MATCH_ACK"
+    # Game flow messages (Referee ↔ Player)
     GAME_INVITATION = "GAME_INVITATION"
     GAME_JOIN_ACK = "GAME_JOIN_ACK"
     CHOOSE_PARITY_CALL = "CHOOSE_PARITY_CALL"
     PARITY_CHOICE = "PARITY_CHOICE"
     GAME_OVER = "GAME_OVER"
+    # Result reporting (Referee → LM)
     MATCH_RESULT_REPORT = "MATCH_RESULT_REPORT"
     MATCH_RESULT_ACK = "MATCH_RESULT_ACK"
 
@@ -44,10 +53,10 @@ class Endpoint:
 class Timeout:
     """Timeout values in seconds."""
     GAME_JOIN_ACK = 5
-    PARITY_CHOICE = 30
+    PARITY_CHOICE = 10
     LEAGUE_REGISTER = 10
     HTTP_REQUEST = 30
-    AGENT_STARTUP = 15
+    AGENT_STARTUP = 5
 
 class Status:
     """Generic status values."""

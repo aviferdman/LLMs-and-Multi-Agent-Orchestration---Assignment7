@@ -60,5 +60,12 @@ def main():
         print("✅ ALL FILES COMPLIANT - No violations found")
         return 0
 
+
+def test_line_count_compliance():
+    """Pytest test for line count compliance."""
+    files, violations = check_line_counts()
+    assert len(violations) == 0, f"Files over 150 lines: {violations}"
+
+
 if __name__ == "__main__":
     sys.exit(main())

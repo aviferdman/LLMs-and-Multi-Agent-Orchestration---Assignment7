@@ -8,12 +8,17 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import uvicorn
 import argparse
+import asyncio
 
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.repositories import PlayerHistoryRepository
-from SHARED.contracts import build_game_join_ack, build_parity_choice
-from SHARED.constants import MessageType, Field, Status, LogEvent, StrategyType, SERVER_HOST
+from SHARED.league_sdk.http_client import send_message
+from SHARED.contracts import build_game_join_ack, build_parity_choice, build_league_register_request
+from SHARED.constants import (
+    MessageType, Field, Status, LogEvent, StrategyType, SERVER_HOST, Endpoint, LOCALHOST, HTTP_PROTOCOL, MCP_PATH
+)
 from agents.player_strategies import STRATEGIES, RandomStrategy
+
 
 class GenericPlayer:
     """Generic player that can use any strategy."""
@@ -22,99 +27,91 @@ class GenericPlayer:
         """Initialize player with strategy."""
         self.player_id = player_id
         self.port = port
+        self.endpoint = f"{HTTP_PROTOCOL}://{LOCALHOST}:{port}{MCP_PATH}"
         self.logger = LeagueLogger(player_id)
-        strategy_class = STRATEGIES.get(strategy_name, RandomStrategy)
-        self.strategy = strategy_class()
+        self.strategy = STRATEGIES.get(strategy_name, RandomStrategy)()
+        self.auth_token = None
         self.app = FastAPI(title=f"Player {player_id}")
         self.setup_routes()
     
     def setup_routes(self):
         """Setup FastAPI routes."""
-        
         @self.app.post("/mcp")
         async def mcp_endpoint(request: Request) -> JSONResponse:
             """Handle MCP protocol messages."""
             try:
                 message = await request.json()
                 self.logger.log_message(LogEvent.RECEIVED, message)
-                message_type = message.get(Field.MESSAGE_TYPE)
-                response = None
+                msg_type = message.get(Field.MESSAGE_TYPE)
                 
-                if message_type == MessageType.GAME_INVITATION:
-                    response = self.handle_game_invitation(message)
-                elif message_type == MessageType.CHOOSE_PARITY_CALL:
-                    response = self.handle_choose_parity_call(message)
-                elif message_type == MessageType.GAME_OVER:
-                    self.handle_game_over(message)
+                if msg_type == MessageType.GAME_INVITATION:
+                    response = self._handle_invitation(message)
+                elif msg_type == MessageType.CHOOSE_PARITY_CALL:
+                    response = self._handle_parity_call(message)
+                elif msg_type == MessageType.GAME_OVER:
+                    self._handle_game_over(message)
                     response = {Field.STATUS: Status.ACKNOWLEDGED}
                 else:
-                    response = {Status.ERROR: "Unknown message type"}
+                    response = {Field.STATUS: Status.ERROR, "message": "Unknown message type"}
                 
-                if response:
-                    self.logger.log_message(LogEvent.SENT, response)
-                    return JSONResponse(content=response)
-                return JSONResponse(content={Field.STATUS: Status.OK})
+                self.logger.log_message(LogEvent.SENT, response)
+                return JSONResponse(content=response)
             except Exception as e:
                 self.logger.log_error(LogEvent.REQUEST_ERROR, str(e))
-                return JSONResponse(content={Status.ERROR: "Internal error"}, status_code=500)
+                return JSONResponse(content={Field.STATUS: Status.ERROR}, status_code=500)
         
         @self.app.on_event("startup")
         async def startup():
-            """Log startup."""
             self.logger.log_message(LogEvent.STARTUP, {Field.PLAYER_ID: self.player_id, "port": self.port})
+            asyncio.create_task(self._register_with_lm())
     
-    def handle_game_invitation(self, message: dict) -> dict:
-        """Handle game invitation."""
-        self.logger.log_message(LogEvent.GAME_INVITATION_RECEIVED, {
-            Field.MATCH_ID: message.get(Field.MATCH_ID),
-            "opponent": message.get(Field.OPPONENT_ID)
-        })
+    async def _register_with_lm(self):
+        """Register this player with the League Manager."""
+        await asyncio.sleep(2)
+        msg = build_league_register_request(self.player_id, self.endpoint)
+        self.logger.log_message("REGISTERING", {"endpoint": Endpoint.LEAGUE_MANAGER})
+        resp = await send_message(Endpoint.LEAGUE_MANAGER, msg)
+        if resp and resp.get(Field.STATUS) == Status.REGISTERED:
+            self.auth_token = resp.get(Field.AUTH_TOKEN)
+            self.logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: self.player_id})
+        else:
+            self.logger.log_error(LogEvent.ERROR, f"Registration failed: {resp}")
+    
+    def _handle_invitation(self, msg: dict) -> dict:
+        self.logger.log_message(LogEvent.GAME_INVITATION_RECEIVED, {Field.MATCH_ID: msg.get(Field.MATCH_ID)})
         return build_game_join_ack(
-            message.get(Field.LEAGUE_ID), message.get(Field.ROUND_ID),
-            message.get(Field.MATCH_ID), self.player_id, message.get(Field.CONVERSATION_ID)
+            msg.get(Field.LEAGUE_ID), msg.get(Field.ROUND_ID), msg.get(Field.MATCH_ID),
+            self.player_id, msg.get(Field.CONVERSATION_ID)
         )
     
-    def handle_choose_parity_call(self, message: dict) -> dict:
-        """Handle parity choice request."""
-        history_repo = PlayerHistoryRepository(self.player_id)
-        history = history_repo.load_history()
-        opponent_history = history.get("opponent_choices", [])
-        choice = self.strategy.choose_parity(opponent_history)
-        
-        self.logger.log_message(LogEvent.PARITY_CHOICE_MADE, {
-            Field.MATCH_ID: message.get(Field.MATCH_ID), Field.CHOICE: choice
-        })
+    def _handle_parity_call(self, msg: dict) -> dict:
+        history = PlayerHistoryRepository(self.player_id).load_history().get("opponent_choices", [])
+        choice = self.strategy.choose_parity(history)
+        self.logger.log_message(LogEvent.PARITY_CHOICE_MADE, {Field.MATCH_ID: msg.get(Field.MATCH_ID), Field.CHOICE: choice})
         return build_parity_choice(
-            message.get(Field.LEAGUE_ID), message.get(Field.ROUND_ID),
-            message.get(Field.MATCH_ID), self.player_id, choice, message.get(Field.CONVERSATION_ID)
+            msg.get(Field.LEAGUE_ID), msg.get(Field.ROUND_ID), msg.get(Field.MATCH_ID),
+            self.player_id, choice, msg.get(Field.CONVERSATION_ID)
         )
     
-    def handle_game_over(self, message: dict) -> None:
-        """Handle game over notification."""
-        self.logger.log_message(LogEvent.GAME_OVER_RECEIVED, {
-            Field.MATCH_ID: message.get(Field.MATCH_ID), Field.WINNER: message.get(Field.WINNER)
-        })
+    def _handle_game_over(self, msg: dict):
+        self.logger.log_message(LogEvent.GAME_OVER_RECEIVED, {Field.MATCH_ID: msg.get(Field.MATCH_ID), Field.WINNER: msg.get(Field.WINNER)})
     
     def run(self):
-        """Run the player server."""
         uvicorn.run(self.app, host=SERVER_HOST, port=self.port)
 
+
 def create_app(player_id: str, port: int, strategy_name: str) -> FastAPI:
-    """Factory function to create player FastAPI app."""
-    player = GenericPlayer(player_id, strategy_name, port)
-    return player.app
+    return GenericPlayer(player_id, strategy_name, port).app
+
 
 def main():
-    """Main entry point."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--player-id", required=True)
-    parser.add_argument("--strategy", required=True, 
-                       choices=[StrategyType.RANDOM, StrategyType.FREQUENCY, StrategyType.PATTERN])
+    parser.add_argument("--strategy", required=True, choices=[StrategyType.RANDOM, StrategyType.FREQUENCY, StrategyType.PATTERN])
     parser.add_argument("--port", type=int, required=True)
     args = parser.parse_args()
-    
-    player = GenericPlayer(args.player_id, args.strategy, args.port)
-    player.run()
+    GenericPlayer(args.player_id, args.strategy, args.port).run()
+
 
 if __name__ == "__main__":
     main()
