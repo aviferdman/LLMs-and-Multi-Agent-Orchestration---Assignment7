@@ -1,4 +1,4 @@
-# Assignment 7 - AI Agent League Competition
+# Assignment 7 - AI Agent League Competition with MCP Protocol
 
 **Course**: LLMs and Multi-Agent Orchestration  
 **Assignment Type**: Competitive Multi-Agent System  
@@ -1640,11 +1640,10 @@ Step 5: Points awarded
   "timestamp": "2025-12-13T22:05:02.000Z",
   "game_state": {
     "game_type": "even_odd",
-    "current_turn": "player_001",
-    "turn_number": 1,
+    "current_player": "player_001",
     "rules": {
-      "max_turns": 10,
-      "timeout_per_turn": 30
+      "single_round": true,
+      "timeout_per_move": 30
     }
   }
 }
@@ -1652,16 +1651,16 @@ Step 5: Points awarded
 
 ---
 
-### 5. Move Execution
+### 5. Play Execution
 
-#### MOVE_REQUEST
+#### PLAY_REQUEST
 
 **Direction**: Referee → Player (whose turn it is)
 
 ```json
 {
   "protocol": "league.v1",
-  "message_type": "MOVE_REQUEST",
+  "message_type": "PLAY_REQUEST",
   "league_id": "550e8400-e29b-41d4-a716-446655440000",
   "round_id": 1,
   "match_id": "R1M1",
@@ -1672,27 +1671,27 @@ Step 5: Points awarded
     "turn_number": 1,
     "timeout_seconds": 30,
     "game_specific_state": {
-      "previous_moves": []
+      "previous_plays": []
     }
   }
 }
 ```
 
-#### MOVE_RESPONSE
+#### PLAY_RESPONSE
 
 **Direction**: Player → Referee
 
 ```json
 {
   "protocol": "league.v1",
-  "message_type": "MOVE_RESPONSE",
+  "message_type": "PLAY_RESPONSE",
   "league_id": "550e8400-e29b-41d4-a716-446655440000",
   "round_id": 1,
   "match_id": "R1M1",
   "conversation_id": "880e8400-e29b-41d4-a716-446655440003",
   "sender": "player_001",
   "timestamp": "2025-12-13T22:05:05.000Z",
-  "move": {
+  "play": {
     "action": "choose",
     "value": "even",
     "reasoning": "Strategic choice based on opponent history"
@@ -1700,23 +1699,23 @@ Step 5: Points awarded
 }
 ```
 
-**Move Structure for Even-Odd**:
+**Play Structure for Even-Odd**:
 - `action`: Always "choose"
 - `value`: "even" or "odd"
 - `reasoning`: Optional string explaining decision
 
 ---
 
-### 6. Move Validation
+### 6. Play Validation
 
-#### MOVE_VALIDATION
+#### PLAY_VALIDATION
 
 **Direction**: Referee → Both Players
 
 ```json
 {
   "protocol": "league.v1",
-  "message_type": "MOVE_VALIDATION",
+  "message_type": "PLAY_VALIDATION",
   "league_id": "550e8400-e29b-41d4-a716-446655440000",
   "round_id": 1,
   "match_id": "R1M1",
@@ -1725,7 +1724,7 @@ Step 5: Points awarded
   "timestamp": "2025-12-13T22:05:06.000Z",
   "validation": {
     "player_id": "player_001",
-    "move": {"action": "choose", "value": "even"},
+    "play": {"action": "choose", "value": "even"},
     "status": "VALID",
     "error": null
   }
@@ -1733,8 +1732,8 @@ Step 5: Points awarded
 ```
 
 **Status Values**:
-- `VALID`: Move accepted
-- `INVALID`: Move rejected
+- `VALID`: Play accepted
+- `INVALID`: Play rejected
 
 **Error Reasons**:
 - "Invalid choice format"
@@ -1762,17 +1761,14 @@ Step 5: Points awarded
   "timestamp": "2025-12-13T22:06:00.000Z",
   "result": {
     "winner": "player_001",
-    "loser": "player_002",
+    "loser": "player_002", 
     "outcome": "WIN",
-    "final_score": {
-      "player_001": 6,
-      "player_002": 4
-    },
-    "total_turns": 10,
     "game_summary": {
-      "moves": [
-        {"turn": 1, "player_001": "even", "player_002": "odd", "number": 7, "winner": "player_002"}
-      ]
+      "player_001_choice": "even",
+      "player_002_choice": "odd",
+      "random_number": 42,
+      "number_parity": "even",
+      "winner_reason": "player_001 correct, player_002 wrong"
     }
   }
 }
@@ -1857,51 +1853,61 @@ Step 5: Points awarded
 
 ### Game Description
 
-A simultaneous-move game where two players compete over multiple rounds.
+A simultaneous-move game where two players compete over multiple rounds, as specified in PDF section 7.2.
 
-### Rules
+### Rules (Per PDF Section 7.2)
 
 1. **Setup**:
-   - 10 turns per game
-   - Each turn, both players simultaneously choose "even" or "odd"
+   - Single round per game
+   - Both players simultaneously choose "even" or "odd"
 
-2. **Turn Execution**:
+2. **Game Execution**:
    - Referee requests moves from both players
    - Both players submit their choice
-   - Referee generates a random number (0-99)
+   - **Referee generates a random number** (judge generates number per PDF)
    - Winner determined by parity match
 
-3. **Winning Condition**:
-   - If number is even AND player chose "even" → Player wins the turn
-   - If number is odd AND player chose "odd" → Player wins the turn
-   - Otherwise → Opponent wins the turn
+3. **Winning Condition (Exact PDF Rules)**:
+   - **If both players are correct OR both are wrong** → **TIE**
+   - **If one player is correct and one is wrong** → **The correct player wins**
+   - Example: Number is 7 (odd), Player1 chose "odd", Player2 chose "even" → Player1 wins
 
-4. **Game Winner**:
-   - Player who wins more turns (out of 10) wins the game
-   - If tied after 10 turns → DRAW
+4. **Timeout Rules (Per PDF Section 7.2)**:
+   - **30 seconds to respond**
+   - **3 attempts before disqualification**
 
-### Example Turn
+5. **Game Result**:
+   - Winner determined after single round
+   - Result can be WIN, LOSS, or TIE
+
+### Example Games (Following PDF Rules)
 
 ```
-Turn 1:
+Game 1 (Player 1 vs Player 2):
   Player 1 chooses: "even"
-  Player 2 chooses: "odd"
+  Player 2 chooses: "odd"  
   Random number: 42 (even)
-  Winner: Player 1 (matched parity)
-  
-Turn 2:
-  Player 1 chooses: "odd"
-  Player 2 chooses: "even"
+  Result: Player 1 correct, Player 2 wrong → Player 1 WINS THE GAME
+
+Game 2 (Player 1 vs Player 3):
+  Player 1 chooses: "even"
+  Player 3 chooses: "even"
   Random number: 17 (odd)
-  Winner: Player 1 (matched parity)
+  Result: Both players wrong → GAME ENDS IN TIE
+
+Game 3 (Player 2 vs Player 4):
+  Player 2 chooses: "odd"
+  Player 4 chooses: "even"
+  Random number: 33 (odd)
+  Result: Player 2 correct, Player 4 wrong → Player 2 WINS THE GAME
 ```
 
 ### Game-Specific Message Fields
 
-#### In MOVE_RESPONSE:
+#### In PLAY_RESPONSE:
 ```json
 {
-  "move": {
+  "play": {
     "action": "choose",
     "value": "even"  // or "odd"
   }
@@ -1960,8 +1966,8 @@ class AgentMCPServer:
             return await self.handle_registration(message)
         elif message_type == "GAME_INVITATION":
             return await self.handle_invitation(message)
-        elif message_type == "MOVE_REQUEST":
-            return await self.handle_move_request(message)
+        elif message_type == "PLAY_REQUEST":
+            return await self.handle_play_request(message)
         # ... etc
 ```
 
@@ -2374,9 +2380,9 @@ All messages must validate against these schemas:
         "GAME_INVITATION",
         "GAME_INVITATION_RESPONSE",
         "GAME_START",
-        "MOVE_REQUEST",
-        "MOVE_RESPONSE",
-        "MOVE_VALIDATION",
+        "PLAY_REQUEST",
+        "PLAY_RESPONSE",
+        "PLAY_VALIDATION",
         "GAME_RESULT",
         "ROUND_COMPLETE",
         "LEAGUE_COMPLETE"
@@ -2464,18 +2470,17 @@ timestamp = datetime.now(timezone.utc).isoformat()
 4. GAME START
    Referee → Both: GAME_START
 
-5. TURNS (×10)
-   For each turn:
-     Referee → Player1: MOVE_REQUEST
-     Player1 → Referee: MOVE_RESPONSE (value="even")
-     Referee → Both: MOVE_VALIDATION
-     
-     Referee → Player2: MOVE_REQUEST
-     Player2 → Referee: MOVE_RESPONSE (value="odd")
-     Referee → Both: MOVE_VALIDATION
-     
-     Referee generates random number
-     Referee determines turn winner
+5. SINGLE GAME
+   Referee → Player1: MOVE_REQUEST
+   Player1 → Referee: MOVE_RESPONSE (value="even")
+   Referee → Both: MOVE_VALIDATION
+   
+   Referee → Player2: MOVE_REQUEST
+   Player2 → Referee: MOVE_RESPONSE (value="odd")
+   Referee → Both: MOVE_VALIDATION
+   
+   Referee generates random number
+   Referee determines game winner immediately
 
 6. GAME END
    Referee → Both + League: GAME_RESULT
