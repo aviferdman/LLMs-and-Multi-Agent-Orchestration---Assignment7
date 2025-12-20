@@ -25,6 +25,9 @@ from .session_manager import (
     Session,
     SessionState,
     SessionManager,
+    AgentType,
+    get_session_manager,
+    reset_session_manager,
 )
 from .agent_comm import (
     send,
@@ -58,6 +61,9 @@ __all__ = [
     "Session",
     "SessionState",
     "SessionManager",
+    "AgentType",
+    "get_session_manager",
+    "reset_session_manager",
     # Agent communication (high-level API)
     "send",
     "send_with_retry",

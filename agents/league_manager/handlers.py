@@ -1,12 +1,11 @@
 """League Manager message handlers."""
 
-import uuid
 from typing import Dict, Any
-from datetime import datetime
 
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.config_models import LeagueConfig
 from SHARED.league_sdk.repositories import StandingsRepository, MatchRepository
+from SHARED.league_sdk.session_manager import get_session_manager, AgentType
 from SHARED.contracts import (
     build_referee_register_response,
     build_league_register_response,
@@ -15,38 +14,37 @@ from SHARED.contracts import (
 from SHARED.constants import Field, LogEvent, Status
 from ranking import update_standings
 
+
 def handle_referee_register(
     message: Dict[str, Any],
-    registered_referees: Dict[str, Any],
     logger: LeagueLogger
 ) -> Dict[str, Any]:
-    """Handle referee registration request."""
+    """Handle referee registration request - delegates to SessionManager."""
     referee_id = message.get(Field.REFEREE_ID)
+    endpoint = message.get(Field.ENDPOINT)
+    session_mgr = get_session_manager()
     
-    if referee_id in registered_referees:
+    if session_mgr.is_registered(referee_id):
         logger.log_error(LogEvent.DUPLICATE_REGISTRATION, f"Referee {referee_id}")
         return {Status.ERROR: "Already registered"}
     
-    auth_token = str(uuid.uuid4())
-    registered_referees[referee_id] = {
-        Field.REFEREE_ID: referee_id,
-        Field.AUTH_TOKEN: auth_token,
-        Field.ENDPOINT: message.get(Field.ENDPOINT),
-        "registered_at": datetime.utcnow().isoformat() + "Z"
-    }
+    # Create session - SessionManager generates auth token
+    session = session_mgr.create_session(referee_id, AgentType.REFEREE, endpoint)
     
     logger.log_message(LogEvent.REFEREE_REGISTERED, {Field.REFEREE_ID: referee_id})
     
-    return build_referee_register_response(referee_id, auth_token)
+    return build_referee_register_response(referee_id, session.auth_token)
+
 
 def handle_league_register(
     message: Dict[str, Any],
-    registered_players: Dict[str, Any],
     league_config: LeagueConfig,
     logger: LeagueLogger
 ) -> Dict[str, Any]:
-    """Handle player registration request."""
+    """Handle player registration request - delegates to SessionManager."""
     player_id = message.get(Field.PLAYER_ID)
+    endpoint = message.get(Field.ENDPOINT)
+    session_mgr = get_session_manager()
     
     # Always ensure player is in standings
     standings_repo = StandingsRepository(league_config.league_id)
@@ -60,24 +58,19 @@ def handle_league_register(
         })
         standings_repo.save(standings)
     
-    if player_id in registered_players:
+    if session_mgr.is_registered(player_id):
         logger.log_error(LogEvent.DUPLICATE_REGISTRATION, f"Player {player_id}")
         return {Status.ERROR: "Already registered"}
     
-    auth_token = str(uuid.uuid4())
-    registered_players[player_id] = {
-        Field.PLAYER_ID: player_id,
-        Field.AUTH_TOKEN: auth_token,
-        Field.ENDPOINT: message.get(Field.ENDPOINT),
-        "registered_at": datetime.utcnow().isoformat() + "Z"
-    }
+    # Create session - SessionManager generates auth token
+    session = session_mgr.create_session(player_id, AgentType.PLAYER, endpoint)
     
     logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: player_id})
     
     return build_league_register_response(
         player_id,
         league_config.league_id,
-        auth_token
+        session.auth_token
     )
 
 def handle_match_result_report(

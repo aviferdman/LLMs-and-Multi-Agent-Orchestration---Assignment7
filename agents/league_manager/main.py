@@ -12,6 +12,7 @@ from typing import Dict, Any
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.config_loader import load_system_config, load_league_config, load_agent_config
 from SHARED.league_sdk.repositories import StandingsRepository
+from SHARED.league_sdk.session_manager import get_session_manager, AgentType
 from SHARED.constants import (
     MessageType, Field, AgentID, LogEvent, MCP_PATH, Status, GameStatus
 )
@@ -27,9 +28,8 @@ active_league_id = system_config.active_league_id
 league_config = load_league_config(active_league_id)
 agents_config = load_agent_config()
 
-# Store registered agents
-registered_referees: Dict[str, Any] = {}
-registered_players: Dict[str, Any] = {}
+# Session manager handles all agent registrations
+session_manager = get_session_manager()
 
 # League state
 league_state = {
@@ -48,9 +48,9 @@ async def mcp_endpoint(request: Request, background_tasks: BackgroundTasks) -> J
         msg_type = message.get(Field.MESSAGE_TYPE)
         
         if msg_type == MessageType.REFEREE_REGISTER_REQUEST:
-            response = handle_referee_register(message, registered_referees, logger)
+            response = handle_referee_register(message, logger)
         elif msg_type == MessageType.LEAGUE_REGISTER_REQUEST:
-            response = handle_league_register(message, registered_players, league_config, logger)
+            response = handle_league_register(message, league_config, logger)
         elif msg_type == MessageType.START_LEAGUE:
             # Reset standings for fresh league start
             standings_repo = StandingsRepository(league_config.league_id)
@@ -65,6 +65,10 @@ async def mcp_endpoint(request: Request, background_tasks: BackgroundTasks) -> J
             standings_repo.save(standings)
             league_state["matches_completed"] = 0
             league_state["current_round"] = 0
+            
+            # Get registered agents from session manager
+            registered_players = session_manager.get_registered_agents_data(AgentType.PLAYER)
+            registered_referees = session_manager.get_registered_agents_data(AgentType.REFEREE)
             
             background_tasks.add_task(
                 run_league_matches, league_config, registered_players,

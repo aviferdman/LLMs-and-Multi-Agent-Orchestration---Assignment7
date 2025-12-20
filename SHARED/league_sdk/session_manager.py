@@ -1,4 +1,8 @@
-"""Session manager - handles agent sessions and connection lifecycle."""
+"""Session manager - handles agent sessions and connection lifecycle.
+
+Provides SessionManager for delegated session handling - agents should use this
+rather than managing auth tokens and registration state manually.
+"""
 
 import uuid
 from datetime import datetime, timezone
@@ -13,6 +17,13 @@ class SessionState(str, Enum):
     ACTIVE = "active"
     SUSPENDED = "suspended"
     CLOSED = "closed"
+
+
+class AgentType(str, Enum):
+    """Agent type constants for session management."""
+    PLAYER = "player"
+    REFEREE = "referee"
+    LEAGUE_MANAGER = "league_manager"
 
 
 @dataclass
@@ -33,14 +44,6 @@ class Session:
     
     def touch(self) -> None:
         self.last_activity = datetime.now(timezone.utc).isoformat()
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "session_id": self.session_id, "agent_id": self.agent_id,
-            "agent_type": self.agent_type, "endpoint": self.endpoint,
-            "state": self.state.value, "auth_token": self.auth_token,
-            "created_at": self.created_at, "last_activity": self.last_activity,
-        }
 
 
 class SessionManager:
@@ -50,9 +53,8 @@ class SessionManager:
         self._sessions: Dict[str, Session] = {}
         self._agent_sessions: Dict[str, str] = {}
     
-    def create_session(
-        self, agent_id: str, agent_type: str, endpoint: str, metadata: Optional[Dict] = None
-    ) -> Session:
+    def create_session(self, agent_id: str, agent_type: str, endpoint: str,
+                       metadata: Optional[Dict] = None) -> Session:
         """Create a new session for an agent."""
         session_id = str(uuid.uuid4())
         session = Session(
@@ -89,18 +91,50 @@ class SessionManager:
         return False
     
     def close_session_by_agent(self, agent_id: str) -> bool:
-        """Close session for an agent."""
         session_id = self._agent_sessions.get(agent_id)
         return self.close_session(session_id) if session_id else False
     
-    def get_active_sessions(self, agent_type: Optional[str] = None) -> Dict[str, Session]:
-        """Get all active sessions, optionally filtered by type."""
-        return {
-            sid: s for sid, s in self._sessions.items()
-            if s.is_active() and (agent_type is None or s.agent_type == agent_type)
-        }
+    def is_registered(self, agent_id: str) -> bool:
+        """Check if an agent is already registered with an active session."""
+        session = self.get_session_by_agent(agent_id)
+        return session is not None and session.is_active()
     
-    def get_session_count(self, state: Optional[SessionState] = None) -> int:
-        if state is None:
-            return len(self._sessions)
-        return sum(1 for s in self._sessions.values() if s.state == state)
+    def get_endpoint(self, agent_id: str) -> Optional[str]:
+        session = self.get_session_by_agent(agent_id)
+        return session.endpoint if session else None
+    
+    def get_auth_token(self, agent_id: str) -> Optional[str]:
+        session = self.get_session_by_agent(agent_id)
+        return session.auth_token if session else None
+    
+    def get_registered_agent_ids(self, agent_type: Optional[str] = None) -> list:
+        """Get list of registered agent IDs, optionally filtered by type."""
+        return [s.agent_id for s in self._sessions.values()
+                if s.is_active() and (agent_type is None or s.agent_type == agent_type)]
+    
+    def get_registered_agents_data(self, agent_type: Optional[str] = None) -> Dict[str, Dict]:
+        """Get registered agents data in dict format for backward compatibility."""
+        result = {}
+        for s in self._sessions.values():
+            if s.is_active() and (agent_type is None or s.agent_type == agent_type):
+                result[s.agent_id] = {"agent_id": s.agent_id, "auth_token": s.auth_token,
+                                       "endpoint": s.endpoint, "registered_at": s.created_at}
+        return result
+
+
+# Global singleton instance
+_session_manager: Optional[SessionManager] = None
+
+
+def get_session_manager() -> SessionManager:
+    """Get the global SessionManager singleton instance."""
+    global _session_manager
+    if _session_manager is None:
+        _session_manager = SessionManager()
+    return _session_manager
+
+
+def reset_session_manager() -> None:
+    """Reset the session manager (useful for testing)."""
+    global _session_manager
+    _session_manager = None
