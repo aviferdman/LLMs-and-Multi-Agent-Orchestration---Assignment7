@@ -101,7 +101,7 @@ def handle_parity_choice(
     choice = message.get(Field.CHOICE)
     valid_choices = [ParityChoice.EVEN, ParityChoice.ODD]
 
-    if choice.upper() not in valid_choices:
+    if choice.lower() not in valid_choices:
         logger.log_error("INVALID_CHOICE", f"Player {player_id}: {choice}")
         return False
 

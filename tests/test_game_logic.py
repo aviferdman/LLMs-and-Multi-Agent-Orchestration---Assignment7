@@ -24,34 +24,34 @@ def test_get_parity_even():
     """Test parity detection for even numbers."""
     rules = EvenOddGameRules()
 
-    assert rules.get_parity(2) == "EVEN"
-    assert rules.get_parity(4) == "EVEN"
-    assert rules.get_parity(6) == "EVEN"
-    assert rules.get_parity(8) == "EVEN"
-    assert rules.get_parity(10) == "EVEN"
+    assert rules.get_parity(2) == "even"
+    assert rules.get_parity(4) == "even"
+    assert rules.get_parity(6) == "even"
+    assert rules.get_parity(8) == "even"
+    assert rules.get_parity(10) == "even"
 
 
 def test_get_parity_odd():
     """Test parity detection for odd numbers."""
     rules = EvenOddGameRules()
 
-    assert rules.get_parity(1) == "ODD"
-    assert rules.get_parity(3) == "ODD"
-    assert rules.get_parity(5) == "ODD"
-    assert rules.get_parity(7) == "ODD"
-    assert rules.get_parity(9) == "ODD"
+    assert rules.get_parity(1) == "odd"
+    assert rules.get_parity(3) == "odd"
+    assert rules.get_parity(5) == "odd"
+    assert rules.get_parity(7) == "odd"
+    assert rules.get_parity(9) == "odd"
 
 
 def test_determine_winner_player_a_wins():
     """Test winner determination when player A wins."""
     rules = EvenOddGameRules()
 
-    # Player A chooses EVEN and number is even
-    winner = rules.determine_winner("EVEN", "ODD", 2)
+    # Player A chooses even and number is even
+    winner = rules.determine_winner("even", "odd", 2)
     assert winner == "PLAYER_A"
 
-    # Player A chooses ODD and number is odd
-    winner = rules.determine_winner("ODD", "EVEN", 3)
+    # Player A chooses odd and number is odd
+    winner = rules.determine_winner("odd", "even", 3)
     assert winner == "PLAYER_A"
 
 
@@ -59,12 +59,12 @@ def test_determine_winner_player_b_wins():
     """Test winner determination when player B wins."""
     rules = EvenOddGameRules()
 
-    # Player B chooses EVEN and number is even
-    winner = rules.determine_winner("ODD", "EVEN", 2)
+    # Player B chooses even and number is even
+    winner = rules.determine_winner("odd", "even", 2)
     assert winner == "PLAYER_B"
 
-    # Player B chooses ODD and number is odd
-    winner = rules.determine_winner("EVEN", "ODD", 3)
+    # Player B chooses odd and number is odd
+    winner = rules.determine_winner("even", "odd", 3)
     assert winner == "PLAYER_B"
 
 
@@ -72,19 +72,23 @@ def test_determine_winner_draw():
     """Test winner determination when both choose same."""
     rules = EvenOddGameRules()
 
-    # Both choose EVEN
-    winner = rules.determine_winner("EVEN", "EVEN", 2)
+    # Both choose even
+    winner = rules.determine_winner("even", "even", 2)
     assert winner == "DRAW"
 
-    # Both choose ODD
-    winner = rules.determine_winner("ODD", "ODD", 3)
+    # Both choose odd
+    winner = rules.determine_winner("odd", "odd", 3)
     assert winner == "DRAW"
 
 
 def test_validate_parity_choice_valid():
-    """Test validating valid parity choices."""
+    """Test validating valid parity choices (per spec: lowercase)."""
     rules = EvenOddGameRules()
 
+    # Lowercase is canonical per spec
+    assert rules.validate_parity_choice("even") == True
+    assert rules.validate_parity_choice("odd") == True
+    # Also accepts uppercase (case-insensitive)
     assert rules.validate_parity_choice("EVEN") == True
     assert rules.validate_parity_choice("ODD") == True
 

@@ -42,8 +42,8 @@ class TestEdgeCaseGameLogic:
     def test_parity_boundary_values(self):
         """Test parity at boundary values."""
         rules = EvenOddGameRules()
-        assert rules.get_parity(1) == "ODD"
-        assert rules.get_parity(10) == "EVEN"
+        assert rules.get_parity(1) == "odd"
+        assert rules.get_parity(10) == "even"
 
     def test_determine_winner_draw(self):
         """Both same wrong choice = draw."""
@@ -66,7 +66,7 @@ class TestEdgeCaseGameLogic:
     def test_parity_for_mid_range(self):
         """Test parity for values 2-9."""
         rules = EvenOddGameRules()
-        assert rules.get_parity(2) == "EVEN"
-        assert rules.get_parity(5) == "ODD"
-        assert rules.get_parity(8) == "EVEN"
-        assert rules.get_parity(9) == "ODD"
+        assert rules.get_parity(2) == "even"
+        assert rules.get_parity(5) == "odd"
+        assert rules.get_parity(8) == "even"
+        assert rules.get_parity(9) == "odd"

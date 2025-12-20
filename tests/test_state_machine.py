@@ -91,18 +91,18 @@ def test_both_players_joined():
 def test_record_choice():
     """Test recording player choices."""
     ctx = MatchContext("M1", "P01", "P02")
-    ctx.record_choice("P01", "EVEN")
-    ctx.record_choice("P02", "ODD")
-    assert ctx.player_a_choice == "EVEN" and ctx.player_b_choice == "ODD"
+    ctx.record_choice("P01", "even")
+    ctx.record_choice("P02", "odd")
+    assert ctx.player_a_choice == "even" and ctx.player_b_choice == "odd"
 
 
 def test_both_choices_received():
     """Test checking if both choices received."""
     ctx = MatchContext("M1", "P01", "P02")
     assert not ctx.both_choices_received()
-    ctx.record_choice("P01", "EVEN")
+    ctx.record_choice("P01", "even")
     assert not ctx.both_choices_received()
-    ctx.record_choice("P02", "ODD")
+    ctx.record_choice("P02", "odd")
     assert ctx.both_choices_received()
 
 
@@ -117,9 +117,9 @@ def test_handle_game_join_ack():
 def test_handle_parity_choice_valid():
     """Test handle_parity_choice with valid choice."""
     ctx = MatchContext("M1", "P01", "P02")
-    msg = {"sender": "P01", "choice": "EVEN"}
+    msg = {"sender": "P01", "choice": "even"}
     assert handle_parity_choice(msg, ctx, LeagueLogger("test", Path("test_logs")))
-    assert ctx.player_a_choice == "EVEN"
+    assert ctx.player_a_choice == "even"
 
 
 def test_handle_parity_choice_invalid():

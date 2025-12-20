@@ -12,21 +12,21 @@ from agents.player_strategies import FrequencyStrategy, PatternStrategy, RandomS
 
 
 def test_random_strategy_choices():
-    """Test RandomStrategy produces valid choices."""
+    """Test RandomStrategy produces valid choices (lowercase per spec)."""
     strategy = RandomStrategy()
     for _ in range(20):
         choice = strategy.choose_parity([])
-        assert choice in ["EVEN", "ODD"], f"Invalid choice: {choice}"
+        assert choice in ["even", "odd"], f"Invalid choice: {choice}"
 
 
 def test_random_strategy_distribution():
     """Test RandomStrategy has reasonable distribution."""
     strategy = RandomStrategy()
     choices = [strategy.choose_parity([]) for _ in range(100)]
-    even_count = choices.count("EVEN")
-    odd_count = choices.count("ODD")
-    assert 30 <= even_count <= 70, f"Unbalanced: {even_count} EVEN"
-    assert 30 <= odd_count <= 70, f"Unbalanced: {odd_count} ODD"
+    even_count = choices.count("even")
+    odd_count = choices.count("odd")
+    assert 30 <= even_count <= 70, f"Unbalanced: {even_count} even"
+    assert 30 <= odd_count <= 70, f"Unbalanced: {odd_count} odd"
 
 
 def test_frequency_strategy_initialization():
@@ -39,15 +39,15 @@ def test_frequency_strategy_first_choice():
     """Test FrequencyStrategy handles empty history."""
     strategy = FrequencyStrategy()
     choice = strategy.choose_parity([])
-    assert choice in ["EVEN", "ODD"]
+    assert choice in ["even", "odd"]
 
 
 def test_frequency_strategy_adapts():
     """Test FrequencyStrategy counters frequent choice."""
     strategy = FrequencyStrategy()
-    opponent_history = ["EVEN"] * 10
+    opponent_history = ["even"] * 10
     choice = strategy.choose_parity(opponent_history)
-    assert choice == "ODD", "Should counter EVEN with ODD"
+    assert choice == "odd", "Should counter even with odd"
 
 
 def test_pattern_strategy_initialization():
@@ -59,25 +59,25 @@ def test_pattern_strategy_initialization():
 def test_pattern_strategy_short_history():
     """Test PatternStrategy with short history."""
     strategy = PatternStrategy()
-    choice = strategy.choose_parity(["EVEN"])
-    assert choice in ["EVEN", "ODD"]
+    choice = strategy.choose_parity(["even"])
+    assert choice in ["even", "odd"]
 
 
 def test_pattern_strategy_detects_pattern():
     """Test PatternStrategy detects repeating patterns."""
     strategy = PatternStrategy()
-    # Pattern: EVEN, ODD, EVEN, repeating
-    history = ["EVEN", "ODD", "EVEN", "EVEN", "ODD", "EVEN"]
+    # Pattern: even, odd, even, repeating
+    history = ["even", "odd", "even", "even", "odd", "even"]
     choice = strategy.choose_parity(history)
-    assert choice in ["EVEN", "ODD"]
+    assert choice in ["even", "odd"]
 
 
 def test_all_strategies_valid_output():
     """Test all strategies produce valid output."""
     strategies = [RandomStrategy(), FrequencyStrategy(), PatternStrategy()]
     for strategy in strategies:
-        choice = strategy.choose_parity(["EVEN", "ODD"])
-        assert choice in ["EVEN", "ODD"]
+        choice = strategy.choose_parity(["even", "odd"])
+        assert choice in ["even", "odd"]
 
 
 if __name__ == "__main__":

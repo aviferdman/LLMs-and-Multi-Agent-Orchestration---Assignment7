@@ -26,7 +26,7 @@ class TestEdgeCaseEmptyData:
         """Empty history should return default choice."""
         strategy = FrequencyStrategy()
         choice = strategy.choose_parity([])
-        assert choice in ["EVEN", "ODD"]
+        assert choice in ["even", "odd"]
 
 
 class TestEdgeCaseMalformedMessages:

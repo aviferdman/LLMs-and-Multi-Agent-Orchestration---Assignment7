@@ -324,9 +324,9 @@ class TestParityChoiceValues:
     """Test valid parity choice values."""
 
     def test_parity_choice_constants_defined(self):
-        """Parity choice constants must be defined."""
-        assert ParityChoice.EVEN == "EVEN"
-        assert ParityChoice.ODD == "ODD"
+        """Parity choice constants must be defined per spec (lowercase)."""
+        assert ParityChoice.EVEN == "even"
+        assert ParityChoice.ODD == "odd"
 
     def test_game_over_uses_correct_choices(self):
         """GAME_OVER choices must use constant values."""

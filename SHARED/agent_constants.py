@@ -40,8 +40,8 @@ class GameStatus:
 class ParityChoice:
     """Parity choices in Even-Odd game."""
 
-    EVEN = "EVEN"
-    ODD = "ODD"
+    EVEN = "even"
+    ODD = "odd"
 
 
 class Winner:

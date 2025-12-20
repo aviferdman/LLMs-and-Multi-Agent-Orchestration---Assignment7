@@ -12,9 +12,7 @@ protocol/
 └── v2/
     ├── README.md              # This file
     ├── OVERVIEW.md            # Protocol overview and base message structure
-    ├── LEAGUE_MANAGER.md      # League Manager contracts
-    ├── REFEREE.md             # Referee contracts
-    └── PLAYER.md              # Player contracts
+    └── CONTRACTS.md           # All protocol contracts (unified reference)
 ```
 
 ## Quick Reference
@@ -22,9 +20,7 @@ protocol/
 | Document | Description |
 |----------|-------------|
 | [OVERVIEW.md](OVERVIEW.md) | Base message structure, field definitions, timestamps |
-| [LEAGUE_MANAGER.md](LEAGUE_MANAGER.md) | Registration, round lifecycle, standings |
-| [REFEREE.md](REFEREE.md) | Match flow, game invitations, results |
-| [PLAYER.md](PLAYER.md) | Player responses and choices |
+| [CONTRACTS.md](CONTRACTS.md) | Complete contract reference (League Manager, Referee, Player, Errors) |
 
 ## Message Flow Summary
 

@@ -161,22 +161,20 @@ class TestParityChoiceContract:
 class TestValidChoiceValues:
     """Test valid choice values for players."""
 
-    def test_valid_choices_are_uppercase(self):
-        """Valid choices must be uppercase strings."""
-        assert ParityChoice.EVEN == "EVEN"
-        assert ParityChoice.ODD == "ODD"
+    def test_valid_choices_are_lowercase(self):
+        """Valid choices must be lowercase strings per spec."""
+        assert ParityChoice.EVEN == "even"
+        assert ParityChoice.ODD == "odd"
 
     def test_choice_validation_logic(self):
-        """Simulate choice validation logic."""
-        valid_choices = [ParityChoice.EVEN, ParityChoice.ODD]
+        """Simulate choice validation logic (case-insensitive)."""
+        valid_choices = [ParityChoice.EVEN.lower(), ParityChoice.ODD.lower()]
 
-        # Valid choices
-        assert "EVEN" in valid_choices
-        assert "ODD" in valid_choices
+        # Valid choices (lowercase as per spec)
+        assert "even" in valid_choices
+        assert "odd" in valid_choices
 
-        # Invalid choices
-        assert "even" not in valid_choices  # Lowercase
-        assert "Even" not in valid_choices  # Mixed case
+        # Invalid values
         assert "maybe" not in valid_choices  # Invalid value
         assert "" not in valid_choices  # Empty string
 
