@@ -87,3 +87,27 @@ def build_match_result_report(
     msg[Field.PLAYER_B] = player_b
     msg[Field.WINNER] = winner
     return msg
+
+
+def build_game_error(
+    league_id: str,
+    round_id: int,
+    match_id: str,
+    referee_id: str,
+    error_code: str,
+    error_message: str,
+    details: Dict[str, Any] = None
+) -> Dict[str, Any]:
+    """Build GAME_ERROR message."""
+    msg = create_base_message(
+        MessageType.GAME_ERROR,
+        league_id,
+        round_id,
+        match_id,
+        referee_id
+    )
+    msg["error_code"] = error_code
+    msg["error_message"] = error_message
+    if details:
+        msg["details"] = details
+    return msg

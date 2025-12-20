@@ -4,7 +4,12 @@ import subprocess
 import asyncio
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.http_client import send_message
-from SHARED.constants import LogEvent, Field, Endpoint, Timeout, AgentType
+from SHARED.league_sdk.config_loader import load_agent_config
+from SHARED.constants import LogEvent, Field, AgentType
+
+# Load config once at module level
+_agents_config = load_agent_config()
+_lm_endpoint = _agents_config["league_manager"]["endpoint"]
 
 async def start_agent(agent_type: str, agent_id: str, port: int, logger: LeagueLogger):
     """Start an agent process."""
@@ -36,7 +41,7 @@ async def register_referee(referee_id: str, endpoint: str, logger: LeagueLogger)
     from SHARED.contracts import build_referee_register_request
     
     message = build_referee_register_request(referee_id, endpoint)
-    response = await send_message(Endpoint.LEAGUE_MANAGER, message)
+    response = await send_message(_lm_endpoint, message)
     logger.log_message(LogEvent.REFEREE_REGISTERED, {Field.REFEREE_ID: referee_id, "response": str(response)})
 
 async def register_player(player_id: str, endpoint: str, logger: LeagueLogger):
@@ -44,17 +49,16 @@ async def register_player(player_id: str, endpoint: str, logger: LeagueLogger):
     from SHARED.contracts import build_league_register_request
     
     message = build_league_register_request(player_id, endpoint)
-    response = await send_message(Endpoint.LEAGUE_MANAGER, message)
+    response = await send_message(_lm_endpoint, message)
     logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: player_id, "response": str(response)})
 
 async def start_all_agents(agents_config: dict, logger: LeagueLogger):
     """Start all agents (league manager, referees, players)."""
-    from SHARED.constants import AgentID, Port
-    
     processes = []
     
-    # Start League Manager
-    lm_proc = await start_agent(AgentType.LEAGUE_MANAGER, AgentID.LEAGUE_MANAGER, Port.LEAGUE_MANAGER, logger)
+    # Start League Manager using config port
+    lm_config = agents_config["league_manager"]
+    lm_proc = await start_agent(AgentType.LEAGUE_MANAGER, lm_config["agent_id"], lm_config["port"], logger)
     processes.append(lm_proc)
     
     # Start Referees

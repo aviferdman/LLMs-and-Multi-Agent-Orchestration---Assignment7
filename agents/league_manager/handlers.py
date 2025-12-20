@@ -48,6 +48,18 @@ def handle_league_register(
     """Handle player registration request."""
     player_id = message.get(Field.PLAYER_ID)
     
+    # Always ensure player is in standings
+    standings_repo = StandingsRepository(league_config.league_id)
+    standings = standings_repo.load()
+    
+    if not any(p[Field.PLAYER_ID] == player_id for p in standings["standings"]):
+        standings["standings"].append({
+            Field.PLAYER_ID: player_id,
+            "wins": 0, "losses": 0, "draws": 0,
+            "points": 0, "games_played": 0, "rank": 0
+        })
+        standings_repo.save(standings)
+    
     if player_id in registered_players:
         logger.log_error(LogEvent.DUPLICATE_REGISTRATION, f"Player {player_id}")
         return {Status.ERROR: "Already registered"}
@@ -61,22 +73,6 @@ def handle_league_register(
     }
     
     logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: player_id})
-    
-    # Initialize player in standings
-    standings_repo = StandingsRepository(league_config.league_id)
-    standings = standings_repo.load()
-    
-    if not any(p[Field.PLAYER_ID] == player_id for p in standings["standings"]):
-        standings["standings"].append({
-            Field.PLAYER_ID: player_id,
-            "wins": 0,
-            "losses": 0,
-            "draws": 0,
-            "points": 0,
-            "games_played": 0,
-            "rank": 0
-        })
-        standings_repo.save(standings)
     
     return build_league_register_response(
         player_id,

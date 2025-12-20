@@ -22,15 +22,20 @@ import asyncio
 import time
 import signal
 import sys
-from SHARED.league_sdk.config_loader import load_agent_config, load_league_config
+from SHARED.league_sdk.config_loader import load_agent_config, load_league_config, load_system_config
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.http_client import send_message
-from SHARED.constants import LeagueID, LogEvent, Timeout, Endpoint
+from SHARED.constants import LeagueID, LogEvent, Timeout
 from SHARED.contracts import build_start_league
 from agents.league_manager.orchestration import (
     start_all_agents,
     wait_for_agents
 )
+
+# Load system config once at module level
+_system_config = load_system_config()
+_agents_config = load_agent_config()
+_lm_endpoint = _agents_config["league_manager"]["endpoint"]
 
 logger = LeagueLogger("LAUNCHER")
 _processes = []
@@ -60,7 +65,7 @@ async def run_league():
     
     # Step 2: Wait for agents to initialize and self-register
     # Agents register themselves with LM on startup
-    await wait_for_agents(Timeout.AGENT_STARTUP, logger)
+    await wait_for_agents(_system_config.timeouts[Timeout.AGENT_STARTUP], logger)
     
     # Additional wait for self-registration to complete
     # Agents wait 2s after startup, so we need at least 5-7s for all registrations
@@ -73,7 +78,7 @@ async def run_league():
     })
     
     start_msg = build_start_league(league_config.league_id, "LAUNCHER")
-    response = await send_message(Endpoint.LEAGUE_MANAGER, start_msg)
+    response = await send_message(_lm_endpoint, start_msg)
     
     logger.log_message("LEAGUE_STARTED", {"response": response})
     
@@ -81,7 +86,8 @@ async def run_league():
     logger.log_message("WAITING_FOR_LEAGUE_COMPLETION", {})
     
     # Synchronous sleep to avoid asyncio cancellation issues
-    time.sleep(30)  # Wait for matches to complete
+    # 3 rounds × (broadcast + 2 matches × ~5s + standings) + buffer = ~90s
+    time.sleep(90)  # Wait for matches to complete
     
     logger.log_message("LAUNCHER_COMPLETE", {})
     

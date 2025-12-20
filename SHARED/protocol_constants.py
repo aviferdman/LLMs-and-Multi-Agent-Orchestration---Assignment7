@@ -17,6 +17,11 @@ class MessageType:
     # League control messages (Launcher → LM)
     START_LEAGUE = "START_LEAGUE"
     LEAGUE_STATUS = "LEAGUE_STATUS"
+    # Round lifecycle messages (LM → All)
+    ROUND_ANNOUNCEMENT = "ROUND_ANNOUNCEMENT"
+    ROUND_COMPLETED = "ROUND_COMPLETED"
+    LEAGUE_COMPLETED = "LEAGUE_COMPLETED"
+    LEAGUE_STANDINGS_UPDATE = "LEAGUE_STANDINGS_UPDATE"
     # Match assignment messages (LM → Referee)
     RUN_MATCH = "RUN_MATCH"
     RUN_MATCH_ACK = "RUN_MATCH_ACK"
@@ -29,9 +34,16 @@ class MessageType:
     # Result reporting (Referee → LM)
     MATCH_RESULT_REPORT = "MATCH_RESULT_REPORT"
     MATCH_RESULT_ACK = "MATCH_RESULT_ACK"
+    # Error messages
+    LEAGUE_ERROR = "LEAGUE_ERROR"
+    GAME_ERROR = "GAME_ERROR"
 
 class Port:
-    """Default port assignments."""
+    """Default port assignments.
+    
+    DEPRECATED: Use agents_config.json for port configuration.
+    These values are kept for backward compatibility and testing only.
+    """
     LEAGUE_MANAGER = 8000
     REFEREE_01 = 8001
     REFEREE_02 = 8002
@@ -41,7 +53,11 @@ class Port:
     PLAYER_04 = 8104
 
 class Endpoint:
-    """Default endpoint URLs."""
+    """Default endpoint URLs.
+    
+    DEPRECATED: Use agents_config.json for endpoint configuration.
+    These values are kept for backward compatibility and testing only.
+    """
     LEAGUE_MANAGER = "http://localhost:8000/mcp"
     REFEREE_01 = "http://localhost:8001/mcp"
     REFEREE_02 = "http://localhost:8002/mcp"
@@ -51,12 +67,16 @@ class Endpoint:
     PLAYER_04 = "http://localhost:8104/mcp"
 
 class Timeout:
-    """Timeout values in seconds."""
-    GAME_JOIN_ACK = 5
-    PARITY_CHOICE = 10
-    LEAGUE_REGISTER = 10
-    HTTP_REQUEST = 30
-    AGENT_STARTUP = 5
+    """Timeout keys for configuration lookup.
+    
+    NOTE: These are now KEY NAMES to be used with system_config.timeouts[key].
+    Actual values are defined in SHARED/config/system.json.
+    """
+    GAME_JOIN_ACK = "game_join_ack"
+    PARITY_CHOICE = "parity_choice"
+    LEAGUE_REGISTER = "league_register"
+    HTTP_REQUEST = "http_request"
+    AGENT_STARTUP = "agent_startup"
 
 class Status:
     """Generic status values."""

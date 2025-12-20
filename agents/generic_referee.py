@@ -12,13 +12,19 @@ import argparse
 
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.http_client import send_with_retry
+from SHARED.league_sdk.config_loader import load_system_config, load_agent_config
 from SHARED.contracts import build_referee_register_request
 from SHARED.constants import (
-    MessageType, Field, Status, LogEvent, Endpoint, MCP_PATH, SERVER_HOST, LOCALHOST, HTTP_PROTOCOL
+    MessageType, Field, Status, LogEvent, MCP_PATH, SERVER_HOST, LOCALHOST, HTTP_PROTOCOL
 )
 from agents.referee_game_logic import EvenOddGameRules
 from agents.referee_http_handlers import handle_run_match, handle_game_join_ack, handle_parity_choice
 from agents.referee_match_runner import run_match_phases
+
+# Load system config once at module level
+_system_config = load_system_config()
+_agents_config = load_agent_config()
+_lm_endpoint = _agents_config["league_manager"]["endpoint"]
 
 
 class GenericReferee:
@@ -69,15 +75,23 @@ class GenericReferee:
     
     async def register_with_league_manager(self):
         """Register this referee with the League Manager with retry."""
-        await asyncio.sleep(2)
-        register_msg = build_referee_register_request(self.referee_id, self.endpoint)
-        self.logger.log_message("REGISTERING", {"endpoint": Endpoint.LEAGUE_MANAGER})
-        response = await send_with_retry(Endpoint.LEAGUE_MANAGER, register_msg, max_retries=3)
-        if response and response.get(Field.STATUS) == Status.REGISTERED:
-            self.auth_token = response.get(Field.AUTH_TOKEN)
-            self.logger.log_message(LogEvent.REFEREE_REGISTERED, {Field.REFEREE_ID: self.referee_id})
-        else:
-            self.logger.log_error(LogEvent.ERROR, f"Registration failed: {response}")
+        try:
+            await asyncio.sleep(2)
+            register_msg = build_referee_register_request(self.referee_id, self.endpoint)
+            self.logger.log_message("REGISTERING", {"endpoint": _lm_endpoint})
+            response = await send_with_retry(
+                _lm_endpoint, register_msg,
+                max_retries=_system_config.retry_policy["max_retries"],
+                timeout=_system_config.timeouts["http_request"],
+                retry_delay=_system_config.retry_policy["retry_delay"]
+            )
+            if response and response.get(Field.STATUS) == Status.REGISTERED:
+                self.auth_token = response.get(Field.AUTH_TOKEN)
+                self.logger.log_message(LogEvent.REFEREE_REGISTERED, {Field.REFEREE_ID: self.referee_id})
+            else:
+                self.logger.log_error(LogEvent.ERROR, f"Registration failed: {response}")
+        except Exception as e:
+            self.logger.log_error("REGISTRATION_EXCEPTION", f"{type(e).__name__}: {e}")
     
     async def run_match(self, league_id, round_id, match_id, player_a, player_b, ep_a, ep_b):
         """Run a match - delegates to match runner."""

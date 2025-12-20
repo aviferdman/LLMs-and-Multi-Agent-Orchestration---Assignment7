@@ -7,13 +7,17 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from generic_player import create_app
-from SHARED.constants import AgentID, Port, StrategyType, SERVER_HOST
+from SHARED.league_sdk.config_loader import load_agent_config
+from SHARED.constants import SERVER_HOST
 import uvicorn
 
 if __name__ == "__main__":
-    player_id = AgentID.PLAYER_02
-    port = Port.PLAYER_02
-    strategy = StrategyType.FREQUENCY
+    agents_config = load_agent_config()
+    player_config = agents_config["players"][1]  # P02 is second player
+    
+    player_id = player_config["player_id"]
+    port = player_config["port"]
+    strategy = player_config["strategy"]
     
     print(f"Starting {player_id} on port {port} with {strategy} strategy...")
     app = create_app(player_id, port, strategy)

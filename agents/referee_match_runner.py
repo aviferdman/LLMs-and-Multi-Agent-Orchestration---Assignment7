@@ -1,12 +1,18 @@
 """Match execution logic for referee."""
 
 from SHARED.league_sdk.http_client import send_message, send_with_retry
+from SHARED.league_sdk.config_loader import load_system_config, load_agent_config
 from SHARED.contracts import (
     build_game_invitation, build_choose_parity_call,
     build_game_over, build_match_result_report
 )
-from SHARED.constants import Field, LogEvent, Endpoint, Timeout, MessageType
+from SHARED.constants import Field, LogEvent, Timeout, MessageType
 from agents.referee_match_state import MatchStateMachine, MatchContext, MatchState
+
+# Load system config once at module level
+_system_config = load_system_config()
+_agents_config = load_agent_config()
+_lm_endpoint = _agents_config["league_manager"]["endpoint"]
 
 
 async def run_match_phases(
@@ -79,8 +85,8 @@ async def invite_players(referee, context, league_id, round_id, match_id,
     inv_a = build_game_invitation(league_id, round_id, match_id, referee.referee_id, player_a, player_b)
     inv_b = build_game_invitation(league_id, round_id, match_id, referee.referee_id, player_b, player_a)
     
-    resp_a = await send_message(ep_a, inv_a, timeout=Timeout.GAME_JOIN_ACK)
-    resp_b = await send_message(ep_b, inv_b, timeout=Timeout.GAME_JOIN_ACK)
+    resp_a = await send_message(ep_a, inv_a, timeout=_system_config.timeouts[Timeout.GAME_JOIN_ACK])
+    resp_b = await send_message(ep_b, inv_b, timeout=_system_config.timeouts[Timeout.GAME_JOIN_ACK])
     
     if resp_a and resp_a.get(Field.MESSAGE_TYPE) == MessageType.GAME_JOIN_ACK:
         context.record_join(player_a, resp_a.get(Field.CONVERSATION_ID))
@@ -99,8 +105,8 @@ async def collect_choices(referee, context, league_id, round_id, match_id,
     req_a = build_choose_parity_call(league_id, round_id, match_id, referee.referee_id, player_a)
     req_b = build_choose_parity_call(league_id, round_id, match_id, referee.referee_id, player_b)
     
-    resp_a = await send_message(ep_a, req_a, timeout=Timeout.PARITY_CHOICE)
-    resp_b = await send_message(ep_b, req_b, timeout=Timeout.PARITY_CHOICE)
+    resp_a = await send_message(ep_a, req_a, timeout=_system_config.timeouts[Timeout.PARITY_CHOICE])
+    resp_b = await send_message(ep_b, req_b, timeout=_system_config.timeouts[Timeout.PARITY_CHOICE])
     
     if resp_a and Field.CHOICE in resp_a:
         context.record_choice(player_a, resp_a[Field.CHOICE])
@@ -129,4 +135,9 @@ async def report_result(referee, league_id, round_id, match_id, player_a, player
     msg = build_match_result_report(
         league_id, round_id, match_id, referee.referee_id, player_a, player_b, winner
     )
-    await send_with_retry(Endpoint.LEAGUE_MANAGER, msg, max_retries=3)
+    await send_with_retry(
+        _lm_endpoint, msg,
+        max_retries=_system_config.retry_policy["max_retries"],
+        timeout=_system_config.timeouts[Timeout.HTTP_REQUEST],
+        retry_delay=_system_config.retry_policy["retry_delay"]
+    )

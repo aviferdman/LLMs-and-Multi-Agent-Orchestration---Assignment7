@@ -5,7 +5,8 @@
     "game_join_ack": 5,
     "parity_choice": 30,
     "league_register": 10,
-    "http_request": 30
+    "http_request": 30,
+    "agent_startup": 5
   },
   "retry_policy": {
     "max_retries": 3,

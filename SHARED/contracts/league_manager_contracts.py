@@ -1,12 +1,12 @@
 """League Manager contract definitions."""
 
 from typing import Dict, Any
-from .base_contract import create_base_message
-from SHARED.constants import (
-    PROTOCOL_VERSION,
-    MessageType,
-    Field,
-    Status
+from SHARED.constants import PROTOCOL_VERSION, MessageType, Field, Status
+
+# Re-export round lifecycle contracts for backward compatibility
+from .round_lifecycle_contracts import (
+    build_round_announcement, build_round_completed, build_league_completed,
+    build_league_standings_update, build_league_error
 )
 
 def build_referee_register_request(

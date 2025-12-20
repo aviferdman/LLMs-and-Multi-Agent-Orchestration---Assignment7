@@ -14,13 +14,19 @@ from .league_manager_contracts import (
     build_start_league,
     build_league_status,
     build_run_match,
-    build_run_match_ack
+    build_run_match_ack,
+    build_round_announcement,
+    build_round_completed,
+    build_league_completed,
+    build_league_standings_update,
+    build_league_error
 )
 from .referee_contracts import (
     build_game_invitation,
     build_choose_parity_call,
     build_game_over,
-    build_match_result_report
+    build_match_result_report,
+    build_game_error
 )
 from .player_contracts import (
     build_game_join_ack,
@@ -40,10 +46,16 @@ __all__ = [
     "build_league_status",
     "build_run_match",
     "build_run_match_ack",
+    "build_round_announcement",
+    "build_round_completed",
+    "build_league_completed",
+    "build_league_standings_update",
+    "build_league_error",
     "build_game_invitation",
     "build_choose_parity_call",
     "build_game_over",
     "build_match_result_report",
+    "build_game_error",
     "build_game_join_ack",
     "build_parity_choice"
 ]

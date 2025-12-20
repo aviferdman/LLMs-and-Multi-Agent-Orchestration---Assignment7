@@ -10,10 +10,10 @@ import uvicorn
 from typing import Dict, Any
 
 from SHARED.league_sdk.logger import LeagueLogger
-from SHARED.league_sdk.config_loader import load_system_config, load_league_config
+from SHARED.league_sdk.config_loader import load_system_config, load_league_config, load_agent_config
 from SHARED.league_sdk.repositories import StandingsRepository
 from SHARED.constants import (
-    MessageType, Field, AgentID, Port, LogEvent, LeagueID, MCP_PATH, Status, GameStatus
+    MessageType, Field, AgentID, LogEvent, LeagueID, MCP_PATH, Status, GameStatus
 )
 from SHARED.contracts import build_league_status
 from handlers import handle_referee_register, handle_league_register, handle_match_result_report
@@ -23,6 +23,7 @@ app = FastAPI(title="League Manager")
 logger = LeagueLogger(AgentID.LEAGUE_MANAGER)
 system_config = load_system_config()
 league_config = load_league_config(LeagueID.EVEN_ODD_2025)
+agents_config = load_agent_config()
 
 # Store registered agents
 registered_referees: Dict[str, Any] = {}
@@ -91,9 +92,11 @@ async def mcp_endpoint(request: Request, background_tasks: BackgroundTasks) -> J
 @app.on_event("startup")
 async def startup():
     """Initialize on startup."""
-    logger.log_message(LogEvent.STARTUP, {Field.LEAGUE_ID: league_config.league_id, "port": Port.LEAGUE_MANAGER})
+    lm_config = agents_config["league_manager"]
+    logger.log_message(LogEvent.STARTUP, {Field.LEAGUE_ID: league_config.league_id, "port": lm_config["port"]})
 
 
 if __name__ == "__main__":
     from SHARED.constants import SERVER_HOST
-    uvicorn.run(app, host=SERVER_HOST, port=Port.LEAGUE_MANAGER)
+    lm_config = agents_config["league_manager"]
+    uvicorn.run(app, host=SERVER_HOST, port=lm_config["port"])

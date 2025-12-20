@@ -7,12 +7,16 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from generic_referee import create_app
-from SHARED.constants import AgentID, Port, SERVER_HOST
+from SHARED.league_sdk.config_loader import load_agent_config
+from SHARED.constants import SERVER_HOST
 import uvicorn
 
 if __name__ == "__main__":
-    referee_id = AgentID.REFEREE_01
-    port = Port.REFEREE_01
+    agents_config = load_agent_config()
+    referee_config = agents_config["referees"][0]  # REF01 is first referee
+    
+    referee_id = referee_config["referee_id"]
+    port = referee_config["port"]
     
     print(f"Starting {referee_id} on port {port}...")
     app = create_app(referee_id, port)

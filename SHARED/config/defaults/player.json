@@ -17,5 +17,25 @@
       "pattern_length": 3,
       "min_confidence": 0.6
     }
+  },
+  "state_machine": {
+    "initial_state": "INIT",
+    "states": ["INIT", "REGISTERED", "ACTIVE", "SUSPENDED", "SHUTDOWN"],
+    "transitions": {
+      "INIT": ["REGISTERED", "SHUTDOWN"],
+      "REGISTERED": ["ACTIVE", "SUSPENDED", "SHUTDOWN"],
+      "ACTIVE": ["SUSPENDED", "SHUTDOWN"],
+      "SUSPENDED": ["ACTIVE", "SHUTDOWN"],
+      "SHUTDOWN": []
+    }
+  },
+  "communication": {
+    "protocol_version": "league.v2",
+    "retry_policy": {
+      "max_retries": 3,
+      "base_delay": 1.0,
+      "use_exponential_backoff": true,
+      "jitter_range": 0.5
+    }
   }
 }
