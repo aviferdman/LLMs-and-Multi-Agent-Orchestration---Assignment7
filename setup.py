@@ -7,8 +7,8 @@ setup(
     version="1.0.0",
     description="SDK for AI Agent League Competition System",
     author="Assignment 7 Team",
-    packages=find_packages(where="SHARED"),
-    package_dir={"": "SHARED"},
+    packages=find_packages(where=".", exclude=["tests*", "doc*", "htmlcov*"]),
+    package_dir={"": "."},
     python_requires=">=3.8",
     install_requires=[
         "fastapi>=0.104.0",

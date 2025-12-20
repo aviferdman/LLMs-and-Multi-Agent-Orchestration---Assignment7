@@ -130,11 +130,8 @@ def create_app(player_id: str, port: int, strategy_name: str) -> FastAPI:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--player-id", required=True)
-    parser.add_argument(
-        "--strategy",
-        required=True,
-        choices=[StrategyType.RANDOM, StrategyType.FREQUENCY, StrategyType.PATTERN],
-    )
+    all_strategies = [StrategyType.RANDOM, StrategyType.FREQUENCY, StrategyType.PATTERN, StrategyType.TIMEOUT]
+    parser.add_argument("--strategy", required=True, choices=all_strategies)
     parser.add_argument("--port", type=int, required=True)
     args = parser.parse_args()
     GenericPlayer(args.player_id, args.strategy, args.port).run()

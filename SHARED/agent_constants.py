@@ -62,6 +62,7 @@ class StrategyType:
     RANDOM = "random"
     FREQUENCY = "frequency"
     PATTERN = "pattern"
+    TIMEOUT = "timeout"  # Losing strategy that deliberately times out
 
 
 class AgentType:

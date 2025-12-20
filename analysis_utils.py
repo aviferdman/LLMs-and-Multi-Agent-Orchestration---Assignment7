@@ -8,14 +8,10 @@ from scipy import stats
 
 def calculate_strategy_stats(df):
     """Calculate win rates and statistics for each strategy."""
-    strategy_stats = defaultdict(
-        lambda: {"wins": 0, "losses": 0, "draws": 0, "total_matches": 0}
-    )
+    strategy_stats = defaultdict(lambda: {"wins": 0, "losses": 0, "draws": 0, "total_matches": 0})
     for _, row in df.iterrows():
-        p1_strategy = row["player1_strategy"]
-        p2_strategy = row["player2_strategy"]
+        p1_strategy, p2_strategy = row["player1_strategy"], row["player2_strategy"]
         winner = row["winner_id"]
-
         # Player 1
         strategy_stats[p1_strategy]["total_matches"] += 1
         if winner == row["player1_id"]:
@@ -24,7 +20,6 @@ def calculate_strategy_stats(df):
             strategy_stats[p1_strategy]["draws"] += 1
         else:
             strategy_stats[p1_strategy]["losses"] += 1
-
         # Player 2
         strategy_stats[p2_strategy]["total_matches"] += 1
         if winner == row["player2_id"]:
@@ -33,7 +28,6 @@ def calculate_strategy_stats(df):
             strategy_stats[p2_strategy]["draws"] += 1
         else:
             strategy_stats[p2_strategy]["losses"] += 1
-
     return strategy_stats
 
 
