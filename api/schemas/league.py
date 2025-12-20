@@ -69,7 +69,7 @@ class StartLeagueRequest(BaseModel):
 
     game_id: str = Field(..., description="ID of the game to play")
     num_players: int = Field(..., ge=2, le=8, description="Number of players")
-    league_name: Optional[str] = Field(None, description="Custom league name")
+    league_name: str = Field(..., min_length=1, description="Custom league name (required and must be unique)")
 
     class Config:
         """Pydantic config."""

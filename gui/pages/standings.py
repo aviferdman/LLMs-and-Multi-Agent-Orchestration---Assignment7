@@ -1,124 +1,76 @@
-"""Standings page with rankings and interactive charts."""
+"""Results page with standings, matches, and player statistics."""
 
 import streamlit as st
 
 from gui.api_client import get_api_client
 from gui.components.charts import render_charts
 from gui.components.header import render_header
+from gui.components.match_card import render_match_card
 from gui.components.standings_table import render_standings_table
 from gui.config import PAGE_ICON, PAGE_TITLE
 
-# Page configuration
-st.set_page_config(page_title=f"{PAGE_TITLE} - Standings", page_icon=PAGE_ICON, layout="wide")
+st.set_page_config(page_title=f"{PAGE_TITLE} - Results", page_icon=PAGE_ICON, layout="wide")
+render_header("Results")
 
-# Render header
-render_header("Standings")
-
-# Title
-st.title("🏅 League Standings")
-st.markdown("Current rankings and player statistics.")
-
-# API client
+st.title("🏅 League Results")
 api_client = get_api_client()
 
-# Refresh button
+# League selector
+leagues_data = api_client.list_leagues()
+leagues = leagues_data.get("leagues", []) if leagues_data else []
+default_league = leagues_data.get("default", "") if leagues_data else ""
+
+if leagues:
+    selected_league = st.selectbox("Select League", leagues, index=leagues.index(default_league) if default_league in leagues else 0)
+else:
+    selected_league = None
+    st.warning("No leagues found. Launch a league first!")
+
 if st.button("🔄 Refresh", type="secondary"):
     st.rerun()
 
-# Fetch standings
-standings_data = api_client.get_standings()
+if selected_league:
+    tab_standings, tab_matches, tab_analytics = st.tabs(["📊 Standings", "🎮 Matches", "📈 Analytics"])
 
-if standings_data:
-    standings = standings_data.get("standings", [])
-    last_updated = standings_data.get("last_updated")
-
-    if standings:
-        # Last updated info
-        if last_updated:
-            st.caption(f"Last updated: {last_updated}")
-
-        st.markdown("---")
-
-        # Rankings table
-        st.subheader("📊 Rankings Table")
-        render_standings_table(standings, show_medals=True)
-
-        st.markdown("---")
-
-        # Interactive charts
-        st.subheader("📈 Performance Analytics")
-        render_charts(standings)
-
-        # Detailed statistics
-        st.markdown("---")
-        st.subheader("📋 Detailed Statistics")
-
-        # Sort options
-        sort_options = {
-            "rank": "Rank",
-            "points": "Points",
-            "wins": "Wins",
-            "win_rate": "Win Rate",
-            "games_played": "Games Played",
-        }
-
-        sort_by = st.selectbox(
-            "Sort by",
-            options=list(sort_options.keys()),
-            format_func=lambda x: sort_options[x],
-        )
-
-        # Sort standings
-        if sort_by == "rank":
-            sorted_standings = sorted(standings, key=lambda x: x.get("rank", 999))
-        elif sort_by == "win_rate":
-            sorted_standings = sorted(
-                standings,
-                key=lambda x: (
-                    x.get("wins", 0) / x.get("games_played", 1)
-                    if x.get("games_played", 0) > 0
-                    else 0
-                ),
-                reverse=True,
-            )
+    with tab_standings:
+        standings_data = api_client.get_standings(league_id=selected_league)
+        if standings_data and (standings := standings_data.get("standings", [])):
+            if last_upd := standings_data.get("last_updated"):
+                st.caption(f"Last updated: {last_upd}")
+            render_standings_table(standings, show_medals=True)
+            st.markdown("---")
+            st.subheader("👥 Player Details")
+            for player in standings:
+                pid, rank = player.get("player_id", "?"), player.get("rank", "?")
+                pts, w, l, d = player.get("points", 0), player.get("wins", 0), player.get("losses", 0), player.get("draws", 0)
+                games = player.get("games_played", 0)
+                wr = (w / games * 100) if games > 0 else 0
+                medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(rank, "")
+                with st.expander(f"{medal} **{pid}** - Rank #{rank} ({pts} pts)"):
+                    c1, c2, c3, c4, c5 = st.columns(5)
+                    c1.metric("Games", games); c2.metric("Wins", w); c3.metric("Losses", l); c4.metric("Draws", d); c5.metric("Win Rate", f"{wr:.1f}%")
         else:
-            sorted_standings = sorted(standings, key=lambda x: x.get(sort_by, 0), reverse=True)
+            st.warning("No standings data for this league.")
 
-        # Display detailed stats
-        for player in sorted_standings:
-            with st.expander(
-                f"**{player.get('player_id', 'Unknown')}** - Rank #{player.get('rank', 'N/A')}"
-            ):
-                col1, col2, col3, col4, col5 = st.columns(5)
+    with tab_matches:
+        c1, c2 = st.columns(2)
+        status_filter = c1.selectbox("Status", ["All", "Completed", "In Progress", "Scheduled"], key="sf")
+        round_filter = c2.number_input("Round (0=All)", min_value=0, value=0, step=1, key="rf")
+        status_map = {"All": None, "Scheduled": "scheduled", "In Progress": "in_progress", "Completed": "completed"}
+        matches = api_client.list_matches(league_id=selected_league, round_number=round_filter or None, status=status_map.get(status_filter))
+        if matches:
+            st.markdown(f"**{len(matches)} match(es)**")
+            for m in sorted(matches, key=lambda x: x.get("timestamp") or "", reverse=True):
+                render_match_card(m, show_details=True)
+        else:
+            st.info("No matches found for this league.")
 
-                with col1:
-                    st.metric("Points", player.get("points", 0))
+    with tab_analytics:
+        data = api_client.get_standings(league_id=selected_league)
+        if data and (s := data.get("standings", [])):
+            render_charts(s)
+        else:
+            st.info("No analytics data. Complete matches first.")
 
-                with col2:
-                    st.metric("Wins", player.get("wins", 0))
-
-                with col3:
-                    st.metric("Losses", player.get("losses", 0))
-
-                with col4:
-                    st.metric("Draws", player.get("draws", 0))
-
-                with col5:
-                    games = player.get("games_played", 0)
-                    wins = player.get("wins", 0)
-                    win_rate = (wins / games * 100) if games > 0 else 0
-                    st.metric("Win Rate", f"{win_rate:.1f}%")
-
-    else:
-        st.info("No standings data available yet. Matches need to be completed first.")
-
-else:
-    st.warning("Unable to fetch standings. Please ensure the league is running.")
-
-    # Quick action
-    if st.button("🚀 Launch New League", type="primary", use_container_width=True):
-        st.switch_page("pages/launcher.py")
-
-# Footer
 st.markdown("---")
-st.caption("Standings are updated after each match completion.")
+st.caption("Data updates after each match. Click Refresh for latest results.")

@@ -33,7 +33,8 @@ async def list_players(league_id: str = DEFAULT_LEAGUE_ID):
     for player in standings.get("standings", []):
         games = player.get("games_played", 0)
         wins = player.get("wins", 0)
-        win_rate = (wins / games * 100) if games > 0 else 0.0
+        # Win rate as decimal (0-1), not percentage
+        win_rate = (wins / games) if games > 0 else 0.0
 
         players.append(
             PlayerResponse(
@@ -45,7 +46,7 @@ async def list_players(league_id: str = DEFAULT_LEAGUE_ID):
                 losses=player.get("losses", 0),
                 draws=player.get("draws", 0),
                 games_played=games,
-                win_rate=round(win_rate, 1),
+                win_rate=round(win_rate, 4),
             )
         )
 

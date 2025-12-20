@@ -26,6 +26,13 @@ game_service = GameService()
 DEFAULT_LEAGUE_ID = "league_2025_even_odd"
 
 
+@router.get("/list", summary="List available leagues")
+async def list_leagues():
+    """Get list of all available league IDs."""
+    leagues = league_service.list_leagues()
+    return {"leagues": leagues, "default": leagues[-1] if leagues else DEFAULT_LEAGUE_ID}
+
+
 @router.get("/status", response_model=LeagueStatusResponse, summary="Get league status")
 async def get_league_status(league_id: str = DEFAULT_LEAGUE_ID):
     """Get current status of the league including progress and participants."""
@@ -90,9 +97,14 @@ async def start_league(request: StartLeagueRequest):
             f"{game.min_players}-{game.max_players} players",
         )
 
-    # Generate league ID
-    league_name = request.league_name or f"league_2025_{request.game_id}"
-    league_id = league_name.lower().replace(" ", "_")
+    # Generate league ID and validate uniqueness
+    league_id = request.league_name.lower().replace(" ", "_")
+    existing_leagues = league_service.list_leagues()
+    if league_id in existing_leagues:
+        raise HTTPException(
+            status_code=400,
+            detail=f"League name '{request.league_name}' already exists. Please choose a unique name.",
+        )
 
     try:
         # Launch the league using run_league.py

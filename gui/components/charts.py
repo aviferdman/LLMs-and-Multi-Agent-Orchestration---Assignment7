@@ -57,14 +57,22 @@ def render_charts(standings: List[Dict]):
 
     with col2:
         st.subheader("Win Rate Comparison")
-        if "win_rate" in df.columns:
+        if "games_played" in df.columns and "wins" in df.columns:
+            # Calculate win rate correctly (as percentage 0-100)
+            win_rates = []
+            for _, row in df.iterrows():
+                games = row.get("games_played", 0)
+                wins = row.get("wins", 0)
+                rate = (wins / games * 100) if games > 0 else 0
+                win_rates.append(rate)
+            
             fig_winrate = go.Figure()
             fig_winrate.add_trace(
                 go.Bar(
                     x=df["player_id"],
-                    y=df["win_rate"] * 100,
+                    y=win_rates,
                     marker_color=COLORS["success"],
-                    text=[f"{wr:.1f}%" for wr in df["win_rate"] * 100],
+                    text=[f"{wr:.1f}%" for wr in win_rates],
                     textposition="auto",
                 )
             )

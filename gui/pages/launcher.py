@@ -1,5 +1,6 @@
 """League Launcher page for starting new leagues."""
 
+import time
 import streamlit as st
 
 from gui.api_client import get_api_client
@@ -18,6 +19,15 @@ st.markdown("Configure and launch a new AI agent league competition.")
 
 # API client
 api_client = get_api_client()
+
+# Initialize session state
+if "league_launched" not in st.session_state:
+    st.session_state.league_launched = False
+
+# Redirect to Live page if league was just launched
+if st.session_state.league_launched:
+    st.session_state.league_launched = False
+    st.switch_page("pages/live.py")
 
 # Check agent status
 with st.expander("🤖 Agent Status", expanded=False):
@@ -55,70 +65,84 @@ with st.expander("🤖 Agent Status", expanded=False):
 st.markdown("---")
 st.subheader("⚙️ League Configuration")
 
-with st.form("league_config_form"):
-    # Fetch available games
-    games = api_client.list_games()
+# Fetch available games
+games = api_client.list_games()
 
-    if not games:
-        st.error("No games available. Please check the API connection.")
-        st.stop()
+if not games:
+    st.error("No games available. Please check the API connection.")
+    st.stop()
 
-    # Game selection
-    game_options = {game["game_id"]: game["name"] for game in games}
-    selected_game_id = st.selectbox(
-        "Select Game",
-        options=list(game_options.keys()),
-        format_func=lambda x: game_options[x],
-        help="Choose the game type for this league",
-    )
+# Game selection
+game_options = {game["game_id"]: game["name"] for game in games}
+selected_game_id = st.selectbox(
+    "Select Game",
+    options=list(game_options.keys()),
+    format_func=lambda x: game_options[x],
+    help="Choose the game type for this league",
+)
 
-    # Get game details
-    game_details = api_client.get_game(selected_game_id)
+# Get game details
+game_details = api_client.get_game(selected_game_id)
 
-    if game_details:
-        st.info(f"**{game_details['name']}**: {game_details['description']}")
+if game_details:
+    st.info(f"**{game_details['name']}**: {game_details['description']}")
 
-        # Show game rules
-        with st.expander("📖 Game Rules"):
-            rules = game_details.get("rules", "No rules available.")
-            st.markdown(rules)
+    # Show game rules
+    with st.expander("📖 Game Rules"):
+        rules = game_details.get("rules", "No rules available.")
+        st.markdown(rules)
 
-        # Player count configuration
-        min_players = game_details.get("min_players", 2)
-        max_players = game_details.get("max_players", 8)
+# Player count - currently only 4 players is supported
+st.markdown("**Number of Players:** 4 (fixed)")
+st.caption("⚠️ Currently only 4-player leagues are supported.")
+num_players = 4
 
-        num_players = st.slider(
-            "Number of Players",
-            min_value=min_players,
-            max_value=max_players,
-            value=min_players,
-            help=f"Select between {min_players} and {max_players} players",
-        )
+# League name - Get existing leagues for validation
+existing_leagues_data = api_client.list_leagues()
+existing_leagues = existing_leagues_data.get("leagues", []) if existing_leagues_data else []
 
-    # League name
-    league_name = st.text_input(
-        "League Name (Optional)",
-        placeholder="e.g., 'Spring Championship 2025'",
-        help="Custom name for your league",
-    )
+league_name = st.text_input(
+    "League Name *",
+    placeholder="e.g., 'Spring Championship 2025'",
+    help="Custom name for your league (must be unique)",
+    key="league_name_input",
+)
 
-    # Submit button
-    submit = st.form_submit_button("🚀 Launch League", type="primary", use_container_width=True)
+# Validation messages
+if league_name:
+    # Generate the league ID that will be created
+    league_id = league_name.lower().replace(" ", "_")
+    if league_id in existing_leagues:
+        st.error(f"❌ League name '{league_name}' already exists. Please choose a unique name.")
+    else:
+        st.success(f"✅ League name is unique")
+else:
+    st.warning("⚠️ League name is required")
 
-    if submit:
-        with st.spinner("Launching league..."):
-            result = api_client.start_league(
-                game_id=selected_game_id,
-                num_players=num_players,
-                league_name=league_name if league_name else None,
-            )
+# Launch button
+if st.button("🚀 Launch League", type="primary", use_container_width=True):
+    # Validate league name
+    if not league_name or not league_name.strip():
+        st.error("❌ Please provide a league name")
+    else:
+        league_id = league_name.lower().replace(" ", "_")
+        if league_id in existing_leagues:
+            st.error(f"❌ League name '{league_name}' already exists. Please choose a unique name.")
+        else:
+            with st.spinner("Launching league..."):
+                result = api_client.start_league(
+                    game_id=selected_game_id,
+                    num_players=num_players,
+                    league_name=league_name,
+                )
 
-            if result and result.get("success"):
-                st.success(f"🎉 {result.get('message', 'League started successfully!')}")
-                st.balloons()
-                st.info("Navigate to the **Live** page to watch matches in real-time!")
-
-                # Auto-navigate to live page after 2 seconds
-                st.markdown("Redirecting to Live page in 2 seconds...")
-            else:
-                st.error("Failed to start league. Please check the logs and try again.")
+                if result and result.get("success"):
+                    st.success(f"🎉 {result.get('message', 'League started successfully!')}")
+                    st.balloons()
+                    st.info("Redirecting to Live page...")
+                    time.sleep(2)
+                    st.session_state.league_launched = True
+                    st.rerun()
+                else:
+                    error_msg = result.get("message", "Unknown error") if result else "No response from API"
+                    st.error(f"Failed to start league: {error_msg}")

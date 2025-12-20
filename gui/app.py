@@ -116,7 +116,7 @@ with col2:
         st.switch_page("pages/live.py")
 
 with col3:
-    if st.button("🏅 View Full Standings", use_container_width=True):
+    if st.button("🏅 View Full Results", use_container_width=True):
         st.switch_page("pages/standings.py")
 
 # Footer

@@ -40,6 +40,10 @@ class APIClient:
         params = {"league_id": league_id} if league_id else {}
         return self._make_request("GET", API_ENDPOINTS["league_standings"], params=params)
 
+    def list_leagues(self) -> Optional[Dict]:
+        """List available leagues."""
+        return self._make_request("GET", f"{self.base_url}/api/v1/league/list")
+
     def get_agents_status(self) -> Optional[Dict]:
         """Get agents status."""
         return self._make_request("GET", API_ENDPOINTS["league_agents"])
@@ -68,10 +72,12 @@ class APIClient:
         return self._make_request("POST", API_ENDPOINTS["league_start"], json=payload)
 
     def list_matches(
-        self, round_number: Optional[int] = None, status: Optional[str] = None
+        self, league_id: Optional[str] = None, round_number: Optional[int] = None, status: Optional[str] = None
     ) -> Optional[List[Dict]]:
         """List matches with optional filters."""
         params = {}
+        if league_id:
+            params["league_id"] = league_id
         if round_number is not None:
             params["round_number"] = round_number
         if status:

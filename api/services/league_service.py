@@ -15,6 +15,7 @@ from api.schemas.matches import MatchListResponse, MatchResponse, MatchStatus
 from api.services.league_helpers import (
     determine_status,
     get_current_round,
+    list_available_leagues,
     list_matches,
     load_agents_config,
     load_league_config,
@@ -47,13 +48,17 @@ class LeagueService:
             league_id=league_id,
             status=determine_status(standings, completed, total),
             game_type=config.get("game_type", "even_odd"),
-            current_round=get_current_round(standings),
+            current_round=get_current_round(standings, matches),
             total_rounds=config.get("total_rounds", 3),
             matches_completed=completed,
             matches_total=total,
             players_registered=len(standings.get("standings", [])),
             referees_registered=2,
         )
+
+    def list_leagues(self) -> list[str]:
+        """List all available leagues."""
+        return list_available_leagues(self.data_dir)
 
     def get_standings(self, league_id: str) -> Optional[StandingsResponse]:
         """Get league standings."""
@@ -117,7 +122,7 @@ class LeagueService:
 
         players = [
             AgentStatus(
-                agent_id=p.get("agent_id", ""),
+                agent_id=p.get("player_id", p.get("agent_id", "")),
                 agent_type="player",
                 is_registered=True,
                 is_ready=True,
@@ -128,7 +133,7 @@ class LeagueService:
 
         referees = [
             AgentStatus(
-                agent_id=r.get("agent_id", ""),
+                agent_id=r.get("referee_id", r.get("agent_id", "")),
                 agent_type="referee",
                 is_registered=True,
                 is_ready=True,

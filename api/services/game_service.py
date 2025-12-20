@@ -13,24 +13,24 @@ class GameService:
         "even_odd": {
             "game_id": "even_odd",
             "name": "Even-Odd Parity Game",
-            "description": "Two players each choose a number (1-10). "
-            "The sum determines the winner based on parity rules.",
+            "description": "Players predict whether a randomly drawn number (1-10) will be EVEN or ODD. "
+            "Players who correctly guess the parity win the round.",
             "min_players": 2,
             "max_players": 8,
             "rules_version": "1.0",
             "rules": """## Even-Odd Parity Game Rules
 
-**Objective**: Win rounds by correctly predicting the parity of the sum.
+**Objective**: Win rounds by correctly predicting the parity of a randomly drawn number.
 
 **Gameplay**:
-1. Each player secretly chooses a number from 1-10
-2. Numbers are revealed simultaneously
-3. The sum is calculated
-4. Winner determined by parity (even/odd)
+1. Each player secretly chooses EVEN or ODD
+2. Referee draws a random number from 1-10
+3. Number is revealed to all players
+4. Players who correctly predicted the parity win
 
 **Scoring**:
 - Win: 3 points
-- Draw: 1 point
+- Draw (both correct or both wrong): 1 point
 - Loss: 0 points
 
 **Tournament**: Round-robin format where each player faces every other player.

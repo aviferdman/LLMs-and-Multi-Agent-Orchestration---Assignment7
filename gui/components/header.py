@@ -40,8 +40,8 @@ def render_header(current_page: str = "Dashboard"):
         unsafe_allow_html=True,
     )
 
-    # Navigation menu
-    cols = st.columns([1, 1, 1, 1, 1, 1, 2])
+    # Simplified navigation menu - 4 main pages
+    cols = st.columns([1, 1, 1, 1, 3])
 
     with cols[0]:
         if st.button(
@@ -69,26 +69,10 @@ def render_header(current_page: str = "Dashboard"):
 
     with cols[3]:
         if st.button(
-            "🏅 Standings",
+            "🏅 Results",
             use_container_width=True,
-            type="primary" if current_page == "Standings" else "secondary",
+            type="primary" if current_page in ["Standings", "Results"] else "secondary",
         ):
             st.switch_page("pages/standings.py")
-
-    with cols[4]:
-        if st.button(
-            "🎮 Matches",
-            use_container_width=True,
-            type="primary" if current_page == "Matches" else "secondary",
-        ):
-            st.switch_page("pages/matches.py")
-
-    with cols[5]:
-        if st.button(
-            "👥 Players",
-            use_container_width=True,
-            type="primary" if current_page == "Players" else "secondary",
-        ):
-            st.switch_page("pages/players.py")
 
     st.markdown("---")

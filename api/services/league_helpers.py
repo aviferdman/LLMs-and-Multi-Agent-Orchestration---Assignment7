@@ -25,8 +25,35 @@ def list_matches(data_dir: Path, league_id: str) -> List[Dict[str, Any]]:
     matches = []
     for match_file in matches_dir.glob("*.json"):
         with open(match_file, "r", encoding="utf-8") as f:
-            matches.append(json.load(f))
+            data = json.load(f)
+            # Map actual field names to expected field names
+            match = {
+                "match_id": data.get("match_id", ""),
+                "player1_id": data.get("player_a", data.get("player1_id", "")),
+                "player2_id": data.get("player_b", data.get("player2_id", "")),
+                "round_number": data.get("round_id", data.get("round_number", 0)),
+                "status": data.get("status", "completed"),
+                "winner_id": _map_winner(data),
+                "player1_score": data.get("player1_score", 0),
+                "player2_score": data.get("player2_score", 0),
+                "timestamp": data.get("timestamp"),
+            }
+            matches.append(match)
     return matches
+
+
+def _map_winner(data: Dict[str, Any]) -> str:
+    """Map winner field from data format to player ID."""
+    winner = data.get("winner", data.get("winner_id"))
+    if not winner:
+        return None
+    if winner == "PLAYER_A":
+        return data.get("player_a", data.get("player1_id", ""))
+    if winner == "PLAYER_B":
+        return data.get("player_b", data.get("player2_id", ""))
+    if winner == "DRAW":
+        return None
+    return winner
 
 
 def determine_status(standings: Dict, completed: int, total: int) -> LeagueStatus:
@@ -40,12 +67,17 @@ def determine_status(standings: Dict, completed: int, total: int) -> LeagueStatu
     return LeagueStatus.REGISTERING
 
 
-def get_current_round(standings: Dict) -> int:
-    """Get current round number."""
+def get_current_round(standings: Dict, matches: List[Dict] = None) -> int:
+    """Get current round number from matches."""
+    if matches:
+        if not matches:
+            return 0
+        return max(m.get("round_number", 0) for m in matches)
+    # Fallback to standings if no matches provided
     if not standings.get("standings"):
         return 0
-    total_games = sum(p.get("games_played", 0) for p in standings["standings"])
-    return (total_games // 2) + 1
+    max_games = max((p.get("games_played", 0) for p in standings["standings"]), default=0)
+    return max_games
 
 
 def parse_standings_to_response(standings: Dict, league_id: str) -> List[PlayerStanding]:
@@ -88,3 +120,11 @@ def load_agents_config(config_dir: Path) -> Dict[str, Any]:
         return {}
     with open(agents_path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def list_available_leagues(data_dir: Path) -> List[str]:
+    """List all available league IDs from matches directory."""
+    matches_dir = data_dir / "matches"
+    if not matches_dir.exists():
+        return []
+    return [d.name for d in matches_dir.iterdir() if d.is_dir()]
