@@ -2,7 +2,7 @@
 
 from typing import Dict, Any
 
-from SHARED.league_sdk.http_client import send_with_retry
+from SHARED.league_sdk.agent_comm import send_with_retry
 from SHARED.league_sdk.config_loader import load_system_config
 from SHARED.constants import Field, LogEvent, Timeout
 from SHARED.contracts import build_run_match

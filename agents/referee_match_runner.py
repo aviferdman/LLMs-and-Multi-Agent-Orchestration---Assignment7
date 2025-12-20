@@ -1,6 +1,6 @@
 """Match execution logic for referee."""
 
-from SHARED.league_sdk.http_client import send_message, send_with_retry
+from SHARED.league_sdk.agent_comm import send, send_with_retry
 from SHARED.league_sdk.config_loader import load_system_config, load_agent_config
 from SHARED.contracts import (
     build_game_invitation, build_choose_parity_call,
@@ -85,8 +85,8 @@ async def invite_players(referee, context, league_id, round_id, match_id,
     inv_a = build_game_invitation(league_id, round_id, match_id, referee.referee_id, player_a, player_b)
     inv_b = build_game_invitation(league_id, round_id, match_id, referee.referee_id, player_b, player_a)
     
-    resp_a = await send_message(ep_a, inv_a, timeout=_system_config.timeouts[Timeout.GAME_JOIN_ACK])
-    resp_b = await send_message(ep_b, inv_b, timeout=_system_config.timeouts[Timeout.GAME_JOIN_ACK])
+    resp_a = await send(ep_a, inv_a)
+    resp_b = await send(ep_b, inv_b)
     
     if resp_a and resp_a.get(Field.MESSAGE_TYPE) == MessageType.GAME_JOIN_ACK:
         context.record_join(player_a, resp_a.get(Field.CONVERSATION_ID))
@@ -105,8 +105,8 @@ async def collect_choices(referee, context, league_id, round_id, match_id,
     req_a = build_choose_parity_call(league_id, round_id, match_id, referee.referee_id, player_a)
     req_b = build_choose_parity_call(league_id, round_id, match_id, referee.referee_id, player_b)
     
-    resp_a = await send_message(ep_a, req_a, timeout=_system_config.timeouts[Timeout.PARITY_CHOICE])
-    resp_b = await send_message(ep_b, req_b, timeout=_system_config.timeouts[Timeout.PARITY_CHOICE])
+    resp_a = await send(ep_a, req_a)
+    resp_b = await send(ep_b, req_b)
     
     if resp_a and Field.CHOICE in resp_a:
         context.record_choice(player_a, resp_a[Field.CHOICE])
@@ -126,8 +126,8 @@ async def notify_game_over(referee, league_id, round_id, match_id, winner,
         league_id, round_id, match_id, referee.referee_id, winner, drawn_number,
         context.player_a_choice, context.player_b_choice
     )
-    await send_message(ep_a, msg)
-    await send_message(ep_b, msg)
+    await send(ep_a, msg)
+    await send(ep_b, msg)
 
 
 async def report_result(referee, league_id, round_id, match_id, player_a, player_b, winner):

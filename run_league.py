@@ -24,7 +24,7 @@ import signal
 import sys
 from SHARED.league_sdk.config_loader import load_agent_config, load_league_config, load_system_config
 from SHARED.league_sdk.logger import LeagueLogger
-from SHARED.league_sdk.http_client import send_message
+from SHARED.league_sdk.agent_comm import send
 from SHARED.constants import LeagueID, LogEvent, Timeout
 from SHARED.contracts import build_start_league
 from agents.league_manager.orchestration import (
@@ -78,7 +78,7 @@ async def run_league():
     })
     
     start_msg = build_start_league(league_config.league_id, "LAUNCHER")
-    response = await send_message(_lm_endpoint, start_msg)
+    response = await send(_lm_endpoint, start_msg)
     
     logger.log_message("LEAGUE_STARTED", {"response": response})
     

@@ -2,7 +2,7 @@
 
 from typing import Dict, Any
 
-from SHARED.league_sdk.http_client import send_message
+from SHARED.league_sdk.agent_comm import send
 from SHARED.constants import Field, LogEvent
 
 
@@ -22,6 +22,6 @@ async def broadcast_to_agents(
     # Send to all endpoints (fire and forget - don't wait for responses)
     for endpoint in endpoints:
         try:
-            await send_message(endpoint, message, timeout=5)
+            await send(endpoint, message)
         except Exception as e:
             logger.log_error(LogEvent.ERROR, f"Broadcast failed to {endpoint}: {e}")

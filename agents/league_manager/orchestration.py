@@ -3,7 +3,7 @@
 import subprocess
 import asyncio
 from SHARED.league_sdk.logger import LeagueLogger
-from SHARED.league_sdk.http_client import send_message
+from SHARED.league_sdk.agent_comm import send
 from SHARED.league_sdk.config_loader import load_agent_config
 from SHARED.constants import LogEvent, Field, AgentType
 
@@ -41,7 +41,7 @@ async def register_referee(referee_id: str, endpoint: str, logger: LeagueLogger)
     from SHARED.contracts import build_referee_register_request
     
     message = build_referee_register_request(referee_id, endpoint)
-    response = await send_message(_lm_endpoint, message)
+    response = await send(_lm_endpoint, message)
     logger.log_message(LogEvent.REFEREE_REGISTERED, {Field.REFEREE_ID: referee_id, "response": str(response)})
 
 async def register_player(player_id: str, endpoint: str, logger: LeagueLogger):
@@ -49,7 +49,7 @@ async def register_player(player_id: str, endpoint: str, logger: LeagueLogger):
     from SHARED.contracts import build_league_register_request
     
     message = build_league_register_request(player_id, endpoint)
-    response = await send_message(_lm_endpoint, message)
+    response = await send(_lm_endpoint, message)
     logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: player_id, "response": str(response)})
 
 async def start_all_agents(agents_config: dict, logger: LeagueLogger):

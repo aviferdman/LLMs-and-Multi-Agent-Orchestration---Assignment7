@@ -12,7 +12,7 @@ import asyncio
 
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.repositories import PlayerHistoryRepository
-from SHARED.league_sdk.http_client import send_with_retry
+from SHARED.league_sdk.agent_comm import send_with_retry
 from SHARED.league_sdk.config_loader import load_system_config, load_agent_config
 from SHARED.contracts import build_game_join_ack, build_parity_choice, build_league_register_request
 from SHARED.constants import (

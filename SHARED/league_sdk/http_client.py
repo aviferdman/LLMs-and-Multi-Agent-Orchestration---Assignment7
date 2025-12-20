@@ -5,6 +5,7 @@ from typing import Dict, Any, Optional
 import asyncio
 import random
 
+
 async def send_message(
     endpoint: str,
     message: Dict[str, Any],
