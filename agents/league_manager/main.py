@@ -13,7 +13,7 @@ from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.config_loader import load_system_config, load_league_config, load_agent_config
 from SHARED.league_sdk.repositories import StandingsRepository
 from SHARED.constants import (
-    MessageType, Field, AgentID, LogEvent, LeagueID, MCP_PATH, Status, GameStatus
+    MessageType, Field, AgentID, LogEvent, MCP_PATH, Status, GameStatus
 )
 from SHARED.contracts import build_league_status
 from handlers import handle_referee_register, handle_league_register, handle_match_result_report
@@ -22,7 +22,9 @@ from match_orchestration import run_league_matches
 app = FastAPI(title="League Manager")
 logger = LeagueLogger(AgentID.LEAGUE_MANAGER)
 system_config = load_system_config()
-league_config = load_league_config(LeagueID.EVEN_ODD_2025)
+# Load league ID from system config - game-agnostic approach
+active_league_id = system_config.active_league_id
+league_config = load_league_config(active_league_id)
 agents_config = load_agent_config()
 
 # Store registered agents

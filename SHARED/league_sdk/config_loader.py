@@ -31,6 +31,7 @@ def load_system_config(config_dir: Path = None) -> SystemConfig:
     return SystemConfig(
         schema_version=data["schema_version"],
         protocol_version=data.get("protocol_version", PROTOCOL_VERSION),
+        active_league_id=data.get("active_league_id", ""),
         timeouts=data.get("timeouts", {}),
         retry_policy=data.get("retry_policy", {}),
     )

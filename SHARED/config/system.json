@@ -1,6 +1,7 @@
 {
   "schema_version": "1.0.0",
   "protocol_version": "league.v2",
+  "active_league_id": "league_2025_even_odd",
   "timeouts": {
     "game_join_ack": 5,
     "parity_choice": 30,

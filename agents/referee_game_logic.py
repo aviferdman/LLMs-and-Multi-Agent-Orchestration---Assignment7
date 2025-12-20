@@ -1,9 +1,26 @@
-"""Game logic for Even-Odd game."""
+"""Game logic for Even-Odd game and game rules factory."""
 
 import random
-from SHARED.constants import EVEN_ODD_MIN_NUMBER, EVEN_ODD_MAX_NUMBER, ParityChoice, Winner
+from SHARED.constants import EVEN_ODD_MIN_NUMBER, EVEN_ODD_MAX_NUMBER, ParityChoice, Winner, GameID
 
-class EvenOddGameRules:
+
+class BaseGameRules:
+    """Base class for all game rules - defines the interface."""
+    
+    def draw_number(self) -> int:
+        """Draw a random number for the game."""
+        raise NotImplementedError
+    
+    def validate_parity_choice(self, choice: str) -> bool:
+        """Validate a player's choice."""
+        raise NotImplementedError
+    
+    def determine_winner(self, choice_a: str, choice_b: str, drawn_number: int) -> str:
+        """Determine the winner based on choices and drawn number."""
+        raise NotImplementedError
+
+
+class EvenOddGameRules(BaseGameRules):
     """Game rules for Even-Odd game."""
     
     def __init__(self):
@@ -35,3 +52,17 @@ class EvenOddGameRules:
             return Winner.PLAYER_B
         else:
             return Winner.DRAW
+
+
+# Game rules registry - maps game type to rules class (game-agnostic factory)
+_GAME_RULES_REGISTRY = {
+    GameID.EVEN_ODD: EvenOddGameRules,
+}
+
+
+def get_game_rules(game_type: str) -> BaseGameRules:
+    """Factory function to get game rules by game type (game-agnostic)."""
+    rules_class = _GAME_RULES_REGISTRY.get(game_type)
+    if rules_class is None:
+        raise ValueError(f"Unknown game type: {game_type}")
+    return rules_class()

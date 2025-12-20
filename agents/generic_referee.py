@@ -15,9 +15,9 @@ from SHARED.league_sdk.http_client import send_with_retry
 from SHARED.league_sdk.config_loader import load_system_config, load_agent_config
 from SHARED.contracts import build_referee_register_request
 from SHARED.constants import (
-    MessageType, Field, Status, LogEvent, MCP_PATH, SERVER_HOST, LOCALHOST, HTTP_PROTOCOL
+    MessageType, Field, Status, LogEvent, MCP_PATH, SERVER_HOST, LOCALHOST, HTTP_PROTOCOL, GameID
 )
-from agents.referee_game_logic import EvenOddGameRules
+from agents.referee_game_logic import get_game_rules
 from agents.referee_http_handlers import handle_run_match, handle_game_join_ack, handle_parity_choice
 from agents.referee_match_runner import run_match_phases
 
@@ -30,13 +30,15 @@ _lm_endpoint = _agents_config["league_manager"]["endpoint"]
 class GenericReferee:
     """Generic referee that can manage any game type."""
     
-    def __init__(self, referee_id: str, port: int):
-        """Initialize referee."""
+    def __init__(self, referee_id: str, port: int, game_type: str = GameID.EVEN_ODD):
+        """Initialize referee with game type from config (game-agnostic)."""
         self.referee_id = referee_id
         self.port = port
+        self.game_type = game_type
         self.endpoint = f"{HTTP_PROTOCOL}://{LOCALHOST}:{port}{MCP_PATH}"
         self.logger = LeagueLogger(referee_id)
-        self.game_rules = EvenOddGameRules()
+        # Use factory to get game rules - game-agnostic approach
+        self.game_rules = get_game_rules(game_type)
         self.active_matches = {}
         self.auth_token = None
         self.app = FastAPI(title=f"Referee {referee_id}")
@@ -102,9 +104,9 @@ class GenericReferee:
         uvicorn.run(self.app, host=SERVER_HOST, port=self.port)
 
 
-def create_app(referee_id: str, port: int) -> FastAPI:
-    """Factory function to create referee FastAPI app."""
-    return GenericReferee(referee_id, port).app
+def create_app(referee_id: str, port: int, game_type: str = GameID.EVEN_ODD) -> FastAPI:
+    """Factory function to create referee FastAPI app (game-agnostic)."""
+    return GenericReferee(referee_id, port, game_type).app
 
 
 def main():
@@ -112,8 +114,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--referee-id", required=True)
     parser.add_argument("--port", type=int, required=True)
+    parser.add_argument("--game-type", default=GameID.EVEN_ODD, help="Game type to referee")
     args = parser.parse_args()
-    GenericReferee(args.referee_id, args.port).run()
+    GenericReferee(args.referee_id, args.port, args.game_type).run()
 
 
 if __name__ == "__main__":

@@ -11,6 +11,7 @@ class SystemConfig:
 
     schema_version: str
     protocol_version: str = PROTOCOL_VERSION
+    active_league_id: str = ""  # The active league to run (game-agnostic)
     timeouts: Dict[str, int] = field(default_factory=dict)
     retry_policy: Dict[str, int] = field(default_factory=dict)
 
