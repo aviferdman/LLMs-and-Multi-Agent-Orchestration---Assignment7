@@ -3,6 +3,7 @@
 import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
+from SHARED.protocol_constants import PROTOCOL_VERSION
 
 def format_timestamp() -> str:
     """Generate ISO-8601 UTC timestamp with Z suffix."""
@@ -11,7 +12,7 @@ def format_timestamp() -> str:
 def create_base_message(message_type: str, league_id: str, round_id: int, match_id: str, sender: str, conversation_id: Optional[str] = None) -> Dict[str, Any]:
     """Create base protocol message with required fields."""
     return {
-        "protocol": "league.v1", "message_type": message_type, "league_id": league_id,
+        "protocol": PROTOCOL_VERSION, "message_type": message_type, "league_id": league_id,
         "round_id": round_id, "match_id": match_id, "conversation_id": conversation_id or str(uuid.uuid4()),
         "sender": sender, "timestamp": format_timestamp()
     }
@@ -53,4 +54,4 @@ def build_match_result_report(league_id: str, round_id: int, match_id: str, refe
 def validate_message(message: Dict[str, Any]) -> bool:
     """Validate protocol message has required fields."""
     required_fields = ["protocol", "message_type", "league_id", "round_id", "match_id", "conversation_id", "sender", "timestamp"]
-    return all(field in message for field in required_fields) and message["protocol"] == "league.v1" and message["timestamp"].endswith("Z")
+    return all(field in message for field in required_fields) and message["protocol"] == PROTOCOL_VERSION and message["timestamp"].endswith("Z")

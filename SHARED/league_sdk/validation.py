@@ -92,17 +92,20 @@ def validate_required_fields(message: Dict[str, Any],
         return f"Missing required fields: {', '.join(missing)}"
     return None
 
-def validate_protocol_version(protocol: str, expected: str = "league.v2") -> bool:
+def validate_protocol_version(protocol: str, expected: str = None) -> bool:
     """
     Validate protocol version matches expected version.
     
     Args:
         protocol: Protocol version from message
-        expected: Expected protocol version
+        expected: Expected protocol version (defaults to PROTOCOL_VERSION)
         
     Returns:
         True if matches, False otherwise
     """
+    from SHARED.protocol_constants import PROTOCOL_VERSION
+    if expected is None:
+        expected = PROTOCOL_VERSION
     return protocol == expected
 
 def get_validation_errors(message: Dict[str, Any]) -> List[str]:

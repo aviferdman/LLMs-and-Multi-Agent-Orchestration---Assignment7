@@ -10,6 +10,7 @@ from SHARED.league_sdk.validation import (
     validate_message, validate_timestamp, validate_uuid
 )
 from SHARED.constants import Field, MessageType
+from SHARED.protocol_constants import PROTOCOL_VERSION
 
 def test_validate_message():
     """Test basic message validation."""
@@ -17,7 +18,7 @@ def test_validate_message():
     
     # Valid message
     valid_msg = {
-        Field.PROTOCOL: "league.v2",
+        Field.PROTOCOL: PROTOCOL_VERSION,
         Field.CONVERSATION_ID: "123e4567-e89b-12d3-a456-426614174000",
         Field.TIMESTAMP: "2025-01-01T12:00:00Z",
         Field.MESSAGE_TYPE: MessageType.GAME_INVITATION
@@ -25,7 +26,7 @@ def test_validate_message():
     assert validate_message(valid_msg), "Valid message should pass"
     
     # Missing field
-    invalid_msg = {Field.PROTOCOL: "league.v2"}
+    invalid_msg = {Field.PROTOCOL: PROTOCOL_VERSION}
     assert not validate_message(invalid_msg), "Incomplete message should fail"
     
     print("  ✓ validate_message works correctly")

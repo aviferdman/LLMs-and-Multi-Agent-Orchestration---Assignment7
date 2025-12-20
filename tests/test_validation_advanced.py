@@ -49,22 +49,24 @@ def test_validate_required_fields():
 
 def test_validate_protocol_version():
     """Test protocol version validation."""
+    from SHARED.protocol_constants import PROTOCOL_VERSION
     print("Testing validate_protocol_version...")
     
-    assert validate_protocol_version("league.v2"), "Correct version should pass"
-    assert not validate_protocol_version("league.v1"), "Wrong version should fail"
+    assert validate_protocol_version(PROTOCOL_VERSION), "Correct version should pass"
     assert not validate_protocol_version("invalid"), "Invalid version should fail"
+    assert not validate_protocol_version("wrong.version"), "Wrong version should fail"
     
     print("  ✓ validate_protocol_version works correctly")
     return True
 
 def test_get_validation_errors():
     """Test comprehensive validation."""
+    from SHARED.protocol_constants import PROTOCOL_VERSION
     print("Testing get_validation_errors...")
     
     # Fully valid message
     valid_msg = {
-        Field.PROTOCOL: "league.v2",
+        Field.PROTOCOL: PROTOCOL_VERSION,
         Field.CONVERSATION_ID: "123e4567-e89b-12d3-a456-426614174000",
         Field.TIMESTAMP: "2025-01-01T12:00:00Z",
         Field.MESSAGE_TYPE: MessageType.GAME_INVITATION

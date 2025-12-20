@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
+from SHARED.protocol_constants import PROTOCOL_VERSION
 
 
 @dataclass
@@ -9,7 +10,7 @@ class SystemConfig:
     """System-wide configuration settings."""
 
     schema_version: str
-    protocol_version: str = "league.v1"
+    protocol_version: str = PROTOCOL_VERSION
     timeouts: Dict[str, int] = field(default_factory=dict)
     retry_policy: Dict[str, int] = field(default_factory=dict)
 
