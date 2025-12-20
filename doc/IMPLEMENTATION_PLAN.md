@@ -830,6 +830,8 @@
   - [ ] `GET /api/v1/league/status` - Current league status
   - [ ] `GET /api/v1/league/standings` - Current standings
   - [ ] `GET /api/v1/league/config` - League configuration
+  - [ ] `GET /api/v1/games` - List available games (**for Launcher dropdown**)
+  - [ ] `GET /api/v1/games/{game_id}` - Get game details (rules, min/max players)
   - [ ] `GET /api/v1/matches` - List all matches
   - [ ] `GET /api/v1/matches/{match_id}` - Get match details
   - [ ] `GET /api/v1/players` - List registered players
@@ -839,18 +841,95 @@
   - [ ] `GET /api/v1/rounds` - List all rounds
   - [ ] `GET /api/v1/rounds/{round_id}` - Get round details
   - [ ] `GET /api/v1/logs` - Get recent log entries
-  - [ ] `POST /api/v1/league/start` - Start the league (admin)
-  - [ ] `WebSocket /api/v1/ws/live` - Live match updates (optional)
+  - [ ] `POST /api/v1/league/start` - Start league with configuration (**for Launcher**)
+  - [ ] `GET /api/v1/agents/status` - Check registered agents readiness
+  - [ ] `WebSocket /api/v1/ws/live` - Live match updates (**REQUIRED**)
+  - [ ] `GET /api/v1/matches/{match_id}/live` - Current live match state
 
-### 13.2 API Implementation - Routes
+### 13.2 Real-Time Event System (WebSocket)
+- [ ] Create `api/websocket/` directory
+- [ ] Create `api/websocket/__init__.py`
+- [ ] Create `api/websocket/connection_manager.py`
+  - [ ] Implement `ConnectionManager` class
+  - [ ] Handle multiple client connections
+  - [ ] Broadcast events to all connected clients
+  - [ ] Handle client disconnect gracefully
+- [ ] Create `api/websocket/events.py`
+  - [ ] Define `MatchEvent` base class
+  - [ ] Define `PlayerThinkingEvent` - Player is deciding (show spinner)
+  - [ ] Define `PlayerMoveEvent` - Player submitted their strategy
+  - [ ] Define `BothMovesReceivedEvent` - Both players responded
+  - [ ] Define `RoundResultEvent` - Round outcome revealed
+  - [ ] Define `MatchStartEvent` - Match begins
+  - [ ] Define `MatchEndEvent` - Match concludes with final score
+  - [ ] Define `LeagueStatusEvent` - League state changes
+- [ ] Create `api/websocket/handlers.py`
+  - [ ] Implement WebSocket endpoint handler
+  - [ ] Handle subscription to specific matches
+  - [ ] Handle subscription to all events
+  - [ ] Implement heartbeat/ping-pong
+- [ ] Create `api/schemas/live.py`
+  - [ ] Define `LiveMatchState` model
+    - [ ] `match_id: str`
+    - [ ] `player1_id: str`
+    - [ ] `player2_id: str`
+    - [ ] `player1_status: str` ("waiting", "thinking", "submitted")
+    - [ ] `player2_status: str` ("waiting", "thinking", "submitted")
+    - [ ] `player1_move: Optional[str]` (shown when submitted)
+    - [ ] `player2_move: Optional[str]` (shown when submitted)
+    - [ ] `current_round: int`
+    - [ ] `rounds_played: List[RoundResult]`
+    - [ ] `player1_score: int`
+    - [ ] `player2_score: int`
+  - [ ] Define `RoundResult` model
+    - [ ] `round_number: int`
+    - [ ] `player1_move: str`
+    - [ ] `player2_move: str`
+    - [ ] `winner: Optional[str]`
+  - [ ] Define `WebSocketMessage` model
+    - [ ] `event_type: str`
+    - [ ] `timestamp: datetime`
+    - [ ] `payload: dict`
+
+### 13.3 Event Publishing from Agents
+- [ ] Create `api/services/event_publisher.py`
+  - [ ] Implement singleton event publisher
+  - [ ] Method: `publish_player_thinking(match_id, player_id)`
+  - [ ] Method: `publish_player_move(match_id, player_id, move)`
+  - [ ] Method: `publish_round_result(match_id, round_num, result)`
+  - [ ] Method: `publish_match_start(match_id, player1, player2)`
+  - [ ] Method: `publish_match_end(match_id, final_score)`
+- [ ] Integrate event publishing into Referee agent
+  - [ ] Publish `PlayerThinkingEvent` when sending PARITY_CALL
+  - [ ] Publish `PlayerMoveEvent` when receiving player response
+  - [ ] Publish `RoundResultEvent` after evaluating round
+  - [ ] Publish `MatchEndEvent` when match concludes
+- [ ] Create event queue for buffering (Redis/in-memory)
+
+### 13.4 API Implementation - Routes
 - [ ] Create `api/routes/__init__.py`
 - [ ] Create `api/routes/league.py`
   - [ ] Implement `get_league_status()` endpoint
   - [ ] Implement `get_league_standings()` endpoint
   - [ ] Implement `get_league_config()` endpoint
-  - [ ] Implement `start_league()` endpoint
+  - [ ] Implement `start_league()` endpoint with configuration:
+    - [ ] Accept `game_id` parameter
+    - [ ] Accept `num_players` parameter
+    - [ ] Accept `league_name` parameter (optional)
+    - [ ] Validate configuration against game requirements
+    - [ ] Return league ID and status
+  - [ ] Implement `get_agents_status()` endpoint
   - [ ] Add proper error handling
   - [ ] Add response models
+- [ ] Create `api/routes/games.py` (**for Launcher dropdown**)
+  - [ ] Implement `list_games()` endpoint
+    - [ ] Return list of available games
+    - [ ] Include: game_id, name, description, min_players, max_players
+  - [ ] Implement `get_game()` endpoint
+    - [ ] Return game details including rules
+    - [ ] Return supported player counts
+  - [ ] Currently supported games:
+    - [ ] `even_odd` - Even-Odd Parity Game (2-8 players)
 - [ ] Create `api/routes/matches.py`
   - [ ] Implement `list_matches()` endpoint
   - [ ] Implement `get_match()` endpoint
@@ -868,12 +947,27 @@
   - [ ] Implement `list_rounds()` endpoint
   - [ ] Implement `get_round()` endpoint
 
-### 13.3 API Implementation - Schemas
+### 13.5 API Implementation - Schemas
 - [ ] Create `api/schemas/__init__.py`
 - [ ] Create `api/schemas/league.py`
   - [ ] Define `LeagueStatusResponse` model
   - [ ] Define `StandingsResponse` model
   - [ ] Define `LeagueConfigResponse` model
+  - [ ] Define `StartLeagueRequest` model:
+    - [ ] `game_id: str` (required)
+    - [ ] `num_players: int` (required)
+    - [ ] `league_name: Optional[str]`
+  - [ ] Define `StartLeagueResponse` model
+  - [ ] Define `AgentsStatusResponse` model
+- [ ] Create `api/schemas/games.py` (**for Launcher dropdown**)
+  - [ ] Define `GameResponse` model:
+    - [ ] `game_id: str`
+    - [ ] `name: str`
+    - [ ] `description: str`
+    - [ ] `min_players: int`
+    - [ ] `max_players: int`
+    - [ ] `rules: Optional[str]`
+  - [ ] Define `GameListResponse` model
 - [ ] Create `api/schemas/matches.py`
   - [ ] Define `MatchResponse` model
   - [ ] Define `MatchListResponse` model
@@ -888,7 +982,7 @@
   - [ ] Define `ErrorResponse` model
   - [ ] Define `SuccessResponse` model
 
-### 13.4 API Integration with SDK
+### 13.6 API Integration with SDK
 - [ ] Create `api/services/__init__.py`
 - [ ] Create `api/services/league_service.py`
   - [ ] Integrate with `StandingsRepository`
@@ -900,7 +994,7 @@
   - [ ] Integrate with `SessionManager` for live data
   - [ ] Add real-time agent status retrieval
 
-### 13.5 Swagger/OpenAPI Configuration
+### 13.7 Swagger/OpenAPI Configuration
 - [ ] Configure FastAPI OpenAPI metadata
   - [ ] Set API title: "League Competition API"
   - [ ] Set API version: "1.0.0"
@@ -913,7 +1007,7 @@
 - [ ] Add example request/response bodies
 - [ ] Verify all endpoints documented
 
-### 13.6 API Server Setup
+### 13.8 API Server Setup
 - [ ] Create `run_api.py` entry point
 - [ ] Configure CORS for local development
 - [ ] Add health check endpoint `/health`
@@ -973,6 +1067,23 @@
   - [ ] Test Swagger UI accessibility
   - [ ] Test ReDoc accessibility
 
+### 14.5 WebSocket Tests
+- [ ] Create `tests/api/test_websocket.py`
+  - [ ] Test WebSocket connection establishment
+  - [ ] Test `PlayerThinkingEvent` delivery
+  - [ ] Test `PlayerMoveEvent` shows move immediately
+  - [ ] Test partial state (one player submitted, other thinking)
+  - [ ] Test `RoundResultEvent` after both moves
+  - [ ] Test `MatchEndEvent` delivery
+  - [ ] Test multiple client connections
+  - [ ] Test client disconnect handling
+  - [ ] Test event ordering (correct sequence)
+- [ ] Create `tests/api/test_live_match_state.py`
+  - [ ] Test `GET /api/v1/matches/{id}/live` endpoint
+  - [ ] Test state transitions (waiting → thinking → submitted)
+  - [ ] Test partial move visibility
+  - [ ] Test score updates after each round
+
 ---
 
 ## Phase 15: GUI Implementation 🆕
@@ -991,15 +1102,50 @@
   - [ ] Add `plotly` for charts
   - [ ] Add `pandas` for data manipulation
 
-### 15.2 GUI Pages - Dashboard
+### 15.2 GUI Pages - League Launcher (**REQUIRED**)
+- [ ] Create `gui/pages/launcher.py`
+  - [ ] **Game Selection Dropdown**:
+    - [ ] List available games from API (`GET /api/v1/games`)
+    - [ ] Currently supported: "Even-Odd" game
+    - [ ] Show game description/rules on selection
+    - [ ] Extensible for future games
+  - [ ] **Player Configuration**:
+    - [ ] Number of players selector (dropdown/slider)
+    - [ ] Currently supported: 4 players
+    - [ ] Min/max players based on selected game
+    - [ ] Player name/ID input fields (optional customization)
+  - [ ] **League Settings**:
+    - [ ] League name input
+    - [ ] Number of rounds (auto-calculated for round-robin)
+    - [ ] Timeout settings (optional advanced)
+  - [ ] **Launch Button**:
+    - [ ] Validate configuration before launch
+    - [ ] Call `POST /api/v1/league/start` with config
+    - [ ] Show loading/progress indicator
+    - [ ] Auto-navigate to Live View on success
+  - [ ] **Status Indicators**:
+    - [ ] Show if agents are registered/ready
+    - [ ] Show referee availability
+    - [ ] Warning if prerequisites not met
+- [ ] Create `gui/components/game_selector.py`
+  - [ ] Dropdown with game icons/names
+  - [ ] Game info tooltip/modal
+  - [ ] Future: game preview/demo
+- [ ] Create `gui/components/player_config.py`
+  - [ ] Dynamic player count selector
+  - [ ] Player list preview
+  - [ ] Strategy hints (for demo purposes)
+
+### 15.3 GUI Pages - Dashboard
 - [ ] Create `gui/pages/dashboard.py`
   - [ ] League status overview card
   - [ ] Current standings table
   - [ ] Active matches indicator
   - [ ] Round progress bar
   - [ ] Quick stats (total matches, players, etc.)
+  - [ ] **Quick Launch Button** (shortcut to Launcher page)
 
-### 15.3 GUI Pages - Standings
+### 15.4 GUI Pages - Standings
 - [ ] Create `gui/pages/standings.py`
   - [ ] Interactive standings table
   - [ ] Sort by wins/losses/points
@@ -1007,7 +1153,7 @@
   - [ ] Win rate pie chart
   - [ ] Historical standings trend (if data available)
 
-### 15.4 GUI Pages - Matches
+### 15.5 GUI Pages - Matches
 - [ ] Create `gui/pages/matches.py`
   - [ ] Match history table
   - [ ] Filter by round/player/status
@@ -1015,7 +1161,7 @@
   - [ ] Live match progress (if applicable)
   - [ ] Match result visualization
 
-### 15.5 GUI Pages - Players
+### 15.6 GUI Pages - Players
 - [ ] Create `gui/pages/players.py`
   - [ ] Player cards with stats
   - [ ] Individual player detail view
@@ -1023,14 +1169,41 @@
   - [ ] Head-to-head comparison tool
   - [ ] Performance trend charts
 
-### 15.6 GUI Pages - Live View (Optional)
+### 15.7 GUI Pages - Live Match View (**REQUIRED**)
 - [ ] Create `gui/pages/live.py`
-  - [ ] Real-time match updates
-  - [ ] Agent status indicators
-  - [ ] Live log stream
-  - [ ] Auto-refresh capability
+  - [ ] WebSocket connection to API
+  - [ ] Auto-reconnect on disconnect
+- [ ] Create `gui/components/live_match_panel.py`
+  - [ ] Two-panel layout (Player 1 | Player 2)
+  - [ ] Player status indicators:
+    - [ ] ⏳ "Waiting" - Match not started for this player
+    - [ ] 🤔 "Thinking..." - Player received PARITY_CALL, deciding
+    - [ ] ✅ "Submitted" - Player sent their strategy
+  - [ ] Show player's move immediately when submitted (even if other player still thinking)
+  - [ ] Animated "thinking" spinner/indicator
+  - [ ] Visual highlight when move is revealed
+- [ ] Create `gui/components/round_history.py`
+  - [ ] Show completed rounds in current match
+  - [ ] Display: Round # | P1 Move | P2 Move | Winner
+  - [ ] Running score display
+  - [ ] Animate new round results appearing
+- [ ] Create `gui/components/match_timer.py`
+  - [ ] Elapsed time since match started
+  - [ ] Time since last move (thinking duration)
+- [ ] Live match state display:
+  - [ ] Current round number
+  - [ ] Match phase ("Round in Progress", "Evaluating", "Complete")
+  - [ ] Both players' current scores
+- [ ] Multiple active matches view:
+  - [ ] Grid/list of all ongoing matches
+  - [ ] Click to focus on specific match
+  - [ ] Mini-status for each match (scores, round)
+- [ ] Event log panel:
+  - [ ] Real-time event stream
+  - [ ] Filterable by match/player
+  - [ ] Color-coded by event type
 
-### 15.7 GUI Components
+### 15.8 GUI Components
 - [ ] Create `gui/components/__init__.py`
 - [ ] Create `gui/components/header.py`
   - [ ] Navigation menu
@@ -1053,7 +1226,7 @@
   - [ ] Win rate distribution
   - [ ] Match outcomes pie chart
 
-### 15.8 GUI API Integration
+### 15.9 GUI API Integration
 - [ ] Create `gui/api_client.py`
   - [ ] Configure API base URL
   - [ ] Implement `get_league_status()`
@@ -1062,8 +1235,18 @@
   - [ ] Implement `get_players()`
   - [ ] Add error handling
   - [ ] Add caching layer
+- [ ] Create `gui/websocket_client.py`
+  - [ ] WebSocket connection manager for Streamlit
+  - [ ] Event handlers for each event type:
+    - [ ] `on_player_thinking(event)` - Update player status to "Thinking"
+    - [ ] `on_player_move(event)` - Show move immediately, update status
+    - [ ] `on_round_result(event)` - Update round history, scores
+    - [ ] `on_match_end(event)` - Mark match complete
+  - [ ] Reconnection logic with exponential backoff
+  - [ ] Event queue for UI updates
+  - [ ] Thread-safe state management
 
-### 15.9 GUI Configuration & Styling
+### 15.10 GUI Configuration & Styling
 - [ ] Create `gui/config.py`
   - [ ] API endpoint configuration
   - [ ] Refresh intervals
@@ -1074,7 +1257,7 @@
 - [ ] Configure page layout
 - [ ] Add responsive design support
 
-### 15.10 GUI Entry Point
+### 15.11 GUI Entry Point
 - [ ] Create `run_gui.py`
 - [ ] Configure Streamlit settings
 - [ ] Add startup instructions to README
@@ -1128,6 +1311,15 @@
   - [ ] Responsive on different screen sizes
   - [ ] Error states display correctly
   - [ ] Loading states display correctly
+  - [ ] **Live View Tests**:
+    - [ ] Player "thinking" spinner appears when player is deciding
+    - [ ] Player move appears immediately after submission
+    - [ ] Correct state when P1 submitted but P2 still thinking
+    - [ ] Round result animates/highlights when revealed
+    - [ ] Score updates correctly after each round
+    - [ ] Match completion is clearly indicated
+    - [ ] Multiple matches display simultaneously
+    - [ ] WebSocket reconnects after disconnect
 
 ### 16.6 End-to-End GUI Tests
 - [ ] Create `tests/gui/test_e2e_gui.py`
@@ -1168,10 +1360,10 @@
 - [ ] Phase 10: Research & Analysis (0/3 sections)
 - [ ] Phase 11: Final Review & Polish (0/4 sections)
 - [ ] Phase 12: Submission Preparation (0/3 sections)
-- [ ] **Phase 13: REST API Layer (Swagger/OpenAPI) (0/6 sections)** 🆕
-- [ ] **Phase 14: API Testing (0/4 sections)** 🆕
-- [ ] **Phase 15: GUI Implementation (0/10 sections)** 🆕
-- [ ] **Phase 16: GUI Testing (0/6 sections)** 🆕
+- [ ] **Phase 13: REST API Layer + WebSocket (0/8 sections)** 🆕
+- [ ] **Phase 14: API & WebSocket Testing (0/5 sections)** 🆕
+- [ ] **Phase 15: GUI Implementation + Live View + Launcher (0/11 sections)** 🆕
+- [ ] **Phase 16: GUI Testing + Live View (0/6 sections)** 🆕
 
 ---
 
@@ -1184,4 +1376,5 @@
 
 **Last Updated**: 2025-12-20  
 **Status**: Phases 6, 7, 8, & 9 Complete - 139/139 tests passing, 100% compliance!
-**New Phases Added**: 13 (REST API), 14 (API Testing), 15 (GUI), 16 (GUI Testing)
+**New Phases Added**: 13 (REST API + WebSocket), 14 (API Testing), 15 (GUI + Launcher), 16 (GUI Testing)
+**Key Features**: League Launcher with game dropdown (Even-Odd), player count selector, real-time live match view
