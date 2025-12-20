@@ -28,9 +28,7 @@ class LeagueLogger:
         }
         self._write_log(log_entry)
 
-    def log_error(
-        self, error_type: str, message: str, details: Dict[str, Any] = None
-    ) -> None:
+    def log_error(self, error_type: str, message: str, details: Dict[str, Any] = None) -> None:
         """Log an error event."""
         log_entry = {
             "timestamp": self._get_timestamp(),

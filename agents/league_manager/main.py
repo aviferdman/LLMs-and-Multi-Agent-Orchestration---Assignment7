@@ -10,16 +10,16 @@ from typing import Any, Dict
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi.responses import JSONResponse
-from handlers import (handle_league_register, handle_match_result_report,
-                      handle_referee_register)
+from handlers import handle_league_register, handle_match_result_report, handle_referee_register
 from match_orchestration import run_league_matches
 
-from SHARED.constants import (MCP_PATH, AgentID, Field, GameStatus, LogEvent,
-                              MessageType, Status)
+from SHARED.constants import MCP_PATH, AgentID, Field, GameStatus, LogEvent, MessageType, Status
 from SHARED.contracts import build_league_status
-from SHARED.league_sdk.config_loader import (load_agent_config,
-                                             load_league_config,
-                                             load_system_config)
+from SHARED.league_sdk.config_loader import (
+    load_agent_config,
+    load_league_config,
+    load_system_config,
+)
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.repositories import StandingsRepository
 from SHARED.league_sdk.session_manager import AgentType, get_session_manager
@@ -44,9 +44,7 @@ league_state = {
 
 
 @app.post(MCP_PATH)
-async def mcp_endpoint(
-    request: Request, background_tasks: BackgroundTasks
-) -> JSONResponse:
+async def mcp_endpoint(request: Request, background_tasks: BackgroundTasks) -> JSONResponse:
     """Handle all MCP protocol messages."""
     try:
         message = await request.json()
@@ -73,12 +71,8 @@ async def mcp_endpoint(
             league_state["current_round"] = 0
 
             # Get registered agents from session manager
-            registered_players = session_manager.get_registered_agents_data(
-                AgentType.PLAYER
-            )
-            registered_referees = session_manager.get_registered_agents_data(
-                AgentType.REFEREE
-            )
+            registered_players = session_manager.get_registered_agents_data(AgentType.PLAYER)
+            registered_referees = session_manager.get_registered_agents_data(AgentType.REFEREE)
 
             background_tasks.add_task(
                 run_league_matches,

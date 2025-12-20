@@ -20,18 +20,20 @@ Execution Flow:
 """
 
 import asyncio
-import time
 import signal
 import sys
-from SHARED.league_sdk.config_loader import load_agent_config, load_league_config, load_system_config
-from SHARED.league_sdk.logger import LeagueLogger
-from SHARED.league_sdk.agent_comm import send
+import time
+
+from agents.league_manager.orchestration import start_all_agents, wait_for_agents
 from SHARED.constants import LeagueID, LogEvent, Timeout
 from SHARED.contracts import build_start_league
-from agents.league_manager.orchestration import (
-    start_all_agents,
-    wait_for_agents
+from SHARED.league_sdk.agent_comm import send
+from SHARED.league_sdk.config_loader import (
+    load_agent_config,
+    load_league_config,
+    load_system_config,
 )
+from SHARED.league_sdk.logger import LeagueLogger
 
 # Load system config once at module level
 _system_config = load_system_config()
@@ -41,57 +43,58 @@ _lm_endpoint = _agents_config["league_manager"]["endpoint"]
 logger = LeagueLogger("LAUNCHER")
 _processes = []
 
+
 def signal_handler(signum, frame):
     """Handle shutdown signals gracefully - only for emergency interrupts."""
     logger.log_message(LogEvent.SHUTDOWN, {"reason": "signal", "signal": signum})
     sys.exit(0)
 
+
 async def run_league():
     """Main launcher function."""
     global _processes
     logger.log_message("LAUNCHER_START", {})
-    
+
     # Load configurations
     agents_config = load_agent_config()
     league_config = load_league_config(LeagueID.EVEN_ODD_2025)
-    
+
     # Step 1: Start all agent processes
     logger.log_message("STARTING_AGENTS", {})
     _processes = await start_all_agents(agents_config, logger)
-    
+
     # Step 2: Wait for agents to initialize and self-register
     # Agents register themselves with LM on startup
     await wait_for_agents(_system_config.timeouts[Timeout.AGENT_STARTUP], logger)
-    
+
     # Additional wait for self-registration to complete
     # Agents wait 2s after startup, so we need at least 5-7s for all registrations
     logger.log_message("WAITING_FOR_REGISTRATIONS", {})
     time.sleep(10)  # Synchronous sleep to avoid asyncio cancellation
-    
+
     # Step 3: Send START_LEAGUE to LM
-    logger.log_message("TRIGGERING_LEAGUE_START", {
-        "league_id": league_config.league_id
-    })
-    
+    logger.log_message("TRIGGERING_LEAGUE_START", {"league_id": league_config.league_id})
+
     start_msg = build_start_league(league_config.league_id, "LAUNCHER")
     response = await send(_lm_endpoint, start_msg)
-    
+
     logger.log_message("LEAGUE_STARTED", {"response": response})
-    
+
     # Step 4: Wait for all processes to exit naturally via protocol
     # Agents shut down gracefully after receiving LEAGUE_COMPLETED
     logger.log_message("WAITING_FOR_PROCESSES_TO_EXIT", {})
-    
+
     for proc in _processes:
         proc.wait()  # Block until process exits
-    
+
     logger.log_message("LAUNCHER_COMPLETE", {"all_processes_exited": True})
+
 
 if __name__ == "__main__":
     # Setup signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    
+
     try:
         asyncio.run(run_league())
     except KeyboardInterrupt:

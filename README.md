@@ -31,7 +31,27 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-### Running a Tournament
+### Running the System
+
+**Option 1: With GUI (Recommended)**
+
+```bash
+# Terminal 1: Start the API server
+python run_api.py
+
+# Terminal 2: Start the GUI
+python run_gui.py
+```
+
+The GUI will open at `http://localhost:8501` with:
+- 🚀 League Launcher (start new leagues with game selection)
+- 📊 Dashboard (league overview and statistics)
+- 📺 Live Match View (real-time match updates)
+- 🏅 Standings (rankings and charts)
+- 📋 Matches (match history and filtering)
+- 👥 Players (player profiles and stats)
+
+**Option 2: Running a Tournament (CLI)
 
 **Option 1: Using Generic Agents (Recommended)**
 
@@ -187,13 +207,16 @@ All agents are configured via `SHARED/config/agents/agents_config.json`:
 
 ## Features
 
-✅ **Protocol v2**: league.v2 with centralized version management  
-✅ **Contract-Based**: All messages defined in `SHARED/contracts/`  
-✅ **Zero Duplication**: Generic agents configured via CLI  
-✅ **Game-Agnostic**: Extensible to new game types  
-✅ **ISO-8601 Timestamps**: All timestamps end with 'Z'  
-✅ **JSONL Logging**: One log per agent  
-✅ **Real-Time Rankings**: Points-based with tiebreakers  
+✅ **Protocol v2**: league.v2 with centralized version management
+✅ **Contract-Based**: All messages defined in `SHARED/contracts/`
+✅ **Zero Duplication**: Generic agents configured via CLI
+✅ **Game-Agnostic**: Extensible to new game types
+✅ **ISO-8601 Timestamps**: All timestamps end with 'Z'
+✅ **JSONL Logging**: One log per agent
+✅ **Real-Time Rankings**: Points-based with tiebreakers
+✅ **REST API**: Complete API with Swagger documentation (port 8080)
+✅ **Web GUI**: Streamlit dashboard with live match view (port 8501)
+✅ **Live Updates**: Real-time match visualization with player status  
 
 ## License
 

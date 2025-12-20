@@ -1,15 +1,24 @@
 """Protocol compliance tests - Message structure and version."""
 
-import pytest
 import uuid
 from datetime import datetime
+
+import pytest
+
 from SHARED.league_sdk.messages import (
-    create_base_message, build_game_invitation, build_game_join_ack,
-    build_choose_parity_call, build_parity_choice, build_game_over,
-    build_match_result_report, format_timestamp
+    build_choose_parity_call,
+    build_game_invitation,
+    build_game_join_ack,
+    build_game_over,
+    build_match_result_report,
+    build_parity_choice,
+    create_base_message,
+    format_timestamp,
 )
 from SHARED.league_sdk.validation import (
-    validate_timestamp, validate_uuid, validate_protocol_version
+    validate_protocol_version,
+    validate_timestamp,
+    validate_uuid,
 )
 from SHARED.protocol_constants import PROTOCOL_VERSION, Field
 

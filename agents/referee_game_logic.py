@@ -2,8 +2,7 @@
 
 import random
 
-from SHARED.constants import (EVEN_ODD_MAX_NUMBER, EVEN_ODD_MIN_NUMBER, GameID,
-                              ParityChoice, Winner)
+from SHARED.constants import EVEN_ODD_MAX_NUMBER, EVEN_ODD_MIN_NUMBER, GameID, ParityChoice, Winner
 
 
 class BaseGameRules:

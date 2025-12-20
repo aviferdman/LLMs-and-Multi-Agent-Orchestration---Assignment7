@@ -8,10 +8,10 @@ Usage:
     python tests/test_e2e_tournament.py
 """
 
-import sys
-import subprocess
-import time
 import json
+import subprocess
+import sys
+import time
 from pathlib import Path
 
 # Add project root to path
@@ -22,23 +22,26 @@ sys.path.insert(0, str(PROJECT_ROOT))
 def run_tournament(timeout: int = 120) -> dict:
     """Run a single tournament and return results."""
     result = {"success": False, "logs": [], "error": None}
-    
+
     try:
         # Clean up logs before running
         logs_dir = PROJECT_ROOT / "SHARED" / "logs" / "agents"
         for log_file in logs_dir.glob("*.jsonl"):
             log_file.unlink(missing_ok=True)
-        
+
         # Run the league
         proc = subprocess.run(
             [sys.executable, str(PROJECT_ROOT / "run_league.py")],
-            capture_output=True, text=True, timeout=timeout, cwd=str(PROJECT_ROOT)
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            cwd=str(PROJECT_ROOT),
         )
-        
+
         result["exit_code"] = proc.returncode
         result["stdout"] = proc.stdout
         result["stderr"] = proc.stderr
-        
+
         # Check for LEAGUE_COMPLETED in logs
         lm_log = logs_dir / "LM01.log.jsonl"
         if lm_log.exists():
@@ -51,12 +54,12 @@ def run_tournament(timeout: int = 120) -> dict:
                             result["success"] = True
                     except json.JSONDecodeError:
                         pass
-        
+
     except subprocess.TimeoutExpired:
         result["error"] = "Tournament timed out"
     except Exception as e:
         result["error"] = str(e)
-    
+
     return result
 
 
@@ -106,13 +109,13 @@ if __name__ == "__main__":
     print("=" * 60)
     print("END-TO-END TOURNAMENT TESTING")
     print("=" * 60)
-    
+
     tests = [
         ("single_tournament", test_single_tournament),
         ("standings_output", test_tournament_produces_standings),
         ("all_matches", test_all_matches_completed),
     ]
-    
+
     passed = failed = 0
     for name, test_func in tests:
         try:
@@ -124,7 +127,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"❌ {name}: Unexpected error - {e}")
             failed += 1
-    
+
     print(f"\n{'=' * 60}")
     print(f"Results: {passed}/{len(tests)} passed")
     print("=" * 60)

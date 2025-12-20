@@ -5,20 +5,23 @@ Tests round-robin match scheduling logic.
 
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from agents.league_manager.scheduler import (
+    RoundState,
+    check_round_complete,
     generate_round_robin_schedule,
     get_match_schedule,
-    RoundState,
     start_round,
-    check_round_complete
 )
+
 
 def test_generate_round_robin_schedule_structure():
     """Test that schedule has correct structure."""
     schedule = generate_round_robin_schedule(["P01", "P02", "P03", "P04"], ["REF01", "REF02"])
     assert len(schedule) == 3 and all(len(r) == 2 for r in schedule)
+
 
 def test_generate_round_robin_all_pairings():
     """Test that all player pairings are included."""
@@ -29,11 +32,13 @@ def test_generate_round_robin_all_pairings():
             pairings.add(tuple(sorted([match["player_a"], match["player_b"]])))
     assert len(pairings) == 6
 
+
 def test_generate_round_robin_referee_assignment():
     """Test that referees are assigned correctly."""
     schedule = generate_round_robin_schedule(["P01", "P02", "P03", "P04"], ["REF01", "REF02"])
     for round_matches in schedule:
         assert all(m["referee_id"] in ["REF01", "REF02"] for m in round_matches)
+
 
 def test_generate_round_robin_match_ids():
     """Test that match IDs are correctly formatted."""
@@ -42,14 +47,17 @@ def test_generate_round_robin_match_ids():
         for m_idx, match in enumerate(round_matches):
             assert match["match_id"] == f"R{r_idx + 1}M{m_idx + 1}"
 
+
 def test_get_match_schedule_structure():
     """Test predefined schedule structure."""
     schedule = get_match_schedule()
     assert len(schedule) == 3 and all(len(r) == 2 for r in schedule)
 
+
 def test_get_match_schedule_total_matches():
     """Test total number of matches."""
     assert sum(len(r) for r in get_match_schedule()) == 6
+
 
 def test_get_match_schedule_player_coverage():
     """Test that all players participate."""
@@ -59,10 +67,14 @@ def test_get_match_schedule_player_coverage():
             players.update([m["player_a"], m["player_b"]])
     assert players == {"P01", "P02", "P03", "P04"}
 
+
 def test_get_match_schedule_no_duplicate_pairings():
     """Test that no pairing plays twice."""
-    pairings = [tuple(sorted([m["player_a"], m["player_b"]])) for r in get_match_schedule() for m in r]
+    pairings = [
+        tuple(sorted([m["player_a"], m["player_b"]])) for r in get_match_schedule() for m in r
+    ]
     assert len(pairings) == len(set(pairings))
+
 
 def test_get_match_schedule_round_ids():
     """Test that round IDs are sequential."""

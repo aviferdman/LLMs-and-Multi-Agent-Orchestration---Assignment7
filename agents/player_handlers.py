@@ -25,11 +25,7 @@ def handle_invitation(player_id: str, msg: dict, logger, conversation_id: str) -
 
 def handle_parity_call(player_id: str, msg: dict, strategy, logger) -> dict:
     """Handle CHOOSE_PARITY_CALL message."""
-    history = (
-        PlayerHistoryRepository(player_id)
-        .load_history()
-        .get(Field.OPPONENT_CHOICES, [])
-    )
+    history = PlayerHistoryRepository(player_id).load_history().get(Field.OPPONENT_CHOICES, [])
     choice = strategy.choose_parity(history)
     logger.log_message(
         LogEvent.PARITY_CHOICE_MADE,

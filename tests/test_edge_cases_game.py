@@ -1,6 +1,7 @@
 """Edge case tests for game logic - Part 2."""
 
 import pytest
+
 from agents.referee_game_logic import EvenOddGameRules
 
 

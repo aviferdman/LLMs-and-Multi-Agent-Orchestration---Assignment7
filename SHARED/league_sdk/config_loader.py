@@ -6,8 +6,7 @@ from typing import Any, Dict
 
 from SHARED.protocol_constants import PROTOCOL_VERSION
 
-from .config_models import (GameConfig, LeagueConfig, PlayerConfig,
-                            RefereeConfig, SystemConfig)
+from .config_models import GameConfig, LeagueConfig, PlayerConfig, RefereeConfig, SystemConfig
 
 
 def _load_json(file_path: Path) -> Dict[str, Any]:

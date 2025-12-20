@@ -5,20 +5,22 @@ from typing import Any, Dict
 from ranking import update_standings
 
 from SHARED.constants import Field, LogEvent, Status
-from SHARED.contracts import (build_league_register_response,
-                              build_match_result_ack,
-                              build_referee_register_response)
+from SHARED.contracts import (
+    build_league_register_response,
+    build_match_result_ack,
+    build_referee_register_response,
+)
 from SHARED.league_sdk.config_models import LeagueConfig
 from SHARED.league_sdk.logger import LeagueLogger
-from SHARED.league_sdk.repositories import (MatchRepository,
-                                            PlayerHistoryRepository,
-                                            StandingsRepository)
+from SHARED.league_sdk.repositories import (
+    MatchRepository,
+    PlayerHistoryRepository,
+    StandingsRepository,
+)
 from SHARED.league_sdk.session_manager import AgentType, get_session_manager
 
 
-def handle_referee_register(
-    message: Dict[str, Any], logger: LeagueLogger
-) -> Dict[str, Any]:
+def handle_referee_register(message: Dict[str, Any], logger: LeagueLogger) -> Dict[str, Any]:
     """Handle referee registration request - delegates to SessionManager."""
     referee_id = message.get(Field.REFEREE_ID)
     endpoint = message.get(Field.ENDPOINT)
@@ -71,9 +73,7 @@ def handle_league_register(
 
     logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: player_id})
 
-    return build_league_register_response(
-        player_id, league_config.league_id, session.auth_token
-    )
+    return build_league_register_response(player_id, league_config.league_id, session.auth_token)
 
 
 def handle_match_result_report(
@@ -85,9 +85,7 @@ def handle_match_result_report(
     player_b = message.get(Field.PLAYER_B)
     winner = message.get(Field.WINNER)
 
-    logger.log_message(
-        LogEvent.MATCH_RESULT, {Field.MATCH_ID: match_id, Field.WINNER: winner}
-    )
+    logger.log_message(LogEvent.MATCH_RESULT, {Field.MATCH_ID: match_id, Field.WINNER: winner})
 
     # Save match data
     match_repo = MatchRepository(league_config.league_id)

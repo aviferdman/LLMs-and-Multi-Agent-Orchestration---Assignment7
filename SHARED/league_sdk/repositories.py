@@ -32,9 +32,7 @@ class StandingsRepository:
         with open(self.standings_file, "w", encoding="utf-8") as f:
             json.dump(standings, f, indent=2)
 
-    def update_player(
-        self, player_id: str, wins: int = 0, losses: int = 0, draws: int = 0
-    ) -> None:
+    def update_player(self, player_id: str, wins: int = 0, losses: int = 0, draws: int = 0) -> None:
         """Update player statistics."""
         standings = self.load()
 
@@ -43,9 +41,7 @@ class StandingsRepository:
                 player["wins"] += wins
                 player["losses"] += losses
                 player["draws"] += draws
-                player["games_played"] = (
-                    player["wins"] + player["losses"] + player["draws"]
-                )
+                player["games_played"] = player["wins"] + player["losses"] + player["draws"]
                 break
 
         self.save(standings)

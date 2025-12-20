@@ -1,13 +1,11 @@
 """Protocol compliance tests - Message types and full validation."""
 
-import pytest
 import uuid
-from SHARED.league_sdk.messages import (
-    build_game_invitation, build_parity_choice, build_game_over
-)
-from SHARED.league_sdk.validation import (
-    validate_message_type, get_validation_errors
-)
+
+import pytest
+
+from SHARED.league_sdk.messages import build_game_invitation, build_game_over, build_parity_choice
+from SHARED.league_sdk.validation import get_validation_errors, validate_message_type
 from SHARED.protocol_constants import MessageType
 
 

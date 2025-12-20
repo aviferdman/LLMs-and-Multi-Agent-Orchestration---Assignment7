@@ -18,9 +18,7 @@ class BaseTransport(ABC):
     """Abstract base class for all transports - defines the interface."""
 
     @abstractmethod
-    async def send(
-        self, endpoint: str, message: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+    async def send(self, endpoint: str, message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Send a message and return the response."""
 
     @abstractmethod
@@ -40,9 +38,7 @@ class HTTPTransport(BaseTransport):
     def __init__(self, timeout: int = 30):
         self.timeout = timeout
 
-    async def send(
-        self, endpoint: str, message: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+    async def send(self, endpoint: str, message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Send HTTP POST message to endpoint."""
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -76,9 +72,7 @@ class HTTPTransport(BaseTransport):
 class STDIOTransport(BaseTransport):
     """STDIO transport for future MCP compatibility (JSON lines via stdin/stdout)."""
 
-    async def send(
-        self, endpoint: str, message: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+    async def send(self, endpoint: str, message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Send message via stdout and read response from stdin."""
         try:
             sys.stdout.write(json.dumps(message) + "\n")
@@ -118,9 +112,7 @@ _TRANSPORT_REGISTRY = {
 }
 
 
-def create_transport(
-    transport_type: str = TransportType.HTTP, **kwargs
-) -> BaseTransport:
+def create_transport(transport_type: str = TransportType.HTTP, **kwargs) -> BaseTransport:
     """Factory function to create a transport instance."""
     transport_class = _TRANSPORT_REGISTRY.get(transport_type)
     if transport_class is None:

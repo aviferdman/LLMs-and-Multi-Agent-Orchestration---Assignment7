@@ -7,8 +7,12 @@ away the transport mechanism. Agents should use this instead of http_client dire
 from typing import Any, Dict, Optional
 
 from SHARED.league_sdk.config_loader import load_system_config
-from SHARED.league_sdk.transport import (BaseTransport, HTTPTransport,
-                                         TransportType, create_transport)
+from SHARED.league_sdk.transport import (
+    BaseTransport,
+    HTTPTransport,
+    TransportType,
+    create_transport,
+)
 
 # Module-level transport instance (singleton pattern)
 _transport: Optional[BaseTransport] = None

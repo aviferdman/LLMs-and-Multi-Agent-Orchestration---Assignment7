@@ -1,4 +1,5 @@
 """Session manager - handles agent sessions and connection lifecycle."""
+
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -12,6 +13,7 @@ class SessionState(str, Enum):
     SUSPENDED = "suspended"
     CLOSED = "closed"
 
+
 class AgentType(str, Enum):
     PLAYER = "player"
     REFEREE = "referee"
@@ -21,6 +23,7 @@ class AgentType(str, Enum):
 @dataclass
 class Session:
     """Represents an agent session."""
+
     session_id: str
     agent_id: str
     agent_type: str
@@ -40,16 +43,24 @@ class Session:
 
 class SessionManager:
     """Manages agent sessions throughout their lifecycle."""
+
     def __init__(self):
         self._sessions: Dict[str, Session] = {}
         self._agent_sessions: Dict[str, str] = {}
 
-    def create_session(self, agent_id: str, agent_type: str, endpoint: str,
-                       metadata: Optional[Dict] = None) -> Session:
+    def create_session(
+        self, agent_id: str, agent_type: str, endpoint: str, metadata: Optional[Dict] = None
+    ) -> Session:
         session_id = str(uuid.uuid4())
-        session = Session(session_id=session_id, agent_id=agent_id, agent_type=agent_type,
-                          endpoint=endpoint, state=SessionState.ACTIVE,
-                          auth_token=str(uuid.uuid4()), metadata=metadata or {})
+        session = Session(
+            session_id=session_id,
+            agent_id=agent_id,
+            agent_type=agent_type,
+            endpoint=endpoint,
+            state=SessionState.ACTIVE,
+            auth_token=str(uuid.uuid4()),
+            metadata=metadata or {},
+        )
         self._sessions[session_id] = session
         self._agent_sessions[agent_id] = session_id
         return session
@@ -93,25 +104,34 @@ class SessionManager:
         return session.auth_token if session else None
 
     def get_registered_agent_ids(self, agent_type: Optional[str] = None) -> list:
-        return [s.agent_id for s in self._sessions.values()
-                if s.is_active() and (agent_type is None or s.agent_type == agent_type)]
+        return [
+            s.agent_id
+            for s in self._sessions.values()
+            if s.is_active() and (agent_type is None or s.agent_type == agent_type)
+        ]
 
     def get_registered_agents_data(self, agent_type: Optional[str] = None) -> Dict[str, Dict]:
         result = {}
         for s in self._sessions.values():
             if s.is_active() and (agent_type is None or s.agent_type == agent_type):
-                result[s.agent_id] = {"agent_id": s.agent_id, "auth_token": s.auth_token,
-                                      "endpoint": s.endpoint, "registered_at": s.created_at}
+                result[s.agent_id] = {
+                    "agent_id": s.agent_id,
+                    "auth_token": s.auth_token,
+                    "endpoint": s.endpoint,
+                    "registered_at": s.created_at,
+                }
         return result
 
 
 _session_manager: Optional[SessionManager] = None
+
 
 def get_session_manager() -> SessionManager:
     global _session_manager
     if _session_manager is None:
         _session_manager = SessionManager()
     return _session_manager
+
 
 def reset_session_manager() -> None:
     global _session_manager

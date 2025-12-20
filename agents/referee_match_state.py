@@ -106,7 +106,5 @@ def handle_parity_choice(
         return False
 
     match_context.record_choice(player_id, choice)
-    logger.log_message(
-        "CHOICE_RECEIVED", {Field.PLAYER_ID: player_id, Field.CHOICE: choice}
-    )
+    logger.log_message("CHOICE_RECEIVED", {Field.PLAYER_ID: player_id, Field.CHOICE: choice})
     return True

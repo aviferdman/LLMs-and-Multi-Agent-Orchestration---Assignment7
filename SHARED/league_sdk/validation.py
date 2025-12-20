@@ -1,7 +1,9 @@
 """Message validation utilities for the league protocol."""
+
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+
 from SHARED.constants import Field, MessageType
 
 
@@ -31,12 +33,18 @@ def validate_uuid(uuid_str: str) -> bool:
 def validate_message_type(msg_type: str) -> bool:
     """Validate message type is a known protocol message."""
     valid_types = [
-        MessageType.GAME_INVITATION, MessageType.GAME_JOIN_ACK,
-        MessageType.CHOOSE_PARITY_CALL, MessageType.PARITY_CHOICE,
-        MessageType.GAME_OVER, MessageType.MATCH_RESULT_REPORT,
-        MessageType.MATCH_RESULT_ACK, MessageType.LEAGUE_REGISTER_REQUEST,
-        MessageType.LEAGUE_REGISTER_RESPONSE, MessageType.REFEREE_REGISTER_REQUEST,
-        MessageType.REFEREE_REGISTER_RESPONSE]
+        MessageType.GAME_INVITATION,
+        MessageType.GAME_JOIN_ACK,
+        MessageType.CHOOSE_PARITY_CALL,
+        MessageType.PARITY_CHOICE,
+        MessageType.GAME_OVER,
+        MessageType.MATCH_RESULT_REPORT,
+        MessageType.MATCH_RESULT_ACK,
+        MessageType.LEAGUE_REGISTER_REQUEST,
+        MessageType.LEAGUE_REGISTER_RESPONSE,
+        MessageType.REFEREE_REGISTER_REQUEST,
+        MessageType.REFEREE_REGISTER_RESPONSE,
+    ]
     return msg_type in valid_types
 
 
@@ -49,6 +57,7 @@ def validate_required_fields(message: Dict[str, Any], required_fields: List[str]
 def validate_protocol_version(protocol: str, expected: str = None) -> bool:
     """Validate protocol version matches expected version."""
     from SHARED.protocol_constants import PROTOCOL_VERSION
+
     return protocol == (expected if expected else PROTOCOL_VERSION)
 
 

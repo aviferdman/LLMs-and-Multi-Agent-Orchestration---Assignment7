@@ -42,9 +42,7 @@ def build_game_invitation(
     opponent_id: str,
 ) -> Dict[str, Any]:
     """Build GAME_INVITATION message."""
-    msg = create_base_message(
-        "GAME_INVITATION", league_id, round_id, match_id, referee_id
-    )
+    msg = create_base_message("GAME_INVITATION", league_id, round_id, match_id, referee_id)
     msg.update({"player_id": player_id, "opponent_id": opponent_id})
     return msg
 
@@ -62,9 +60,7 @@ def build_choose_parity_call(
     league_id: str, round_id: int, match_id: str, referee_id: str, player_id: str
 ) -> Dict[str, Any]:
     """Build CHOOSE_PARITY_CALL message."""
-    msg = create_base_message(
-        "CHOOSE_PARITY_CALL", league_id, round_id, match_id, referee_id
-    )
+    msg = create_base_message("CHOOSE_PARITY_CALL", league_id, round_id, match_id, referee_id)
     msg["player_id"] = player_id
     return msg
 
@@ -118,9 +114,7 @@ def build_match_result_report(
     winner: str,
 ) -> Dict[str, Any]:
     """Build MATCH_RESULT_REPORT message."""
-    msg = create_base_message(
-        "MATCH_RESULT_REPORT", league_id, round_id, match_id, referee_id
-    )
+    msg = create_base_message("MATCH_RESULT_REPORT", league_id, round_id, match_id, referee_id)
     msg.update({"player_a": player_a, "player_b": player_b, "winner": winner})
     return msg
 

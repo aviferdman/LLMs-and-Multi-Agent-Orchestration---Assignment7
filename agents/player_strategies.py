@@ -24,9 +24,7 @@ class FrequencyStrategy:
 
         counter = Counter(opponent_history)
         most_common = counter.most_common(1)[0][0]
-        return (
-            ParityChoice.ODD if most_common == ParityChoice.EVEN else ParityChoice.EVEN
-        )
+        return ParityChoice.ODD if most_common == ParityChoice.EVEN else ParityChoice.EVEN
 
 
 class PatternStrategy:
@@ -50,11 +48,7 @@ class PatternStrategy:
         if last_three in pattern_predictions:
             predictions = pattern_predictions[last_three]
             predicted = Counter(predictions).most_common(1)[0][0]
-            return (
-                ParityChoice.ODD
-                if predicted == ParityChoice.EVEN
-                else ParityChoice.EVEN
-            )
+            return ParityChoice.ODD if predicted == ParityChoice.EVEN else ParityChoice.EVEN
 
         return random.choice([ParityChoice.EVEN, ParityChoice.ODD])
 

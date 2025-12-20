@@ -19,9 +19,7 @@ def build_round_announcement(
     }
 
 
-def build_round_completed(
-    league_id: str, round_id: int, results: list
-) -> Dict[str, Any]:
+def build_round_completed(league_id: str, round_id: int, results: list) -> Dict[str, Any]:
     """Build ROUND_COMPLETED message (LM → All agents)."""
     return {
         Field.PROTOCOL: PROTOCOL_VERSION,
@@ -45,9 +43,7 @@ def build_league_completed(
     }
 
 
-def build_league_standings_update(
-    league_id: str, round_id: int, standings: list
-) -> Dict[str, Any]:
+def build_league_standings_update(league_id: str, round_id: int, standings: list) -> Dict[str, Any]:
     """Build LEAGUE_STANDINGS_UPDATE message (LM → All agents)."""
     return {
         Field.PROTOCOL: PROTOCOL_VERSION,

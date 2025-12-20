@@ -12,9 +12,7 @@ def calculate_rankings(standings_data: List[Dict[str, Any]]) -> List[Dict[str, A
     Primary: Points (descending)
     Tiebreaker: Wins (descending)
     """
-    sorted_standings = sorted(
-        standings_data, key=lambda p: (p["points"], p["wins"]), reverse=True
-    )
+    sorted_standings = sorted(standings_data, key=lambda p: (p["points"], p["wins"]), reverse=True)
 
     for rank, player in enumerate(sorted_standings, start=1):
         player["rank"] = rank

@@ -5,11 +5,13 @@ from typing import Any, Dict
 from SHARED.constants import PROTOCOL_VERSION, Field, MessageType, Status
 
 # Re-export round lifecycle contracts for backward compatibility
-from .round_lifecycle_contracts import (build_league_completed,
-                                        build_league_error,
-                                        build_league_standings_update,
-                                        build_round_announcement,
-                                        build_round_completed)
+from .round_lifecycle_contracts import (
+    build_league_completed,
+    build_league_error,
+    build_league_standings_update,
+    build_round_announcement,
+    build_round_completed,
+)
 
 
 def build_referee_register_request(referee_id: str, endpoint: str) -> Dict[str, Any]:
@@ -59,9 +61,7 @@ def build_league_register_response(
     }
 
 
-def build_match_result_ack(
-    match_id: str, status: str = Status.RECORDED
-) -> Dict[str, Any]:
+def build_match_result_ack(match_id: str, status: str = Status.RECORDED) -> Dict[str, Any]:
     """Build MATCH_RESULT_ACK message."""
     return {
         Field.PROTOCOL: PROTOCOL_VERSION,
@@ -125,9 +125,7 @@ def build_run_match(
     }
 
 
-def build_run_match_ack(
-    match_id: str, status: str = Status.ACKNOWLEDGED
-) -> Dict[str, Any]:
+def build_run_match_ack(match_id: str, status: str = Status.ACKNOWLEDGED) -> Dict[str, Any]:
     """Build RUN_MATCH_ACK message (Referee → LM)."""
     return {
         Field.PROTOCOL: PROTOCOL_VERSION,

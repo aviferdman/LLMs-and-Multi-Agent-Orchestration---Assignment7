@@ -1,12 +1,16 @@
 """Edge case tests for protocol validation - Part 1."""
 
 import pytest
-from SHARED.league_sdk.validation import (
-    validate_message, validate_timestamp, validate_uuid,
-    validate_message_type, get_validation_errors
-)
-from SHARED.league_sdk.messages import format_timestamp
+
 from agents.player_strategies import FrequencyStrategy
+from SHARED.league_sdk.messages import format_timestamp
+from SHARED.league_sdk.validation import (
+    get_validation_errors,
+    validate_message,
+    validate_message_type,
+    validate_timestamp,
+    validate_uuid,
+)
 
 
 class TestEdgeCaseEmptyData:

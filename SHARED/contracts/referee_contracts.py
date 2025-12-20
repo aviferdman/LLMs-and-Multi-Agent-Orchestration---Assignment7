@@ -46,9 +46,7 @@ def build_game_over(
     player_b_choice: str,
 ) -> Dict[str, Any]:
     """Build GAME_OVER message."""
-    msg = create_base_message(
-        MessageType.GAME_OVER, league_id, round_id, match_id, referee_id
-    )
+    msg = create_base_message(MessageType.GAME_OVER, league_id, round_id, match_id, referee_id)
     msg[Field.WINNER] = winner
     msg[Field.DRAWN_NUMBER] = drawn_number
     msg[Field.PLAYER_A_CHOICE] = player_a_choice
@@ -85,9 +83,7 @@ def build_game_error(
     details: Dict[str, Any] = None,
 ) -> Dict[str, Any]:
     """Build GAME_ERROR message."""
-    msg = create_base_message(
-        MessageType.GAME_ERROR, league_id, round_id, match_id, referee_id
-    )
+    msg = create_base_message(MessageType.GAME_ERROR, league_id, round_id, match_id, referee_id)
     msg["error_code"] = error_code
     msg["error_message"] = error_message
     if details:

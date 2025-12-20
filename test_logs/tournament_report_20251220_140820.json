@@ -1,0 +1,21 @@
+{
+  "summary": {
+    "total_runs": 3,
+    "successful": 3,
+    "failed": 0,
+    "success_rate": 100.0
+  },
+  "performance": {
+    "avg_duration": 85.0,
+    "min_duration": 82.14,
+    "max_duration": 89.12,
+    "avg_memory_mb": 0.0
+  },
+  "consistency": {
+    "all_6_matches": true,
+    "all_3_rounds": true,
+    "issues": []
+  },
+  "failures": [],
+  "timestamp": "2025-12-20T14:08:20.353852Z"
+}

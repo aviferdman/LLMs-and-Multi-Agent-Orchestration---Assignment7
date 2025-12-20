@@ -5,10 +5,13 @@ Tests that the system produces valid output when run end-to-end.
 
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import json
-from SHARED.league_sdk.repositories import StandingsRepository, MatchRepository
+
+from SHARED.league_sdk.repositories import MatchRepository, StandingsRepository
+
 
 def test_tournament_completed():
     """Verify a complete tournament was run."""
@@ -18,6 +21,7 @@ def test_tournament_completed():
     assert "standings" in data
     assert len(data["standings"]) == 4
 
+
 def test_all_matches_saved():
     """Verify all 6 matches were saved."""
     match_repo = MatchRepository("league_2025_even_odd")
@@ -26,12 +30,14 @@ def test_all_matches_saved():
     expected = ["R1M1", "R1M2", "R2M1", "R2M2", "R3M1", "R3M2"]
     assert sorted(matches) == sorted(expected)
 
+
 def test_standings_have_ranks():
     """Verify all players have ranks assigned."""
     standings_repo = StandingsRepository("league_2025_even_odd")
     data = standings_repo.load()
     ranks = [p["rank"] for p in data["standings"]]
     assert sorted(ranks) == [1, 2, 3, 4]
+
 
 def test_standings_points_valid():
     """Verify points are calculated correctly."""
@@ -41,12 +47,14 @@ def test_standings_points_valid():
         expected = player["wins"] * 3 + player["draws"]
         assert player["points"] == expected
 
+
 def test_all_players_played_3_games():
     """Verify each player played exactly 3 games."""
     standings_repo = StandingsRepository("league_2025_even_odd")
     data = standings_repo.load()
     for player in data["standings"]:
         assert player["games_played"] == 3
+
 
 def test_match_data_structure():
     """Verify match data has required fields."""
@@ -56,12 +64,13 @@ def test_match_data_structure():
     required = ["match_id", "player_a", "player_b", "winner"]
     assert all(field in match for field in required)
 
+
 def test_winner_consistency():
     """Verify match results consistent with standings."""
     standings_repo = StandingsRepository("league_2025_even_odd")
     match_repo = MatchRepository("league_2025_even_odd")
     data = standings_repo.load()
-    
+
     player_wins = {p["player_id"]: 0 for p in data["standings"]}
     for match_id in match_repo.list_matches():
         match = match_repo.load_match(match_id)
@@ -70,9 +79,10 @@ def test_winner_consistency():
             player_wins[match["player_a"]] += 1
         elif winner == "PLAYER_B":
             player_wins[match["player_b"]] += 1
-    
+
     for player in data["standings"]:
         assert player_wins[player["player_id"]] == player["wins"]
+
 
 def test_standings_sorted_by_points():
     """Verify standings are sorted by points descending."""
@@ -80,6 +90,7 @@ def test_standings_sorted_by_points():
     data = standings_repo.load()
     points = [p["points"] for p in data["standings"]]
     assert points == sorted(points, reverse=True)
+
 
 if __name__ == "__main__":
     print("=" * 60)
@@ -106,4 +117,6 @@ if __name__ == "__main__":
             print(f"✗ {e}")
             failed += 1
     print(f"\n{'='*60}\nSUMMARY: {passed}/{len(tests)} tests passed\n{'='*60}")
-    print(f"\n{'✅ ALL INTEGRATION TESTS PASSED!' if failed == 0 else f'❌ {failed} test(s) failed'}")
+    print(
+        f"\n{'✅ ALL INTEGRATION TESTS PASSED!' if failed == 0 else f'❌ {failed} test(s) failed'}"
+    )
