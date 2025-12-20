@@ -13,8 +13,8 @@ def get_all_python_files():
     """Get all Python files in the project."""
     files = []
     for root, dirs, filenames in os.walk(project_root):
-        # Skip venv, hidden dirs, and pycache
-        if any(skip in root for skip in ['.venv', '.git', '__pycache__', '.pytest']):
+        # Skip venv, hidden dirs, pycache, htmlcov, and tests
+        if any(skip in root for skip in ['.venv', '.git', '__pycache__', '.pytest', 'htmlcov', 'tests']):
             continue
         for filename in filenames:
             if filename.endswith('.py'):

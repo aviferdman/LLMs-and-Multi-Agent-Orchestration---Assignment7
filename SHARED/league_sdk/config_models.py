@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
+
 from SHARED.protocol_constants import PROTOCOL_VERSION
 
 

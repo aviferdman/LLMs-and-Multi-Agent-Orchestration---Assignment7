@@ -1,23 +1,20 @@
 """HTTP client utilities for agent communication."""
 
-import httpx
-from typing import Dict, Any, Optional
 import asyncio
 import random
+from typing import Any, Dict, Optional
+
+import httpx
 
 
 async def send_message(
-    endpoint: str,
-    message: Dict[str, Any],
-    timeout: int = 30
+    endpoint: str, message: Dict[str, Any], timeout: int = 30
 ) -> Optional[Dict[str, Any]]:
     """Send HTTP POST message to agent endpoint."""
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
-                endpoint,
-                json=message,
-                headers={"Content-Type": "application/json"}
+                endpoint, json=message, headers={"Content-Type": "application/json"}
             )
             response.raise_for_status()
             return response.json()
@@ -26,16 +23,17 @@ async def send_message(
     except httpx.HTTPError:
         return None
 
+
 async def send_with_retry(
     endpoint: str,
     message: Dict[str, Any],
     max_retries: int = 3,
     timeout: int = 30,
     retry_delay: int = 1,
-    use_exponential_backoff: bool = True
+    use_exponential_backoff: bool = True,
 ) -> Optional[Dict[str, Any]]:
     """Send message with retry logic using exponential backoff with jitter.
-    
+
     Args:
         endpoint: Target URL
         message: Message payload
@@ -43,7 +41,7 @@ async def send_with_retry(
         timeout: HTTP timeout in seconds
         retry_delay: Base delay in seconds
         use_exponential_backoff: If True, use exponential backoff with jitter
-    
+
     Returns:
         Response dict or None on failure
     """
@@ -51,32 +49,29 @@ async def send_with_retry(
         result = await send_message(endpoint, message, timeout)
         if result is not None:
             return result
-        
+
         if attempt < max_retries - 1:
             if use_exponential_backoff:
                 # Exponential backoff: delay = base * (2^attempt) + jitter
-                base_delay = retry_delay * (2 ** attempt)
+                base_delay = retry_delay * (2**attempt)
                 jitter = random.uniform(0, retry_delay * 0.5)
                 delay = base_delay + jitter
             else:
                 # Linear backoff (legacy)
                 delay = retry_delay * (attempt + 1)
             await asyncio.sleep(delay)
-    
+
     return None
 
+
 def send_message_sync(
-    endpoint: str,
-    message: Dict[str, Any],
-    timeout: int = 30
+    endpoint: str, message: Dict[str, Any], timeout: int = 30
 ) -> Optional[Dict[str, Any]]:
     """Synchronous version of send_message."""
     try:
         with httpx.Client(timeout=timeout) as client:
             response = client.post(
-                endpoint,
-                json=message,
-                headers={"Content-Type": "application/json"}
+                endpoint, json=message, headers={"Content-Type": "application/json"}
             )
             response.raise_for_status()
             return response.json()

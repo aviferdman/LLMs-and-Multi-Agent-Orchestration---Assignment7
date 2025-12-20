@@ -1,0 +1,13 @@
+{
+  "protocol": "league.v2",
+  "message_type": "ROUND_ANNOUNCEMENT",
+  "timestamp": "2025-12-20T10:04:00.000Z",
+  "conversation_id": "f6a7b8c9-d0e1-2345-fghi-678901234567",
+  "sender": "LM01",
+  "league_id": "league_2025_even_odd",
+  "round_id": 1,
+  "matches": [
+    {"match_id": "R1_M1", "player_a": "P01", "player_b": "P02", "referee_id": "REF01"},
+    {"match_id": "R1_M2", "player_a": "P03", "player_b": "P04", "referee_id": "REF02"}
+  ]
+}

@@ -15,7 +15,8 @@ Execution Flow:
    - Referee determines winner, sends GAME_OVER to Players
    - Referee sends MATCH_RESULT_REPORT to LM
    - LM updates standings
-5. LM completes all rounds and finalizes standings
+5. LM sends LEAGUE_COMPLETED to all agents
+6. All agents (Players, Referees, LM) shut down gracefully via protocol
 """
 
 import asyncio
@@ -41,13 +42,8 @@ logger = LeagueLogger("LAUNCHER")
 _processes = []
 
 def signal_handler(signum, frame):
-    """Handle shutdown signals gracefully."""
+    """Handle shutdown signals gracefully - only for emergency interrupts."""
     logger.log_message(LogEvent.SHUTDOWN, {"reason": "signal", "signal": signum})
-    for proc in _processes:
-        try:
-            proc.terminate()
-        except Exception:
-            pass
     sys.exit(0)
 
 async def run_league():
@@ -82,21 +78,14 @@ async def run_league():
     
     logger.log_message("LEAGUE_STARTED", {"response": response})
     
-    # Step 4: Keep processes running until league completes
-    logger.log_message("WAITING_FOR_LEAGUE_COMPLETION", {})
+    # Step 4: Wait for all processes to exit naturally via protocol
+    # Agents shut down gracefully after receiving LEAGUE_COMPLETED
+    logger.log_message("WAITING_FOR_PROCESSES_TO_EXIT", {})
     
-    # Synchronous sleep to avoid asyncio cancellation issues
-    # 3 rounds × (broadcast + 2 matches × ~5s + standings) + buffer = ~90s
-    time.sleep(90)  # Wait for matches to complete
-    
-    logger.log_message("LAUNCHER_COMPLETE", {})
-    
-    # Terminate all processes
     for proc in _processes:
-        try:
-            proc.terminate()
-        except Exception:
-            pass
+        proc.wait()  # Block until process exits
+    
+    logger.log_message("LAUNCHER_COMPLETE", {"all_processes_exited": True})
 
 if __name__ == "__main__":
     # Setup signal handlers
@@ -107,8 +96,3 @@ if __name__ == "__main__":
         asyncio.run(run_league())
     except KeyboardInterrupt:
         logger.log_message(LogEvent.SHUTDOWN, {"reason": "user_interrupt"})
-        for proc in _processes:
-            try:
-                proc.terminate()
-            except Exception:
-                pass

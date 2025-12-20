@@ -1,7 +1,9 @@
 """Agent, game, and system constants."""
 
+
 class AgentID:
     """All agent identifiers."""
+
     LEAGUE_MANAGER = "LM01"
     REFEREE_01 = "REF01"
     REFEREE_02 = "REF02"
@@ -10,16 +12,22 @@ class AgentID:
     PLAYER_03 = "P03"
     PLAYER_04 = "P04"
 
+
 class LeagueID:
     """League identifiers."""
+
     EVEN_ODD_2025 = "league_2025_even_odd"
+
 
 class GameID:
     """Game type identifiers."""
+
     EVEN_ODD = "even_odd"
+
 
 class GameStatus:
     """Game/Match status values."""
+
     WAITING_FOR_PLAYERS = "WAITING_FOR_PLAYERS"
     COLLECTING_CHOICES = "COLLECTING_CHOICES"
     DRAWING_NUMBER = "DRAWING_NUMBER"
@@ -28,34 +36,45 @@ class GameStatus:
     COMPLETED = "completed"
     CANCELLED = "cancelled"
 
+
 class ParityChoice:
     """Parity choices in Even-Odd game."""
+
     EVEN = "EVEN"
     ODD = "ODD"
 
+
 class Winner:
     """Winner designation values."""
+
     PLAYER_A = "PLAYER_A"
     PLAYER_B = "PLAYER_B"
     DRAW = "DRAW"
 
+
 EVEN_ODD_MIN_NUMBER = 1
 EVEN_ODD_MAX_NUMBER = 10
 
+
 class StrategyType:
     """Player strategy types."""
+
     RANDOM = "random"
     FREQUENCY = "frequency"
     PATTERN = "pattern"
 
+
 class AgentType:
     """Agent type identifiers."""
+
     LEAGUE_MANAGER = "league_manager"
     REFEREE = "referee"
     PLAYER = "player"
 
+
 class Directory:
     """Standard directory names."""
+
     CONFIG = "config"
     DATA = "data"
     LOGS = "logs"
@@ -68,15 +87,19 @@ class Directory:
     TESTS = "tests"
     DOC = "doc"
 
+
 class FileName:
     """Standard file names."""
+
     SYSTEM_CONFIG = "system.json"
     AGENTS_CONFIG = "agents_config.json"
     GAMES_REGISTRY = "games_registry.json"
     STANDINGS = "standings.json"
 
+
 class LogEvent:
     """Logging event types."""
+
     STARTUP = "STARTUP"
     SHUTDOWN = "SHUTDOWN"
     RECEIVED = "RECEIVED"
@@ -94,8 +117,10 @@ class LogEvent:
     REQUEST_ERROR = "REQUEST_ERROR"
     DUPLICATE_REGISTRATION = "DUPLICATE_REGISTRATION"
 
+
 class Points:
     """Point values for match outcomes."""
+
     WIN = 3
     DRAW = 1
     LOSS = 0

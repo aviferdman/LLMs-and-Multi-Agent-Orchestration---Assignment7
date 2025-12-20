@@ -2,23 +2,27 @@
 
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from fastapi import FastAPI, Request, BackgroundTasks
-from fastapi.responses import JSONResponse
-import uvicorn
-from typing import Dict, Any
+from typing import Any, Dict
 
-from SHARED.league_sdk.logger import LeagueLogger
-from SHARED.league_sdk.config_loader import load_system_config, load_league_config, load_agent_config
-from SHARED.league_sdk.repositories import StandingsRepository
-from SHARED.league_sdk.session_manager import get_session_manager, AgentType
-from SHARED.constants import (
-    MessageType, Field, AgentID, LogEvent, MCP_PATH, Status, GameStatus
-)
-from SHARED.contracts import build_league_status
-from handlers import handle_referee_register, handle_league_register, handle_match_result_report
+import uvicorn
+from fastapi import BackgroundTasks, FastAPI, Request
+from fastapi.responses import JSONResponse
+from handlers import (handle_league_register, handle_match_result_report,
+                      handle_referee_register)
 from match_orchestration import run_league_matches
+
+from SHARED.constants import (MCP_PATH, AgentID, Field, GameStatus, LogEvent,
+                              MessageType, Status)
+from SHARED.contracts import build_league_status
+from SHARED.league_sdk.config_loader import (load_agent_config,
+                                             load_league_config,
+                                             load_system_config)
+from SHARED.league_sdk.logger import LeagueLogger
+from SHARED.league_sdk.repositories import StandingsRepository
+from SHARED.league_sdk.session_manager import AgentType, get_session_manager
 
 app = FastAPI(title="League Manager")
 logger = LeagueLogger(AgentID.LEAGUE_MANAGER)
@@ -35,18 +39,20 @@ session_manager = get_session_manager()
 league_state = {
     "league_status": GameStatus.WAITING_FOR_PLAYERS,
     "current_round": 0,
-    "matches_completed": 0
+    "matches_completed": 0,
 }
 
 
 @app.post(MCP_PATH)
-async def mcp_endpoint(request: Request, background_tasks: BackgroundTasks) -> JSONResponse:
+async def mcp_endpoint(
+    request: Request, background_tasks: BackgroundTasks
+) -> JSONResponse:
     """Handle all MCP protocol messages."""
     try:
         message = await request.json()
         logger.log_message(LogEvent.RECEIVED, message)
         msg_type = message.get(Field.MESSAGE_TYPE)
-        
+
         if msg_type == MessageType.REFEREE_REGISTER_REQUEST:
             response = handle_referee_register(message, logger)
         elif msg_type == MessageType.LEAGUE_REGISTER_REQUEST:
@@ -65,44 +71,71 @@ async def mcp_endpoint(request: Request, background_tasks: BackgroundTasks) -> J
             standings_repo.save(standings)
             league_state["matches_completed"] = 0
             league_state["current_round"] = 0
-            
+
             # Get registered agents from session manager
-            registered_players = session_manager.get_registered_agents_data(AgentType.PLAYER)
-            registered_referees = session_manager.get_registered_agents_data(AgentType.REFEREE)
-            
+            registered_players = session_manager.get_registered_agents_data(
+                AgentType.PLAYER
+            )
+            registered_referees = session_manager.get_registered_agents_data(
+                AgentType.REFEREE
+            )
+
             background_tasks.add_task(
-                run_league_matches, league_config, registered_players,
-                registered_referees, logger, league_state
+                run_league_matches,
+                league_config,
+                registered_players,
+                registered_referees,
+                logger,
+                league_state,
             )
             response = build_league_status(
-                league_config.league_id, Status.SUCCESS,
-                league_state["current_round"], league_config.total_rounds, league_state["matches_completed"]
+                league_config.league_id,
+                Status.SUCCESS,
+                league_state["current_round"],
+                league_config.total_rounds,
+                league_state["matches_completed"],
             )
         elif msg_type == MessageType.LEAGUE_STATUS:
             response = build_league_status(
-                league_config.league_id, league_state["league_status"],
-                league_state["current_round"], league_config.total_rounds, league_state["matches_completed"]
+                league_config.league_id,
+                league_state["league_status"],
+                league_state["current_round"],
+                league_config.total_rounds,
+                league_state["matches_completed"],
             )
         elif msg_type == MessageType.MATCH_RESULT_REPORT:
             response = handle_match_result_report(message, league_config, logger)
         else:
             response = {Field.STATUS: Status.ERROR, "message": "Unknown message type"}
-        
+
         logger.log_message(LogEvent.SENT, response)
         return JSONResponse(content=response)
     except Exception as e:
         logger.log_error(LogEvent.REQUEST_ERROR, str(e))
-        return JSONResponse(content={Field.STATUS: Status.ERROR, "message": str(e)}, status_code=500)
+        return JSONResponse(
+            content={Field.STATUS: Status.ERROR, "message": str(e)}, status_code=500
+        )
 
 
 @app.on_event("startup")
 async def startup():
     """Initialize on startup."""
     lm_config = agents_config["league_manager"]
-    logger.log_message(LogEvent.STARTUP, {Field.LEAGUE_ID: league_config.league_id, "port": lm_config["port"]})
+    logger.log_message(
+        LogEvent.STARTUP,
+        {Field.LEAGUE_ID: league_config.league_id, "port": lm_config["port"]},
+    )
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    """Cleanup on shutdown."""
+    logger.log_message(LogEvent.SHUTDOWN, {Field.LEAGUE_ID: league_config.league_id})
+    session_manager.clear_all()
 
 
 if __name__ == "__main__":
     from SHARED.constants import SERVER_HOST
+
     lm_config = agents_config["league_manager"]
     uvicorn.run(app, host=SERVER_HOST, port=lm_config["port"])

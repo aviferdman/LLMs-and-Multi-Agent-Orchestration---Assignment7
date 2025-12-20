@@ -1,30 +1,29 @@
 """League Manager contract definitions."""
 
-from typing import Dict, Any
-from SHARED.constants import PROTOCOL_VERSION, MessageType, Field, Status
+from typing import Any, Dict
+
+from SHARED.constants import PROTOCOL_VERSION, Field, MessageType, Status
 
 # Re-export round lifecycle contracts for backward compatibility
-from .round_lifecycle_contracts import (
-    build_round_announcement, build_round_completed, build_league_completed,
-    build_league_standings_update, build_league_error
-)
+from .round_lifecycle_contracts import (build_league_completed,
+                                        build_league_error,
+                                        build_league_standings_update,
+                                        build_round_announcement,
+                                        build_round_completed)
 
-def build_referee_register_request(
-    referee_id: str,
-    endpoint: str
-) -> Dict[str, Any]:
+
+def build_referee_register_request(referee_id: str, endpoint: str) -> Dict[str, Any]:
     """Build REFEREE_REGISTER_REQUEST message."""
     return {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.REFEREE_REGISTER_REQUEST,
         Field.REFEREE_ID: referee_id,
-        Field.ENDPOINT: endpoint
+        Field.ENDPOINT: endpoint,
     }
 
+
 def build_referee_register_response(
-    referee_id: str,
-    auth_token: str,
-    status: str = Status.REGISTERED
+    referee_id: str, auth_token: str, status: str = Status.REGISTERED
 ) -> Dict[str, Any]:
     """Build REFEREE_REGISTER_RESPONSE message."""
     return {
@@ -32,26 +31,22 @@ def build_referee_register_response(
         Field.MESSAGE_TYPE: MessageType.REFEREE_REGISTER_RESPONSE,
         Field.REFEREE_ID: referee_id,
         Field.AUTH_TOKEN: auth_token,
-        Field.STATUS: status
+        Field.STATUS: status,
     }
 
-def build_league_register_request(
-    player_id: str,
-    endpoint: str
-) -> Dict[str, Any]:
+
+def build_league_register_request(player_id: str, endpoint: str) -> Dict[str, Any]:
     """Build LEAGUE_REGISTER_REQUEST message."""
     return {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.LEAGUE_REGISTER_REQUEST,
         Field.PLAYER_ID: player_id,
-        Field.ENDPOINT: endpoint
+        Field.ENDPOINT: endpoint,
     }
 
+
 def build_league_register_response(
-    player_id: str,
-    league_id: str,
-    auth_token: str,
-    status: str = Status.REGISTERED
+    player_id: str, league_id: str, auth_token: str, status: str = Status.REGISTERED
 ) -> Dict[str, Any]:
     """Build LEAGUE_REGISTER_RESPONSE message."""
     return {
@@ -60,39 +55,38 @@ def build_league_register_response(
         Field.PLAYER_ID: player_id,
         Field.LEAGUE_ID: league_id,
         Field.AUTH_TOKEN: auth_token,
-        Field.STATUS: status
+        Field.STATUS: status,
     }
 
+
 def build_match_result_ack(
-    match_id: str,
-    status: str = Status.RECORDED
+    match_id: str, status: str = Status.RECORDED
 ) -> Dict[str, Any]:
     """Build MATCH_RESULT_ACK message."""
     return {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.MATCH_RESULT_ACK,
         Field.MATCH_ID: match_id,
-        Field.STATUS: status
+        Field.STATUS: status,
     }
 
-def build_start_league(
-    league_id: str,
-    sender: str
-) -> Dict[str, Any]:
+
+def build_start_league(league_id: str, sender: str) -> Dict[str, Any]:
     """Build START_LEAGUE message (Launcher → LM)."""
     return {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.START_LEAGUE,
         Field.LEAGUE_ID: league_id,
-        Field.SENDER: sender
+        Field.SENDER: sender,
     }
+
 
 def build_league_status(
     league_id: str,
     status: str,
     current_round: int = 0,
     total_rounds: int = 0,
-    matches_completed: int = 0
+    matches_completed: int = 0,
 ) -> Dict[str, Any]:
     """Build LEAGUE_STATUS response message."""
     return {
@@ -102,8 +96,9 @@ def build_league_status(
         Field.STATUS: status,
         "current_round": current_round,
         "total_rounds": total_rounds,
-        "matches_completed": matches_completed
+        "matches_completed": matches_completed,
     }
+
 
 def build_run_match(
     league_id: str,
@@ -113,7 +108,7 @@ def build_run_match(
     player_a: str,
     player_a_endpoint: str,
     player_b: str,
-    player_b_endpoint: str
+    player_b_endpoint: str,
 ) -> Dict[str, Any]:
     """Build RUN_MATCH message (LM → Referee)."""
     return {
@@ -126,17 +121,17 @@ def build_run_match(
         Field.PLAYER_A: player_a,
         "player_a_endpoint": player_a_endpoint,
         Field.PLAYER_B: player_b,
-        "player_b_endpoint": player_b_endpoint
+        "player_b_endpoint": player_b_endpoint,
     }
 
+
 def build_run_match_ack(
-    match_id: str,
-    status: str = Status.ACKNOWLEDGED
+    match_id: str, status: str = Status.ACKNOWLEDGED
 ) -> Dict[str, Any]:
     """Build RUN_MATCH_ACK message (Referee → LM)."""
     return {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.RUN_MATCH_ACK,
         Field.MATCH_ID: match_id,
-        Field.STATUS: status
+        Field.STATUS: status,
     }

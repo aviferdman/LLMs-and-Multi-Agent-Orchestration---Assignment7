@@ -4,39 +4,45 @@ This module provides transport independence as required by the spec:
 "If changing transport (HTTP ↔ STDIO) affects business logic, the design is invalid"
 """
 
-from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
 import asyncio
-import random
-import httpx
-import sys
 import json
+import random
+import sys
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Optional
+
+import httpx
 
 
 class BaseTransport(ABC):
     """Abstract base class for all transports - defines the interface."""
-    
+
     @abstractmethod
-    async def send(self, endpoint: str, message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    async def send(
+        self, endpoint: str, message: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Send a message and return the response."""
-        pass
-    
+
     @abstractmethod
     async def send_with_retry(
-        self, endpoint: str, message: Dict[str, Any],
-        max_retries: int = 3, retry_delay: float = 1.0
+        self,
+        endpoint: str,
+        message: Dict[str, Any],
+        max_retries: int = 3,
+        retry_delay: float = 1.0,
     ) -> Optional[Dict[str, Any]]:
         """Send a message with retry logic."""
-        pass
 
 
 class HTTPTransport(BaseTransport):
     """HTTP transport implementation using httpx."""
-    
+
     def __init__(self, timeout: int = 30):
         self.timeout = timeout
-    
-    async def send(self, endpoint: str, message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+
+    async def send(
+        self, endpoint: str, message: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Send HTTP POST message to endpoint."""
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -47,10 +53,13 @@ class HTTPTransport(BaseTransport):
                 return response.json()
         except (httpx.TimeoutException, httpx.HTTPError):
             return None
-    
+
     async def send_with_retry(
-        self, endpoint: str, message: Dict[str, Any],
-        max_retries: int = 3, retry_delay: float = 1.0
+        self,
+        endpoint: str,
+        message: Dict[str, Any],
+        max_retries: int = 3,
+        retry_delay: float = 1.0,
     ) -> Optional[Dict[str, Any]]:
         """Send message with exponential backoff and jitter."""
         for attempt in range(max_retries):
@@ -58,7 +67,7 @@ class HTTPTransport(BaseTransport):
             if result is not None:
                 return result
             if attempt < max_retries - 1:
-                base_delay = retry_delay * (2 ** attempt)
+                base_delay = retry_delay * (2**attempt)
                 jitter = random.uniform(0, retry_delay * 0.5)
                 await asyncio.sleep(base_delay + jitter)
         return None
@@ -66,8 +75,10 @@ class HTTPTransport(BaseTransport):
 
 class STDIOTransport(BaseTransport):
     """STDIO transport for future MCP compatibility (JSON lines via stdin/stdout)."""
-    
-    async def send(self, endpoint: str, message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+
+    async def send(
+        self, endpoint: str, message: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Send message via stdout and read response from stdin."""
         try:
             sys.stdout.write(json.dumps(message) + "\n")
@@ -76,10 +87,13 @@ class STDIOTransport(BaseTransport):
             return json.loads(response_line.strip()) if response_line else None
         except (json.JSONDecodeError, IOError):
             return None
-    
+
     async def send_with_retry(
-        self, endpoint: str, message: Dict[str, Any],
-        max_retries: int = 3, retry_delay: float = 1.0
+        self,
+        endpoint: str,
+        message: Dict[str, Any],
+        max_retries: int = 3,
+        retry_delay: float = 1.0,
     ) -> Optional[Dict[str, Any]]:
         """Send with retry logic."""
         for attempt in range(max_retries):
@@ -93,14 +107,20 @@ class STDIOTransport(BaseTransport):
 
 class TransportType:
     """Transport type identifiers."""
+
     HTTP = "http"
     STDIO = "stdio"
 
 
-_TRANSPORT_REGISTRY = {TransportType.HTTP: HTTPTransport, TransportType.STDIO: STDIOTransport}
+_TRANSPORT_REGISTRY = {
+    TransportType.HTTP: HTTPTransport,
+    TransportType.STDIO: STDIOTransport,
+}
 
 
-def create_transport(transport_type: str = TransportType.HTTP, **kwargs) -> BaseTransport:
+def create_transport(
+    transport_type: str = TransportType.HTTP, **kwargs
+) -> BaseTransport:
     """Factory function to create a transport instance."""
     transport_class = _TRANSPORT_REGISTRY.get(transport_type)
     if transport_class is None:
