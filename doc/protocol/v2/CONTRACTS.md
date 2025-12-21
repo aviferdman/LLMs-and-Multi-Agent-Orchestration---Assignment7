@@ -22,7 +22,11 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "ROUND_ANNOUNCEMENT",
+  "sender": "league_manager",
+  "timestamp": "2025-01-15T10:00:00Z",
+  "conversation_id": "conv-round1-announcement",
   "league_id": "league_2025_even_odd",
   "round_id": 1,
   "matches": [
@@ -104,7 +108,11 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "LEAGUE_STANDINGS_UPDATE",
+  "sender": "league_manager",
+  "timestamp": "2025-01-15T12:05:00Z",
+  "conversation_id": "conv-standings-update-r1",
   "league_id": "league_2025_even_odd",
   "round_id": 1,
   "standings": [
@@ -275,7 +283,11 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "REFEREE_REGISTER_REQUEST",
+  "sender": "referee:REF01",
+  "timestamp": "2025-01-15T09:00:00Z",
+  "conversation_id": "conv-ref01-registration",
   "referee_meta": {
     "display_name": "Referee Alpha",
     "version": "1.0.0",
@@ -298,7 +310,11 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "REFEREE_REGISTER_RESPONSE",
+  "sender": "league_manager",
+  "timestamp": "2025-01-15T09:00:01Z",
+  "conversation_id": "conv-ref01-registration",
   "status": "ACCEPTED",
   "referee_id": "REF01",
   "reason": null
@@ -328,14 +344,17 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "GAME_INVITATION",
+  "sender": "referee:REF01",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "conversation_id": "conv-r1m1-001",
   "league_id": "league_2025_even_odd",
   "round_id": 1,
   "match_id": "R1M1",
   "game_type": "even_odd",
   "role_in_match": "PLAYER_A",
-  "opponent_id": "P02",
-  "conversation_id": "conv-r1m1-001"
+  "opponent_id": "P02"
 }
 ```
 
@@ -360,7 +379,11 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "CHOOSE_PARITY_CALL",
+  "sender": "referee:REF01",
+  "timestamp": "2025-01-15T10:30:05Z",
+  "conversation_id": "conv-r1m1-001",
   "match_id": "R1M1",
   "player_id": "P01",
   "game_type": "even_odd",
@@ -397,7 +420,11 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "GAME_OVER",
+  "sender": "referee:REF01",
+  "timestamp": "2025-01-15T10:30:35Z",
+  "conversation_id": "conv-r1m1-001",
   "match_id": "R1M1",
   "game_type": "even_odd",
   "game_result": {
@@ -434,7 +461,11 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "MATCH_RESULT_REPORT",
+  "sender": "referee:REF01",
+  "timestamp": "2025-01-15T10:30:36Z",
+  "conversation_id": "conv-r1m1-001",
   "league_id": "league_2025_even_odd",
   "round_id": 1,
   "match_id": "R1M1",
@@ -470,6 +501,9 @@
 {
   "protocol": "league.v2",
   "message_type": "MATCH_RESULT_ACK",
+  "sender": "league_manager",
+  "timestamp": "2025-01-15T10:30:37Z",
+  "conversation_id": "conv-r1m1-001",
   "match_id": "R1M1",
   "status": "recorded"
 }
@@ -539,7 +573,11 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "LEAGUE_REGISTER_REQUEST",
+  "sender": "player:P01",
+  "timestamp": "2025-01-15T09:01:00Z",
+  "conversation_id": "conv-p01-registration",
   "player_meta": {
     "display_name": "Agent Alpha",
     "version": "1.0.0",
@@ -561,7 +599,11 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "LEAGUE_REGISTER_RESPONSE",
+  "sender": "league_manager",
+  "timestamp": "2025-01-15T09:01:01Z",
+  "conversation_id": "conv-p01-registration",
   "status": "ACCEPTED",
   "player_id": "P01",
   "reason": null
@@ -588,10 +630,14 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "GAME_JOIN_ACK",
+  "sender": "player:P01",
+  "timestamp": "2025-01-15T10:30:02Z",
+  "conversation_id": "conv-r1m1-001",
   "match_id": "R1M1",
   "player_id": "P01",
-  "arrival_timestamp": "2025-01-15T10:30:00Z",
+  "arrival_timestamp": "2025-01-15T10:30:02Z",
   "accept": true
 }
 ```
@@ -615,7 +661,11 @@
 **Example:**
 ```json
 {
+  "protocol": "league.v2",
   "message_type": "CHOOSE_PARITY_RESPONSE",
+  "sender": "player:P01",
+  "timestamp": "2025-01-15T10:30:10Z",
+  "conversation_id": "conv-r1m1-001",
   "match_id": "R1M1",
   "player_id": "P01",
   "parity_choice": "even"
@@ -685,8 +735,10 @@
 {
   "protocol": "league.v2",
   "message_type": "START_LEAGUE",
-  "league_id": "league_2025_even_odd",
-  "sender": "launcher"
+  "sender": "launcher",
+  "timestamp": "2025-01-15T09:30:00Z",
+  "conversation_id": "conv-start-league",
+  "league_id": "league_2025_even_odd"
 }
 ```
 
@@ -707,6 +759,9 @@
 {
   "protocol": "league.v2",
   "message_type": "LEAGUE_STATUS",
+  "sender": "league_manager",
+  "timestamp": "2025-01-15T09:30:01Z",
+  "conversation_id": "conv-start-league",
   "league_id": "league_2025_even_odd",
   "status": "running",
   "current_round": 1,
