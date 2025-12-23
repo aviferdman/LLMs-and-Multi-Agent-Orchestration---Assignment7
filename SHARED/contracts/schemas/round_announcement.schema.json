@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "round_announcement.schema.json",
+  "title": "ROUND_ANNOUNCEMENT",
+  "description": "League Manager → All Agents: New round begins",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "ROUND_ANNOUNCEMENT"
+    },
+    "sender": {
+      "const": "league_manager"
+    },
+    "league_id": {
+      "type": "string",
+      "description": "Unique league identifier"
+    },
+    "round_id": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Round number (1-based)"
+    },
+    "matches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "match_id": {
+            "type": "string",
+            "description": "Unique match identifier"
+          },
+          "game_type": {
+            "type": "string",
+            "enum": ["even_odd"],
+            "description": "Type of game"
+          },
+          "player_A_id": {
+            "type": "string",
+            "description": "Player A identifier"
+          },
+          "player_B_id": {
+            "type": "string",
+            "description": "Player B identifier"
+          },
+          "referee_endpoint": {
+            "type": "string",
+            "format": "uri",
+            "description": "Referee HTTP endpoint"
+          }
+        },
+        "required": ["match_id", "game_type", "player_A_id", "player_B_id", "referee_endpoint"]
+      },
+      "minItems": 1,
+      "description": "List of matches in this round"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "league_id", "round_id", "matches"]
+}

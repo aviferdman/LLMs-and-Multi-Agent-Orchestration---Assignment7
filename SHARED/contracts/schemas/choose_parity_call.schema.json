@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "choose_parity_call.schema.json",
+  "title": "CHOOSE_PARITY_CALL",
+  "description": "Referee → Player: Both players joined, game starts (30s timeout for response)",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "CHOOSE_PARITY_CALL"
+    },
+    "sender": {
+      "type": "string",
+      "pattern": "^referee:.+$"
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "player_id": {
+      "type": "string",
+      "description": "Target player ID"
+    },
+    "game_type": {
+      "type": "string",
+      "enum": ["even_odd"]
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "opponent_id": {
+          "type": "string"
+        },
+        "round_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "your_standings": {
+          "type": "object",
+          "properties": {
+            "wins": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "losses": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "draws": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": ["wins", "losses", "draws"]
+        }
+      },
+      "required": ["opponent_id", "round_id", "your_standings"],
+      "description": "Game context for player decision-making"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 deadline for response"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "match_id", "player_id", "game_type", "context", "deadline"]
+}

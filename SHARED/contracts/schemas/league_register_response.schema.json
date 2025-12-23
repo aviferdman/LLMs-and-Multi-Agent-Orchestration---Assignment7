@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "league_register_response.schema.json",
+  "title": "LEAGUE_REGISTER_RESPONSE",
+  "description": "League Manager → Player: Response to registration request",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "LEAGUE_REGISTER_RESPONSE"
+    },
+    "sender": {
+      "const": "league_manager"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ACCEPTED", "REJECTED"],
+      "description": "Registration result"
+    },
+    "player_id": {
+      "type": "string",
+      "description": "Assigned player ID"
+    },
+    "reason": {
+      "type": ["string", "null"],
+      "description": "Reason for rejection if status is REJECTED"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "status", "player_id"]
+}

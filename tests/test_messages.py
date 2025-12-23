@@ -1,6 +1,7 @@
 """Unit tests for SHARED.league_sdk.messages module.
 
 Tests message creation, validation, and formatting utilities.
+These tests verify protocol-compliant message structures.
 """
 
 import sys
@@ -10,25 +11,31 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import re
 
-from SHARED.constants import MessageType
-from SHARED.league_sdk.messages import (
+from SHARED.constants import Field, MessageType
+from SHARED.contracts import (
     build_choose_parity_call,
+    build_choose_parity_response,
     build_game_invitation,
     build_game_join_ack,
     build_game_over,
     build_match_result_report,
-    build_parity_choice,
-    create_base_message,
-    format_timestamp,
-    validate_message,
 )
+from SHARED.contracts.base_contract import create_base_message, create_game_message
+from SHARED.protocol_constants import generate_timestamp as format_timestamp
 
 
-def test_create_base_message():
-    """Test creating a base message with required fields."""
-    msg = create_base_message(MessageType.GAME_INVITATION, "league_2025", 1, "R1M1", "REF01")
-    assert all(k in msg for k in ["protocol", "timestamp", "conversation_id", "message_type"])
-    assert msg["message_type"] == MessageType.GAME_INVITATION and msg["timestamp"].endswith("Z")
+def test_create_game_message():
+    """Test creating a game message with required fields."""
+    msg = create_game_message(
+        message_type=MessageType.GAME_INVITATION,
+        sender_type="referee",
+        sender_id="REF01",
+        league_id="league_2025",
+        round_id=1,
+        match_id="R1M1",
+    )
+    assert all(k in msg for k in [Field.PROTOCOL, Field.TIMESTAMP, Field.CONVERSATION_ID, Field.MESSAGE_TYPE])
+    assert msg[Field.MESSAGE_TYPE] == MessageType.GAME_INVITATION and msg[Field.TIMESTAMP].endswith("Z")
 
 
 def test_format_timestamp():
@@ -37,51 +44,94 @@ def test_format_timestamp():
     assert re.match(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z", ts) and ts.endswith("Z")
 
 
-def test_validate_message_valid():
-    """Test validation of valid message."""
-    msg = create_base_message(MessageType.GAME_INVITATION, "league_2025", 1, "R1M1", "REF01")
-    assert validate_message(msg) == True
-
-
-def test_validate_message_missing_field():
-    """Test validation catches missing required field."""
-    assert validate_message({"protocol": "league.v2"}) == False
-
-
 def test_build_game_invitation():
     """Test building game invitation message."""
-    msg = build_game_invitation("league_2025", 1, "R1M1", "REF01", "P01", "P02")
-    assert msg["message_type"] == "GAME_INVITATION" and msg["player_id"] == "P01"
+    msg = build_game_invitation(
+        league_id="league_2025",
+        round_id=1,
+        match_id="R1M1",
+        referee_id="REF01",
+        player_id="P01",
+        opponent_id="P02",
+        role_in_match="player_a",
+        game_type="even_odd",
+    )
+    assert msg[Field.MESSAGE_TYPE] == MessageType.GAME_INVITATION
+    assert msg[Field.ROLE_IN_MATCH] == "player_a"
+    assert msg[Field.GAME_TYPE] == "even_odd"
 
 
 def test_build_game_join_ack():
     """Test building game join acknowledgment."""
-    msg = build_game_join_ack("league_2025", 1, "R1M1", "P01", "conv-123")
-    assert msg["message_type"] == "GAME_JOIN_ACK" and msg["conversation_id"] == "conv-123"
+    msg = build_game_join_ack(
+        match_id="R1M1",
+        player_id="P01",
+        conversation_id="conv-123",
+        accept=True,
+    )
+    assert msg[Field.MESSAGE_TYPE] == MessageType.GAME_JOIN_ACK and msg[Field.CONVERSATION_ID] == "conv-123"
+    assert msg[Field.ACCEPT] is True
 
 
 def test_build_choose_parity_call():
     """Test building choose parity call message."""
-    msg = build_choose_parity_call("league_2025", 1, "R1M1", "REF01", "P01")
-    assert msg["message_type"] == "CHOOSE_PARITY_CALL" and msg["player_id"] == "P01"
+    msg = build_choose_parity_call(
+        league_id="league_2025",
+        round_id=1,
+        match_id="R1M1",
+        referee_id="REF01",
+        player_id="P01",
+        opponent_id="P02",
+        player_standings={},
+        timeout_seconds=30,
+    )
+    assert msg[Field.MESSAGE_TYPE] == MessageType.CHOOSE_PARITY_CALL and msg[Field.PLAYER_ID] == "P01"
+    assert Field.DEADLINE in msg
 
 
-def test_build_parity_choice():
-    """Test building parity choice message."""
-    msg = build_parity_choice("league_2025", 1, "R1M1", "P01", "EVEN", "conv-123")
-    assert msg["message_type"] == "PARITY_CHOICE" and msg["choice"] == "EVEN"
+def test_build_choose_parity_response():
+    """Test building choose parity response message (new name for PARITY_CHOICE)."""
+    msg = build_choose_parity_response(
+        match_id="R1M1",
+        player_id="P01",
+        parity_choice="EVEN",
+        conversation_id="conv-123",
+    )
+    assert msg[Field.MESSAGE_TYPE] == MessageType.CHOOSE_PARITY_RESPONSE and msg[Field.PARITY_CHOICE] == "EVEN"
 
 
 def test_build_game_over():
     """Test building game over message."""
-    msg = build_game_over("league_2025", 1, "R1M1", "REF01", "PLAYER_A", 4, "EVEN", "ODD")
-    assert msg["winner"] == "PLAYER_A" and msg["drawn_number"] == 4
+    msg = build_game_over(
+        league_id="league_2025",
+        round_id=1,
+        match_id="R1M1",
+        referee_id="REF01",
+        status="WIN",
+        winner_player_id="P01",
+        drawn_number=4,
+        number_parity="even",
+        choices={"P01": "EVEN", "P02": "ODD"},
+        reason="Player P01 chose correctly",
+    )
+    assert msg[Field.MESSAGE_TYPE] == MessageType.GAME_OVER
+    assert msg[Field.GAME_RESULT]["winner_player_id"] == "P01"
 
 
 def test_build_match_result_report():
     """Test building match result report message."""
-    msg = build_match_result_report("league_2025", 1, "R1M1", "REF01", "P01", "P02", "PLAYER_A")
-    assert msg["player_a"] == "P01" and msg["winner"] == "PLAYER_A"
+    msg = build_match_result_report(
+        league_id="league_2025",
+        round_id=1,
+        match_id="R1M1",
+        referee_id="REF01",
+        winner="P01",
+        score={"P01": 1, "P02": 0},
+        drawn_number=4,
+        choices={"P01": "EVEN", "P02": "ODD"},
+    )
+    assert msg[Field.MESSAGE_TYPE] == MessageType.MATCH_RESULT_REPORT
+    assert msg[Field.RESULT]["winner"] == "P01"
 
 
 if __name__ == "__main__":
@@ -90,14 +140,12 @@ if __name__ == "__main__":
     print("=" * 60)
 
     tests = [
-        ("create_base_message", test_create_base_message),
+        ("create_game_message", test_create_game_message),
         ("format_timestamp", test_format_timestamp),
-        ("validate_message_valid", test_validate_message_valid),
-        ("validate_message_missing_field", test_validate_message_missing_field),
         ("build_game_invitation", test_build_game_invitation),
         ("build_game_join_ack", test_build_game_join_ack),
         ("build_choose_parity_call", test_build_choose_parity_call),
-        ("build_parity_choice", test_build_parity_choice),
+        ("build_choose_parity_response", test_build_choose_parity_response),
         ("build_game_over", test_build_game_over),
         ("build_match_result_report", test_build_match_result_report),
     ]

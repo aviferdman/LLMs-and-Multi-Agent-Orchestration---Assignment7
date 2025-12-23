@@ -1,135 +1,94 @@
-"""League Manager contract definitions."""
+"""League Manager contract definitions - Facade module.
+
+This module re-exports all League Manager contracts for backward compatibility.
+The actual implementations are split into smaller modules.
+
+League Manager-sourced messages (responses and control):
+- REFEREE_REGISTER_RESPONSE: LM → Referee
+- LEAGUE_REGISTER_RESPONSE: LM → Player
+- MATCH_RESULT_ACK: LM → Referee
+- LEAGUE_STATUS: LM → Launcher
+- RUN_MATCH: LM → Referee
+- SHUTDOWN_COMMAND: LM → All Agents
+
+Registration requests (Referee/Player → LM):
+- REFEREE_REGISTER_REQUEST
+- LEAGUE_REGISTER_REQUEST
+
+Launcher messages:
+- START_LEAGUE: Launcher → LM
+"""
 
 from typing import Any, Dict
 
-from SHARED.constants import PROTOCOL_VERSION, Field, MessageType, Status
+from SHARED.constants import Status
+
+# Re-export registration contracts
+from .registration_contracts import (
+    build_league_register_request,
+    build_league_register_response,
+    build_referee_register_request,
+    build_referee_register_response,
+)
+
+# Re-export match control contracts
+from .match_control_contracts import (
+    build_league_status,
+    build_match_result_ack,
+    build_run_match,
+    build_shutdown_ack,
+    build_shutdown_command,
+    build_start_league,
+)
 
 # Re-export round lifecycle contracts for backward compatibility
 from .round_lifecycle_contracts import (
     build_league_completed,
     build_league_error,
+    build_league_query_response,
     build_league_standings_update,
     build_round_announcement,
     build_round_completed,
 )
 
+# Export all for wildcard imports
+__all__ = [
+    # Registration
+    "build_referee_register_request",
+    "build_referee_register_response",
+    "build_league_register_request",
+    "build_league_register_response",
+    # Match control
+    "build_match_result_ack",
+    "build_start_league",
+    "build_league_status",
+    "build_run_match",
+    "build_shutdown_command",
+    "build_shutdown_ack",
+    # Round lifecycle
+    "build_round_announcement",
+    "build_round_completed",
+    "build_league_standings_update",
+    "build_league_completed",
+    "build_league_error",
+    "build_league_query_response",
+    # Deprecated
+    "build_run_match_ack",
+]
 
-def build_referee_register_request(referee_id: str, endpoint: str) -> Dict[str, Any]:
-    """Build REFEREE_REGISTER_REQUEST message."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.REFEREE_REGISTER_REQUEST,
-        Field.REFEREE_ID: referee_id,
-        Field.ENDPOINT: endpoint,
-    }
 
-
-def build_referee_register_response(
-    referee_id: str, auth_token: str, status: str = Status.REGISTERED
+# DEPRECATED: Old function signatures for backward compatibility
+def build_run_match_ack(
+    match_id: str, status: str = Status.ACKNOWLEDGED
 ) -> Dict[str, Any]:
-    """Build REFEREE_REGISTER_RESPONSE message."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.REFEREE_REGISTER_RESPONSE,
-        Field.REFEREE_ID: referee_id,
-        Field.AUTH_TOKEN: auth_token,
-        Field.STATUS: status,
-    }
+    """DEPRECATED: Use referee_contracts.build_run_match_ack instead."""
+    import warnings
 
+    from .referee_contracts import build_run_match_ack as _build_run_match_ack
 
-def build_league_register_request(player_id: str, endpoint: str) -> Dict[str, Any]:
-    """Build LEAGUE_REGISTER_REQUEST message."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.LEAGUE_REGISTER_REQUEST,
-        Field.PLAYER_ID: player_id,
-        Field.ENDPOINT: endpoint,
-    }
-
-
-def build_league_register_response(
-    player_id: str, league_id: str, auth_token: str, status: str = Status.REGISTERED
-) -> Dict[str, Any]:
-    """Build LEAGUE_REGISTER_RESPONSE message."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.LEAGUE_REGISTER_RESPONSE,
-        Field.PLAYER_ID: player_id,
-        Field.LEAGUE_ID: league_id,
-        Field.AUTH_TOKEN: auth_token,
-        Field.STATUS: status,
-    }
-
-
-def build_match_result_ack(match_id: str, status: str = Status.RECORDED) -> Dict[str, Any]:
-    """Build MATCH_RESULT_ACK message."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.MATCH_RESULT_ACK,
-        Field.MATCH_ID: match_id,
-        Field.STATUS: status,
-    }
-
-
-def build_start_league(league_id: str, sender: str) -> Dict[str, Any]:
-    """Build START_LEAGUE message (Launcher → LM)."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.START_LEAGUE,
-        Field.LEAGUE_ID: league_id,
-        Field.SENDER: sender,
-    }
-
-
-def build_league_status(
-    league_id: str,
-    status: str,
-    current_round: int = 0,
-    total_rounds: int = 0,
-    matches_completed: int = 0,
-) -> Dict[str, Any]:
-    """Build LEAGUE_STATUS response message."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.LEAGUE_STATUS,
-        Field.LEAGUE_ID: league_id,
-        Field.STATUS: status,
-        "current_round": current_round,
-        "total_rounds": total_rounds,
-        "matches_completed": matches_completed,
-    }
-
-
-def build_run_match(
-    league_id: str,
-    round_id: int,
-    match_id: str,
-    referee_id: str,
-    player_a: str,
-    player_a_endpoint: str,
-    player_b: str,
-    player_b_endpoint: str,
-) -> Dict[str, Any]:
-    """Build RUN_MATCH message (LM → Referee)."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.RUN_MATCH,
-        Field.LEAGUE_ID: league_id,
-        Field.ROUND_ID: round_id,
-        Field.MATCH_ID: match_id,
-        Field.REFEREE_ID: referee_id,
-        Field.PLAYER_A: player_a,
-        "player_a_endpoint": player_a_endpoint,
-        Field.PLAYER_B: player_b,
-        "player_b_endpoint": player_b_endpoint,
-    }
-
-
-def build_run_match_ack(match_id: str, status: str = Status.ACKNOWLEDGED) -> Dict[str, Any]:
-    """Build RUN_MATCH_ACK message (Referee → LM)."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.RUN_MATCH_ACK,
-        Field.MATCH_ID: match_id,
-        Field.STATUS: status,
-    }
+    warnings.warn(
+        "build_run_match_ack in league_manager_contracts is deprecated",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return _build_run_match_ack(match_id=match_id, referee_id="UNKNOWN", status=status)

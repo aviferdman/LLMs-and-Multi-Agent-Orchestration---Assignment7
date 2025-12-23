@@ -1,70 +1,39 @@
-"""Round lifecycle contract builders for League Manager."""
+"""Round lifecycle contract builders - Facade module.
 
-from typing import Any, Dict
+This module re-exports all round lifecycle contracts for backward compatibility.
+The actual implementations are split into smaller modules.
 
-from SHARED.constants import PROTOCOL_VERSION, Field, MessageType
+League Manager-sourced messages:
+- ROUND_ANNOUNCEMENT: LM → All Agents
+- ROUND_COMPLETED: LM → Players
+- LEAGUE_COMPLETED: LM → All Agents
+- LEAGUE_STANDINGS_UPDATE: LM → Players
+- LEAGUE_ERROR: LM → Agent
+- LEAGUE_QUERY_RESPONSE: LM → Player/Referee
+"""
 
+# Re-export round contracts
+from .round_contracts import (
+    build_round_announcement,
+    build_round_completed,
+)
 
-def build_round_announcement(
-    league_id: str, round_id: int, total_rounds: int, matches: list
-) -> Dict[str, Any]:
-    """Build ROUND_ANNOUNCEMENT message (LM → All agents)."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.ROUND_ANNOUNCEMENT,
-        Field.LEAGUE_ID: league_id,
-        Field.ROUND_ID: round_id,
-        "total_rounds": total_rounds,
-        "matches": matches,
-    }
+# Re-export standings contracts
+from .standings_contracts import (
+    build_league_completed,
+    build_league_error,
+    build_league_query_response,
+    build_league_standings_update,
+)
 
-
-def build_round_completed(league_id: str, round_id: int, results: list) -> Dict[str, Any]:
-    """Build ROUND_COMPLETED message (LM → All agents)."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.ROUND_COMPLETED,
-        Field.LEAGUE_ID: league_id,
-        Field.ROUND_ID: round_id,
-        "results": results,
-    }
-
-
-def build_league_completed(
-    league_id: str, final_standings: list, total_matches: int
-) -> Dict[str, Any]:
-    """Build LEAGUE_COMPLETED message (LM → All agents)."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.LEAGUE_COMPLETED,
-        Field.LEAGUE_ID: league_id,
-        "final_standings": final_standings,
-        "total_matches": total_matches,
-    }
-
-
-def build_league_standings_update(league_id: str, round_id: int, standings: list) -> Dict[str, Any]:
-    """Build LEAGUE_STANDINGS_UPDATE message (LM → All agents)."""
-    return {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.LEAGUE_STANDINGS_UPDATE,
-        Field.LEAGUE_ID: league_id,
-        Field.ROUND_ID: round_id,
-        "standings": standings,
-    }
-
-
-def build_league_error(
-    league_id: str, error_code: str, error_message: str, details: Dict[str, Any] = None
-) -> Dict[str, Any]:
-    """Build LEAGUE_ERROR message."""
-    msg = {
-        Field.PROTOCOL: PROTOCOL_VERSION,
-        Field.MESSAGE_TYPE: MessageType.LEAGUE_ERROR,
-        Field.LEAGUE_ID: league_id,
-        "error_code": error_code,
-        "error_message": error_message,
-    }
-    if details:
-        msg["details"] = details
-    return msg
+# Export all for wildcard imports
+__all__ = [
+    # Round management
+    "build_round_announcement",
+    "build_round_completed",
+    # Standings and completion
+    "build_league_completed",
+    "build_league_standings_update",
+    "build_league_error",
+    "build_league_query_response",
+]

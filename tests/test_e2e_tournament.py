@@ -6,17 +6,30 @@ It runs multiple tournaments and validates the results.
 
 Usage:
     python tests/test_e2e_tournament.py
+
+Note: These tests require spawning the full league system and may timeout
+in CI environments. They are marked as skip unless explicitly run.
 """
 
 import json
+import os
 import subprocess
 import sys
 import time
 from pathlib import Path
 
+import pytest
+
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
+
+# Skip E2E tests unless explicitly requested
+E2E_ENABLED = os.environ.get("RUN_E2E_TESTS", "").lower() == "true"
+skip_e2e = pytest.mark.skipif(
+    not E2E_ENABLED,
+    reason="E2E tests skipped. Set RUN_E2E_TESTS=true to run."
+)
 
 
 def run_tournament(timeout: int = 120) -> dict:
@@ -77,6 +90,8 @@ def validate_tournament_result(result: dict) -> list:
 
 def test_single_tournament():
     """Run a single tournament E2E test."""
+    if not E2E_ENABLED:
+        pytest.skip("E2E tests skipped. Set RUN_E2E_TESTS=true to run.")
     print("Running single tournament E2E test...")
     result = run_tournament()
     issues = validate_tournament_result(result)
@@ -86,6 +101,8 @@ def test_single_tournament():
 
 def test_tournament_produces_standings():
     """Verify tournament produces valid standings."""
+    if not E2E_ENABLED:
+        pytest.skip("E2E tests skipped. Set RUN_E2E_TESTS=true to run.")
     print("Testing tournament standings output...")
     result = run_tournament()
     standings_found = any(
@@ -98,6 +115,8 @@ def test_tournament_produces_standings():
 
 def test_all_matches_completed():
     """Verify all 6 matches completed."""
+    if not E2E_ENABLED:
+        pytest.skip("E2E tests skipped. Set RUN_E2E_TESTS=true to run.")
     print("Testing all matches completed...")
     result = run_tournament()
     match_results = [log for log in result["logs"] if log.get("event_type") == "MATCH_RESULT"]

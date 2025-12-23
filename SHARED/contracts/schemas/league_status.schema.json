@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "league_status.schema.json",
+  "title": "LEAGUE_STATUS",
+  "description": "League Manager → Launcher: Response to START_LEAGUE",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "LEAGUE_STATUS"
+    },
+    "sender": {
+      "const": "league_manager"
+    },
+    "league_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "running", "completed", "error"],
+      "description": "Current league status"
+    },
+    "current_round": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Current round number (0 if not started)"
+    },
+    "total_rounds": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Total rounds in the league"
+    },
+    "matches_completed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of matches completed so far"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "league_id", "status", "current_round", "total_rounds", "matches_completed"]
+}

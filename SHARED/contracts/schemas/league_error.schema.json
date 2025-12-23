@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "league_error.schema.json",
+  "title": "LEAGUE_ERROR",
+  "description": "League Manager → Agent: League-level error occurs",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "LEAGUE_ERROR"
+    },
+    "sender": {
+      "const": "league_manager"
+    },
+    "error_code": {
+      "type": "string",
+      "pattern": "^E[0-9]{3}$",
+      "description": "Error code (E001-E999)"
+    },
+    "error_description": {
+      "type": "string",
+      "description": "Human-readable error description"
+    },
+    "original_message_type": {
+      "type": ["string", "null"],
+      "description": "Message type that caused the error"
+    },
+    "context": {
+      "type": ["object", "null"],
+      "description": "Additional error context"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "error_code", "error_description"]
+}

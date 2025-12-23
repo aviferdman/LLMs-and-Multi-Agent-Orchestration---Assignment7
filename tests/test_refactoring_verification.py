@@ -69,7 +69,8 @@ def test_messages():
     print("Testing message utilities...")
     from SHARED.league_sdk.messages import build_game_invitation, validate_message
 
-    msg = build_game_invitation("l1", 1, "m1", "REF01", "P01", "P02")
+    # build_game_invitation requires role_in_match parameter
+    msg = build_game_invitation("l1", 1, "m1", "REF01", "P01", "P02", "player_a")
     print(f"  ✓ Message built & validated: {validate_message(msg)}")
     return True
 

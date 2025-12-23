@@ -117,7 +117,8 @@ def test_handle_game_join_ack():
 def test_handle_parity_choice_valid():
     """Test handle_parity_choice with valid choice."""
     ctx = MatchContext("M1", "P01", "P02")
-    msg = {"sender": "P01", "choice": "even"}
+    # Use correct field name "parity_choice" per protocol
+    msg = {"sender": "P01", "parity_choice": "even"}
     assert handle_parity_choice(msg, ctx, LeagueLogger("test", Path("test_logs")))
     assert ctx.player_a_choice == "even"
 
@@ -125,7 +126,8 @@ def test_handle_parity_choice_valid():
 def test_handle_parity_choice_invalid():
     """Test handle_parity_choice with invalid choice."""
     ctx = MatchContext("M1", "P01", "P02")
-    msg = {"sender": "P01", "choice": "BLUE"}
+    # Use correct field name "parity_choice" per protocol
+    msg = {"sender": "P01", "parity_choice": "BLUE"}
     assert not handle_parity_choice(msg, ctx, LeagueLogger("test", Path("test_logs")))
 
 

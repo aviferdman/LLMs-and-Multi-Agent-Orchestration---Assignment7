@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "game_error.schema.json",
+  "title": "GAME_ERROR",
+  "description": "Referee → Player: Game-level error occurs",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "GAME_ERROR"
+    },
+    "sender": {
+      "type": "string",
+      "pattern": "^referee:.+$"
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "error_code": {
+      "type": "string",
+      "pattern": "^E[0-9]{3}$",
+      "description": "Error code (E001-E999)"
+    },
+    "error_description": {
+      "type": "string",
+      "description": "Human-readable error description"
+    },
+    "affected_player": {
+      "type": "string",
+      "description": "Player ID affected by the error"
+    },
+    "action_required": {
+      "type": "string",
+      "description": "Action that was expected from the player"
+    },
+    "retry_info": {
+      "type": ["object", "null"],
+      "properties": {
+        "retry_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "next_retry_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "Retry information if applicable"
+    },
+    "consequence": {
+      "type": ["string", "null"],
+      "description": "Consequence if error persists"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "match_id", "error_code", "error_description", "affected_player", "action_required"]
+}

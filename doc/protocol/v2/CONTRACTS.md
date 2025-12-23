@@ -604,7 +604,7 @@
   "sender": "league_manager",
   "timestamp": "2025-01-15T09:01:01Z",
   "conversation_id": "conv-p01-registration",
-  "status": "ACCEPTED",
+  "status": "ACCEPTED | REJECTED",
   "player_id": "P01",
   "reason": null
 }
@@ -714,65 +714,7 @@
 
 ---
 
-## 4. LAUNCHER SOURCE
-
-### 4.1 START_LEAGUE
-**Direction**: Launcher → League Manager  
-**Endpoint**: `POST /mcp`  
-**When**: Starting the league
-
-**Fields:**
-
-| Field | Type | Required |
-|-------|------|----------|
-| `protocol` | string | ✅ |
-| `message_type` | string | ✅ |
-| `league_id` | string | ✅ |
-| `sender` | string | ✅ |
-
-**Example:**
-```json
-{
-  "protocol": "league.v2",
-  "message_type": "START_LEAGUE",
-  "sender": "launcher",
-  "timestamp": "2025-01-15T09:30:00Z",
-  "conversation_id": "conv-start-league",
-  "league_id": "league_2025_even_odd"
-}
-```
-
-**Response: LEAGUE_STATUS**
-
-| Field | Type | Required |
-|-------|------|----------|
-| `protocol` | string | ✅ |
-| `message_type` | string | ✅ |
-| `league_id` | string | ✅ |
-| `status` | string | ✅ |
-| `current_round` | integer | ✅ |
-| `total_rounds` | integer | ✅ |
-| `matches_completed` | integer | ✅ |
-
-**Example:**
-```json
-{
-  "protocol": "league.v2",
-  "message_type": "LEAGUE_STATUS",
-  "sender": "league_manager",
-  "timestamp": "2025-01-15T09:30:01Z",
-  "conversation_id": "conv-start-league",
-  "league_id": "league_2025_even_odd",
-  "status": "running",
-  "current_round": 1,
-  "total_rounds": 3,
-  "matches_completed": 0
-}
-```
-
----
-
-## 5. ERRORS
+## 4. ERRORS
 
 ### Error Codes
 

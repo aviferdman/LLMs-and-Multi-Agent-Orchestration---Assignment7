@@ -44,7 +44,13 @@ async def register_referee(referee_id: str, endpoint: str, logger: LeagueLogger)
     """Register referee with league manager."""
     from SHARED.contracts import build_referee_register_request
 
-    message = build_referee_register_request(referee_id, endpoint)
+    message = build_referee_register_request(
+        referee_id=referee_id,
+        display_name=f"Referee {referee_id}",
+        version="1.0.0",
+        contact_endpoint=endpoint,
+        game_types=["even_odd"],
+    )
     response = await send(_lm_endpoint, message)
     logger.log_message(
         LogEvent.REFEREE_REGISTERED,
@@ -56,7 +62,13 @@ async def register_player(player_id: str, endpoint: str, logger: LeagueLogger):
     """Register player with league manager."""
     from SHARED.contracts import build_league_register_request
 
-    message = build_league_register_request(player_id, endpoint)
+    message = build_league_register_request(
+        player_id=player_id,
+        display_name=f"Player {player_id}",
+        version="1.0.0",
+        contact_endpoint=endpoint,
+        game_types=["even_odd"],
+    )
     response = await send(_lm_endpoint, message)
     logger.log_message(
         LogEvent.PLAYER_REGISTERED,

@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "base_message.schema.json",
+  "title": "Base Message Schema",
+  "description": "Common fields required in all protocol messages (league.v2)",
+  "type": "object",
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const": "league.v2",
+      "description": "Protocol version identifier"
+    },
+    "message_type": {
+      "type": "string",
+      "description": "Type of the message"
+    },
+    "sender": {
+      "type": "string",
+      "pattern": "^(player:|referee:|league_manager|launcher).*$",
+      "description": "Sender identifier in format 'player:ID', 'referee:ID', 'league_manager', or 'launcher'"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": ".*Z$",
+      "description": "ISO-8601 timestamp ending with Z"
+    },
+    "conversation_id": {
+      "type": "string",
+      "description": "Unique conversation identifier for message correlation"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id"]
+}

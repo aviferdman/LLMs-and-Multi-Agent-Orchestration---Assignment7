@@ -98,8 +98,13 @@ def handle_parity_choice(
 ) -> bool:
     """Handle parity choice from player."""
     player_id = message.get(Field.SENDER)
-    choice = message.get(Field.CHOICE)
+    # Try both field names for compatibility
+    choice = message.get(Field.PARITY_CHOICE) or message.get(Field.CHOICE)
     valid_choices = [ParityChoice.EVEN, ParityChoice.ODD]
+
+    if choice is None:
+        logger.log_error("MISSING_CHOICE", f"Player {player_id}: no choice provided")
+        return False
 
     if choice.lower() not in valid_choices:
         logger.log_error("INVALID_CHOICE", f"Player {player_id}: {choice}")

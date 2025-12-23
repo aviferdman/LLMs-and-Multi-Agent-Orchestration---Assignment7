@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "run_match_ack.schema.json",
+  "title": "RUN_MATCH_ACK",
+  "description": "Referee → League Manager: Acknowledgment of match assignment",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "RUN_MATCH_ACK"
+    },
+    "sender": {
+      "type": "string",
+      "pattern": "^referee:.+$"
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["acknowledged", "error"],
+      "description": "Acknowledgment status"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "match_id", "status"]
+}

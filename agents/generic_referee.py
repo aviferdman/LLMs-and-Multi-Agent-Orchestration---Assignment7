@@ -13,12 +13,14 @@ from fastapi.responses import JSONResponse
 
 from agents.referee_game_logic import get_game_rules
 from agents.referee_http_handlers import (
+    handle_broadcast_message,
     handle_game_join_ack,
     handle_parity_choice,
-    handle_run_match,
+    handle_round_announcement,
 )
 from agents.referee_match_runner import run_match_phases
 from SHARED.constants import (
+    AGENT_VERSION,
     HTTP_PROTOCOL,
     LOCALHOST,
     MCP_PATH,
@@ -58,16 +60,17 @@ class GenericReferee:
                 message = await request.json()
                 self.logger.log_message(LogEvent.RECEIVED, message)
                 msg_type = message.get(Field.MESSAGE_TYPE)
-                if msg_type == MessageType.RUN_MATCH:
-                    response = handle_run_match(message, self, background_tasks)
+                if msg_type == MessageType.ROUND_ANNOUNCEMENT:
+                    response = handle_round_announcement(message, self, background_tasks)
                 elif msg_type == MessageType.GAME_JOIN_ACK:
                     response = handle_game_join_ack(message, self)
                 elif msg_type == MessageType.PARITY_CHOICE:
                     response = handle_parity_choice(message, self)
-                elif msg_type == MessageType.LEAGUE_COMPLETED:
-                    self.logger.log_message("LEAGUE_COMPLETED_RECEIVED", {})
-                    response = {Field.STATUS: Status.ACKNOWLEDGED}
-                    asyncio.create_task(self._shutdown_gracefully())
+                elif msg_type in (MessageType.ROUND_COMPLETED, MessageType.LEAGUE_STANDINGS_UPDATE,
+                                  MessageType.LEAGUE_COMPLETED):
+                    response = handle_broadcast_message(message, self)
+                    if msg_type == MessageType.LEAGUE_COMPLETED:
+                        asyncio.create_task(self._shutdown_gracefully())
                 elif msg_type == MessageType.SHUTDOWN_COMMAND:
                     self.logger.log_message("SHUTDOWN_RECEIVED", {})
                     response = {Field.STATUS: Status.ACKNOWLEDGED}
@@ -92,7 +95,13 @@ class GenericReferee:
     async def register_with_league_manager(self):
         try:
             await asyncio.sleep(2)
-            register_msg = build_referee_register_request(self.referee_id, self.endpoint)
+            register_msg = build_referee_register_request(
+                referee_id=self.referee_id,
+                display_name=f"Referee {self.referee_id}",
+                version=AGENT_VERSION,
+                contact_endpoint=self.endpoint,
+                game_types=[self.game_type],
+            )
             self.logger.log_message("REGISTERING", {"endpoint": _lm_endpoint})
             response = await send_with_retry(
                 _lm_endpoint,
@@ -118,7 +127,6 @@ class GenericReferee:
         await asyncio.sleep(1)
         self.logger.log_message("SHUTDOWN_INITIATED", {Field.REFEREE_ID: self.referee_id})
         import os
-
         os._exit(0)
 
     def run(self):

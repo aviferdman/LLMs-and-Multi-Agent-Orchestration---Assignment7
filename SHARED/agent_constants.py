@@ -25,6 +25,10 @@ class GameID:
     EVEN_ODD = "even_odd"
 
 
+# Agent version for registration messages
+AGENT_VERSION = "1.0.0"
+
+
 class GameStatus:
     """Game/Match status values."""
 

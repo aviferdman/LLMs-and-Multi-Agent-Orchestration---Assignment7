@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "match_result_ack.schema.json",
+  "title": "MATCH_RESULT_ACK",
+  "description": "League Manager → Referee: Acknowledgment of match result",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "MATCH_RESULT_ACK"
+    },
+    "sender": {
+      "const": "league_manager"
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["recorded", "error"],
+      "description": "Result recording status"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "match_id", "status"]
+}

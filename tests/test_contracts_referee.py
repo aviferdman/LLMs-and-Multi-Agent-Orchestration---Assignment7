@@ -1,7 +1,7 @@
 """Referee contract compliance tests.
 
 Tests all Referee message contracts as defined in
-doc/protocol/v2/REFEREE.md
+doc/protocol/v2/CONTRACTS.md
 """
 
 import sys
@@ -35,6 +35,8 @@ class TestGameInvitationContract:
             referee_id="REF01",
             player_id="P01",
             opponent_id="P02",
+            role_in_match="player_a",
+            game_type="even_odd",
         )
 
         # Base message fields
@@ -43,13 +45,14 @@ class TestGameInvitationContract:
         assert msg[Field.LEAGUE_ID] == "league_2025"
         assert msg[Field.ROUND_ID] == 1
         assert msg[Field.MATCH_ID] == "R1M1"
-        assert Field.CONVERSATION_ID in msg
-        assert msg[Field.SENDER] == "REF01"
+        assert msg[Field.SENDER] == "referee:REF01"
         assert Field.TIMESTAMP in msg
+        assert Field.CONVERSATION_ID in msg
 
         # Game invitation specific fields
-        assert msg[Field.PLAYER_ID] == "P01"
         assert msg[Field.OPPONENT_ID] == "P02"
+        assert msg[Field.ROLE_IN_MATCH] == "player_a"
+        assert msg[Field.GAME_TYPE] == "even_odd"
 
     def test_game_invitation_is_valid_base_message(self):
         """GAME_INVITATION must pass base message validation."""
@@ -60,6 +63,7 @@ class TestGameInvitationContract:
             referee_id="REF01",
             player_id="P01",
             opponent_id="P02",
+            role_in_match="player_a",
         )
         assert validate_base_message(msg) is True
 
@@ -72,6 +76,7 @@ class TestGameInvitationContract:
             referee_id="REF01",
             player_id="P01",
             opponent_id="P02",
+            role_in_match="player_b",
         )
         assert msg[Field.TIMESTAMP].endswith("Z")
 
@@ -87,15 +92,21 @@ class TestChooseParityCallContract:
             match_id="R1M1",
             referee_id="REF01",
             player_id="P01",
+            opponent_id="P02",
+            player_standings={"wins": 0, "losses": 0, "draws": 0},
+            timeout_seconds=30,
         )
 
         assert msg[Field.PROTOCOL] == PROTOCOL_VERSION
         assert msg[Field.MESSAGE_TYPE] == MessageType.CHOOSE_PARITY_CALL
-        assert msg[Field.LEAGUE_ID] == "league_2025"
-        assert msg[Field.ROUND_ID] == 1
+        # Note: league_id and round_id are in context, not top-level
         assert msg[Field.MATCH_ID] == "R1M1"
-        assert msg[Field.SENDER] == "REF01"
+        assert msg[Field.SENDER] == "referee:REF01"
         assert msg[Field.PLAYER_ID] == "P01"
+        assert Field.DEADLINE in msg
+        assert Field.CONTEXT in msg
+        assert msg[Field.CONTEXT]["opponent_id"] == "P02"
+        assert msg[Field.CONTEXT]["round_id"] == 1
 
     def test_choose_parity_call_is_valid_base_message(self):
         """CHOOSE_PARITY_CALL must pass base message validation."""
@@ -105,6 +116,9 @@ class TestChooseParityCallContract:
             match_id="R1M1",
             referee_id="REF01",
             player_id="P01",
+            opponent_id="P02",
+            player_standings={},
+            timeout_seconds=30,
         )
         assert validate_base_message(msg) is True
 
@@ -119,36 +133,40 @@ class TestGameOverContract:
             round_id=1,
             match_id="R1M1",
             referee_id="REF01",
-            winner="P01",
+            status="WIN",
+            winner_player_id="P01",
             drawn_number=8,
-            player_a_choice=ParityChoice.EVEN,
-            player_b_choice=ParityChoice.ODD,
+            number_parity="even",
+            choices={"P01": "even", "P02": "odd"},
+            reason="P01 correctly predicted even parity",
         )
 
         assert msg[Field.PROTOCOL] == PROTOCOL_VERSION
         assert msg[Field.MESSAGE_TYPE] == MessageType.GAME_OVER
-        assert msg[Field.LEAGUE_ID] == "league_2025"
-        assert msg[Field.ROUND_ID] == 1
+        # Note: league_id and round_id are not top-level in GAME_OVER
         assert msg[Field.MATCH_ID] == "R1M1"
-        assert msg[Field.SENDER] == "REF01"
-        assert msg[Field.WINNER] == "P01"
-        assert msg[Field.DRAWN_NUMBER] == 8
-        assert msg[Field.PLAYER_A_CHOICE] == ParityChoice.EVEN
-        assert msg[Field.PLAYER_B_CHOICE] == ParityChoice.ODD
+        assert msg[Field.SENDER] == "referee:REF01"
+        assert Field.GAME_RESULT in msg
+        assert msg[Field.GAME_RESULT]["status"] == "WIN"
+        assert msg[Field.GAME_RESULT]["winner_player_id"] == "P01"
+        assert msg[Field.GAME_RESULT]["drawn_number"] == 8
 
-    def test_game_over_with_draw_winner(self):
-        """GAME_OVER winner can be 'draw'."""
+    def test_game_over_with_draw(self):
+        """GAME_OVER can indicate a draw."""
         msg = build_game_over(
             league_id="league_2025",
             round_id=1,
             match_id="R1M1",
             referee_id="REF01",
-            winner=Winner.DRAW,
+            status="DRAW",
+            winner_player_id=None,
             drawn_number=5,
-            player_a_choice=ParityChoice.ODD,
-            player_b_choice=ParityChoice.ODD,
+            number_parity="odd",
+            choices={"P01": "odd", "P02": "odd"},
+            reason="Both players chose odd",
         )
-        assert msg[Field.WINNER] == Winner.DRAW
+        assert msg[Field.GAME_RESULT]["status"] == "DRAW"
+        assert msg[Field.GAME_RESULT]["winner_player_id"] is None
 
     def test_game_over_drawn_number_range(self):
         """GAME_OVER drawn_number must be 1-10."""
@@ -158,12 +176,14 @@ class TestGameOverContract:
                 round_id=1,
                 match_id="R1M1",
                 referee_id="REF01",
-                winner="P01",
+                status="WIN",
+                winner_player_id="P01",
                 drawn_number=num,
-                player_a_choice=ParityChoice.EVEN,
-                player_b_choice=ParityChoice.ODD,
+                number_parity="even" if num % 2 == 0 else "odd",
+                choices={"P01": "even", "P02": "odd"},
+                reason="test",
             )
-            assert 1 <= msg[Field.DRAWN_NUMBER] <= 10
+            assert 1 <= msg[Field.GAME_RESULT]["drawn_number"] <= 10
 
     def test_game_over_is_valid_base_message(self):
         """GAME_OVER must pass base message validation."""
@@ -172,10 +192,12 @@ class TestGameOverContract:
             round_id=1,
             match_id="R1M1",
             referee_id="REF01",
-            winner="P01",
+            status="WIN",
+            winner_player_id="P01",
             drawn_number=8,
-            player_a_choice=ParityChoice.EVEN,
-            player_b_choice=ParityChoice.ODD,
+            number_parity="even",
+            choices={"P01": "even", "P02": "odd"},
+            reason="normal win",
         )
         assert validate_base_message(msg) is True
 
@@ -190,9 +212,10 @@ class TestMatchResultReportContract:
             round_id=1,
             match_id="R1M1",
             referee_id="REF01",
-            player_a="P01",
-            player_b="P02",
             winner="P01",
+            score={"P01": 1, "P02": 0},
+            drawn_number=8,
+            choices={"P01": "even", "P02": "odd"},
         )
 
         assert msg[Field.PROTOCOL] == PROTOCOL_VERSION
@@ -200,10 +223,9 @@ class TestMatchResultReportContract:
         assert msg[Field.LEAGUE_ID] == "league_2025"
         assert msg[Field.ROUND_ID] == 1
         assert msg[Field.MATCH_ID] == "R1M1"
-        assert msg[Field.SENDER] == "REF01"
-        assert msg[Field.PLAYER_A] == "P01"
-        assert msg[Field.PLAYER_B] == "P02"
-        assert msg[Field.WINNER] == "P01"
+        assert msg[Field.SENDER] == "referee:REF01"
+        assert Field.RESULT in msg
+        assert msg[Field.RESULT]["winner"] == "P01"
 
     def test_match_result_report_with_draw(self):
         """MATCH_RESULT_REPORT winner can be 'draw'."""
@@ -212,11 +234,12 @@ class TestMatchResultReportContract:
             round_id=1,
             match_id="R1M1",
             referee_id="REF01",
-            player_a="P01",
-            player_b="P02",
-            winner=Winner.DRAW,
+            winner="draw",
+            score={"P01": 0, "P02": 0},
+            drawn_number=5,
+            choices={"P01": "odd", "P02": "odd"},
         )
-        assert msg[Field.WINNER] == Winner.DRAW
+        assert msg[Field.RESULT]["winner"] == "draw"
 
     def test_match_result_report_is_valid_base_message(self):
         """MATCH_RESULT_REPORT must pass base message validation."""
@@ -225,9 +248,10 @@ class TestMatchResultReportContract:
             round_id=1,
             match_id="R1M1",
             referee_id="REF01",
-            player_a="P01",
-            player_b="P02",
             winner="P01",
+            score={"P01": 1, "P02": 0},
+            drawn_number=8,
+            choices={"P01": "even", "P02": "odd"},
         )
         assert validate_base_message(msg) is True
 
@@ -238,46 +262,45 @@ class TestGameErrorContract:
     def test_game_error_structure(self):
         """GAME_ERROR must have all required fields."""
         msg = build_game_error(
-            league_id="league_2025",
-            round_id=1,
             match_id="R1M1",
             referee_id="REF01",
             error_code="E001",
-            error_message="Response timeout",
+            error_description="Response timeout",
+            affected_player="P01",
+            action_required="CHOOSE_PARITY_RESPONSE",
         )
 
         assert msg[Field.PROTOCOL] == PROTOCOL_VERSION
         assert msg[Field.MESSAGE_TYPE] == MessageType.GAME_ERROR
-        assert msg[Field.LEAGUE_ID] == "league_2025"
-        assert msg[Field.ROUND_ID] == 1
         assert msg[Field.MATCH_ID] == "R1M1"
-        assert msg["error_code"] == "E001"
-        assert msg["error_message"] == "Response timeout"
+        assert msg[Field.ERROR_CODE] == "E001"
+        assert msg[Field.ERROR_DESCRIPTION] == "Response timeout"
+        assert msg[Field.AFFECTED_PLAYER] == "P01"
 
     def test_game_error_with_details(self):
-        """GAME_ERROR can include optional details."""
+        """GAME_ERROR can include optional retry info."""
         msg = build_game_error(
-            league_id="league_2025",
-            round_id=1,
             match_id="R1M1",
             referee_id="REF01",
             error_code="E001",
-            error_message="Response timeout",
-            details={"player_id": "P01", "timeout_seconds": 30},
+            error_description="Response timeout",
+            affected_player="P01",
+            action_required="CHOOSE_PARITY_RESPONSE",
+            retry_info={"can_retry": False, "reason": "timeout exceeded"},
         )
 
-        assert msg["details"]["player_id"] == "P01"
-        assert msg["details"]["timeout_seconds"] == 30
+        assert msg[Field.RETRY_INFO]["can_retry"] is False
+        assert msg[Field.RETRY_INFO]["reason"] == "timeout exceeded"
 
     def test_game_error_is_valid_base_message(self):
         """GAME_ERROR must pass base message validation."""
         msg = build_game_error(
-            league_id="league_2025",
-            round_id=1,
             match_id="R1M1",
             referee_id="REF01",
             error_code="E001",
-            error_message="Timeout",
+            error_description="Timeout",
+            affected_player="P01",
+            action_required="CHOOSE_PARITY_RESPONSE",
         )
         assert validate_base_message(msg) is True
 
@@ -291,34 +314,6 @@ class TestWinnerValues:
         assert Winner.PLAYER_B == "PLAYER_B"
         assert Winner.DRAW == "DRAW"
 
-    def test_game_over_accepts_player_id_as_winner(self):
-        """GAME_OVER accepts specific player ID as winner."""
-        msg = build_game_over(
-            league_id="league_2025",
-            round_id=1,
-            match_id="R1M1",
-            referee_id="REF01",
-            winner="P01",  # Specific player ID
-            drawn_number=8,
-            player_a_choice=ParityChoice.EVEN,
-            player_b_choice=ParityChoice.ODD,
-        )
-        assert msg[Field.WINNER] == "P01"
-
-    def test_game_over_accepts_generic_winner(self):
-        """GAME_OVER accepts generic winner constants."""
-        msg = build_game_over(
-            league_id="league_2025",
-            round_id=1,
-            match_id="R1M1",
-            referee_id="REF01",
-            winner=Winner.PLAYER_A,
-            drawn_number=8,
-            player_a_choice=ParityChoice.EVEN,
-            player_b_choice=ParityChoice.ODD,
-        )
-        assert msg[Field.WINNER] == Winner.PLAYER_A
-
 
 class TestParityChoiceValues:
     """Test valid parity choice values."""
@@ -327,18 +322,3 @@ class TestParityChoiceValues:
         """Parity choice constants must be defined per spec (lowercase)."""
         assert ParityChoice.EVEN == "even"
         assert ParityChoice.ODD == "odd"
-
-    def test_game_over_uses_correct_choices(self):
-        """GAME_OVER choices must use constant values."""
-        msg = build_game_over(
-            league_id="league_2025",
-            round_id=1,
-            match_id="R1M1",
-            referee_id="REF01",
-            winner="P01",
-            drawn_number=8,
-            player_a_choice=ParityChoice.EVEN,
-            player_b_choice=ParityChoice.ODD,
-        )
-        assert msg[Field.PLAYER_A_CHOICE] == ParityChoice.EVEN
-        assert msg[Field.PLAYER_B_CHOICE] == ParityChoice.ODD
