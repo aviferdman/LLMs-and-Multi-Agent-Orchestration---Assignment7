@@ -41,7 +41,9 @@ def test_load_league_config():
     assert config.league_id == league_id
     assert config.game_type == "even_odd"
     assert hasattr(config, "scoring")
-    assert config.total_rounds == 3
+    assert config.status == "ACTIVE"
+    assert config.participants is not None
+    assert config.participants.min_players == 2
 
 
 def test_load_agent_config():
@@ -56,15 +58,17 @@ def test_load_agent_config():
     # Verify league manager
     lm = config["league_manager"]
     assert lm["agent_id"] == "LM01"
-    assert lm["port"] == 8000
+    assert lm["version"] == "1.0.0"
 
     # Verify referees
     assert len(config["referees"]) == 2
     assert config["referees"][0]["referee_id"] == "REF01"
+    assert config["referees"][0]["max_concurrent_matches"] == 1
 
     # Verify players
     assert len(config["players"]) == 4
     assert config["players"][0]["player_id"] == "P01"
+    assert config["players"][0]["active"] is True
 
 
 def test_load_game_config():

@@ -1,7 +1,7 @@
 """Configuration data models for the league system."""
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from SHARED.protocol_constants import PROTOCOL_VERSION
 
@@ -12,9 +12,18 @@ class SystemConfig:
 
     schema_version: str
     protocol_version: str = PROTOCOL_VERSION
-    active_league_id: str = ""  # The active league to run (game-agnostic)
+    system_id: str = ""
+    active_league_id: str = ""
     timeouts: Dict[str, int] = field(default_factory=dict)
-    retry_policy: Dict[str, int] = field(default_factory=dict)
+    retry_policy: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ParticipantsConfig:
+    """Participants limits configuration."""
+
+    min_players: int = 2
+    max_players: int = 10000
 
 
 @dataclass
@@ -24,8 +33,8 @@ class LeagueConfig:
     league_id: str
     game_type: str
     scoring: Dict[str, int]
-    total_rounds: int
-    matches_per_round: int = 2
+    status: str = "ACTIVE"
+    participants: Optional[ParticipantsConfig] = None
 
 
 @dataclass
@@ -34,10 +43,11 @@ class PlayerConfig:
 
     player_id: str
     display_name: str
-    endpoint: str
-    port: int
-    game_types: List[str]
-    strategy: Optional[str] = None
+    version: str = "1.0.0"
+    preferred_leagues: List[str] = field(default_factory=list)
+    game_types: List[str] = field(default_factory=list)
+    default_endpoint: str = ""
+    active: bool = True
 
 
 @dataclass
@@ -47,8 +57,10 @@ class RefereeConfig:
     referee_id: str
     display_name: str
     endpoint: str
-    port: int
-    game_types: List[str]
+    version: str = "1.0.0"
+    game_types: List[str] = field(default_factory=list)
+    max_concurrent_matches: int = 1
+    active: bool = True
 
 
 @dataclass
@@ -59,4 +71,4 @@ class GameConfig:
     game_name: str
     rules_version: str
     max_players: int
-    metadata: Dict[str, any] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)

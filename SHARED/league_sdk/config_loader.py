@@ -29,6 +29,7 @@ def load_system_config(config_dir: Path = None) -> SystemConfig:
     return SystemConfig(
         schema_version=data["schema_version"],
         protocol_version=data.get("protocol_version", PROTOCOL_VERSION),
+        system_id=data.get("system_id", ""),
         active_league_id=data.get("active_league_id", ""),
         timeouts=data.get("timeouts", {}),
         retry_policy=data.get("retry_policy", {}),
@@ -43,12 +44,20 @@ def load_league_config(league_id: str, config_dir: Path = None) -> LeagueConfig:
     config_path = config_dir / f"{league_id}.json"
     data = _load_json(config_path)
 
+    participants = None
+    if "participants" in data:
+        from .config_models import ParticipantsConfig
+        participants = ParticipantsConfig(
+            min_players=data["participants"].get("min_players", 2),
+            max_players=data["participants"].get("max_players", 10000),
+        )
+
     return LeagueConfig(
         league_id=data["league_id"],
         game_type=data["game_type"],
         scoring=data["scoring"],
-        total_rounds=data["total_rounds"],
-        matches_per_round=data.get("matches_per_round", 2),
+        status=data.get("status", "ACTIVE"),
+        participants=participants,
     )
 
 

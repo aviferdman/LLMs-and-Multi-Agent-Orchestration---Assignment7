@@ -66,10 +66,10 @@ class TestTimeoutConfiguration:
     """Test timeout configuration values."""
 
     def test_parity_choice_timeout_defined(self):
-        """parity_choice timeout should be defined in system config."""
+        """move_timeout_sec should be defined in system config."""
         config = load_system_config()
-        assert "parity_choice" in config.timeouts
-        assert isinstance(config.timeouts["parity_choice"], (int, float))
+        assert "move_timeout_sec" in config.timeouts
+        assert isinstance(config.timeouts["move_timeout_sec"], (int, float))
 
     def test_parity_choice_timeout_reasonable(self):
         """parity_choice timeout should be a reasonable value (1-120 seconds)."""
@@ -78,10 +78,10 @@ class TestTimeoutConfiguration:
         assert 1 <= timeout <= 120
 
     def test_http_request_timeout_defined(self):
-        """http_request timeout should be defined for HTTP calls."""
+        """generic_response_timeout_sec should be defined for HTTP calls."""
         config = load_system_config()
-        assert "http_request" in config.timeouts
-        assert isinstance(config.timeouts["http_request"], (int, float))
+        assert "generic_response_timeout_sec" in config.timeouts
+        assert isinstance(config.timeouts["generic_response_timeout_sec"], (int, float))
 
 
 class TestTimeoutHandlingScenarios:

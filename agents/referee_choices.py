@@ -2,7 +2,20 @@
 
 from SHARED.constants import Field, LogEvent, Winner
 from SHARED.contracts import build_choose_parity_call
+from SHARED.contracts.jsonrpc_helpers import extract_jsonrpc_params, is_jsonrpc_request
 from SHARED.league_sdk.agent_comm import send
+
+
+def _extract_choice(resp: dict) -> str:
+    """Extract parity choice from JSON-RPC envelope if present."""
+    if not resp:
+        return None
+    # If response is a JSON-RPC request, extract from params
+    if is_jsonrpc_request(resp):
+        params = extract_jsonrpc_params(resp)
+        return params.get(Field.PARITY_CHOICE)
+    # Otherwise look directly in response
+    return resp.get(Field.PARITY_CHOICE)
 
 
 async def collect_choices(
@@ -32,16 +45,9 @@ async def collect_choices(
         timeout_seconds=30,
     )
     resp_a, resp_b = await send(ep_a, req_a), await send(ep_b, req_b)
-    choice_a = (
-        resp_a.get(Field.PARITY_CHOICE)
-        if resp_a and Field.PARITY_CHOICE in resp_a
-        else None
-    )
-    choice_b = (
-        resp_b.get(Field.PARITY_CHOICE)
-        if resp_b and Field.PARITY_CHOICE in resp_b
-        else None
-    )
+    # Extract choices from JSON-RPC envelope if present
+    choice_a = _extract_choice(resp_a)
+    choice_b = _extract_choice(resp_b)
     if choice_a:
         context.record_choice(player_a, choice_a)
     if choice_b:

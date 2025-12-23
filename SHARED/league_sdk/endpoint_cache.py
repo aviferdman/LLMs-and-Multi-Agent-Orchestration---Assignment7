@@ -38,7 +38,8 @@ class EndpointCache:
         """Build player endpoint lookup from config."""
         for player in self.config.get("players", []):
             player_id = player.get("player_id")
-            endpoint = player.get("endpoint")
+            # Support both 'endpoint' and 'default_endpoint' field names
+            endpoint = player.get("endpoint") or player.get("default_endpoint")
             if player_id and endpoint:
                 self.player_endpoints[player_id] = endpoint
 
