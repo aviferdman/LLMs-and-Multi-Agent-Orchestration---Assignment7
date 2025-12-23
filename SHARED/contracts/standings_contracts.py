@@ -6,7 +6,9 @@ Handles standings updates, league completion, and query messages.
 from typing import Any, Dict, List, Optional
 
 from SHARED.constants import PROTOCOL_VERSION, Field, MessageType
-from SHARED.protocol_constants import generate_conversation_id, generate_timestamp
+from SHARED.protocol_constants import JSONRPCMethod, generate_conversation_id, generate_timestamp
+
+from .jsonrpc_helpers import wrap_jsonrpc_request, wrap_jsonrpc_response
 
 
 def build_league_completed(
@@ -17,25 +19,8 @@ def build_league_completed(
     final_standings: List[Dict[str, Any]],
     conversation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Build LEAGUE_COMPLETED message.
-
-    Sent by league manager to all agents when league is finished.
-
-    Args:
-        league_id: League identifier
-        total_rounds: Total rounds played
-        total_matches: Total matches played
-        champion: Champion info with:
-            - player_id: Champion player ID
-            - display_name: Champion display name (optional)
-            - points: Champion's total points
-        final_standings: List of standing entries with rank, player_id, points
-        conversation_id: Optional conversation ID
-
-    Returns:
-        LEAGUE_COMPLETED message dictionary
-    """
-    return {
+    """Build LEAGUE_COMPLETED message. Sent by LM to all agents when league is finished."""
+    params = {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.LEAGUE_COMPLETED,
         Field.SENDER: "league_manager",
@@ -47,6 +32,7 @@ def build_league_completed(
         Field.CHAMPION: champion,
         Field.FINAL_STANDINGS: final_standings,
     }
+    return wrap_jsonrpc_request(JSONRPCMethod.LEAGUE_COMPLETED, params, agent_id="LM")
 
 
 def build_league_standings_update(
@@ -55,20 +41,8 @@ def build_league_standings_update(
     standings: List[Dict[str, Any]],
     conversation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Build LEAGUE_STANDINGS_UPDATE message.
-
-    Sent by league manager to players after each round completion.
-
-    Args:
-        league_id: League identifier
-        round_id: Round number after which standings are updated
-        standings: List of standing entries with rank, player_id, etc.
-        conversation_id: Optional conversation ID
-
-    Returns:
-        LEAGUE_STANDINGS_UPDATE message dictionary
-    """
-    return {
+    """Build LEAGUE_STANDINGS_UPDATE message. Sent by LM to players after each round."""
+    params = {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.LEAGUE_STANDINGS_UPDATE,
         Field.SENDER: "league_manager",
@@ -78,6 +52,7 @@ def build_league_standings_update(
         Field.ROUND_ID: round_id,
         Field.STANDINGS: standings,
     }
+    return wrap_jsonrpc_request(JSONRPCMethod.LEAGUE_STANDINGS_UPDATE, params, agent_id="LM")
 
 
 def build_league_error(
@@ -87,21 +62,8 @@ def build_league_error(
     context: Optional[Dict[str, Any]] = None,
     conversation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Build LEAGUE_ERROR message.
-
-    Sent by league manager when a league-level error occurs.
-
-    Args:
-        error_code: Error code (e.g., 'E012')
-        error_description: Error description (e.g., 'AUTH_TOKEN_INVALID')
-        original_message_type: Message type that caused the error
-        context: Additional error context
-        conversation_id: Optional conversation ID
-
-    Returns:
-        LEAGUE_ERROR message dictionary
-    """
-    msg = {
+    """Build LEAGUE_ERROR message. Sent by LM when a league-level error occurs."""
+    params = {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.LEAGUE_ERROR,
         Field.SENDER: "league_manager",
@@ -111,10 +73,10 @@ def build_league_error(
         Field.ERROR_DESCRIPTION: error_description,
     }
     if original_message_type:
-        msg[Field.ORIGINAL_MESSAGE_TYPE] = original_message_type
+        params[Field.ORIGINAL_MESSAGE_TYPE] = original_message_type
     if context:
-        msg[Field.CONTEXT] = context
-    return msg
+        params[Field.CONTEXT] = context
+    return wrap_jsonrpc_request(JSONRPCMethod.LEAGUE_ERROR, params, agent_id="LM")
 
 
 def build_league_query_response(
@@ -122,21 +84,10 @@ def build_league_query_response(
     success: bool,
     data: Optional[Dict[str, Any]] = None,
     conversation_id: Optional[str] = None,
+    request_id: Optional[int] = None,
 ) -> Dict[str, Any]:
-    """Build LEAGUE_QUERY_RESPONSE message.
-
-    Sent by league manager in response to LEAGUE_QUERY.
-
-    Args:
-        query_type: Echo of the query type requested
-        success: Whether the query was successful
-        data: Query result data (None if query failed)
-        conversation_id: Optional conversation ID
-
-    Returns:
-        LEAGUE_QUERY_RESPONSE message dictionary
-    """
-    msg = {
+    """Build LEAGUE_QUERY_RESPONSE message. Sent by LM in response to LEAGUE_QUERY."""
+    result = {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.LEAGUE_QUERY_RESPONSE,
         Field.SENDER: "league_manager",
@@ -146,5 +97,7 @@ def build_league_query_response(
         "success": success,
     }
     if data is not None:
-        msg[Field.DATA] = data
-    return msg
+        result[Field.DATA] = data
+    if request_id is not None:
+        return wrap_jsonrpc_response(result, request_id)
+    return wrap_jsonrpc_request(JSONRPCMethod.LEAGUE_QUERY_RESPONSE, result, agent_id="LM")

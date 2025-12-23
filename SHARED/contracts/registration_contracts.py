@@ -7,10 +7,13 @@ from typing import Any, Dict, List, Optional
 
 from SHARED.constants import PROTOCOL_VERSION, Field, MessageType, Status
 from SHARED.protocol_constants import (
+    JSONRPCMethod,
     format_sender,
     generate_conversation_id,
     generate_timestamp,
 )
+
+from .jsonrpc_helpers import wrap_jsonrpc_request, wrap_jsonrpc_response
 
 
 def build_referee_register_request(
@@ -23,7 +26,7 @@ def build_referee_register_request(
     conversation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Build REFEREE_REGISTER_REQUEST message."""
-    return {
+    params = {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.REFEREE_REGISTER_REQUEST,
         Field.SENDER: format_sender("referee", referee_id),
@@ -37,6 +40,7 @@ def build_referee_register_request(
             Field.MAX_CONCURRENT_MATCHES: max_concurrent_matches,
         },
     }
+    return wrap_jsonrpc_request(JSONRPCMethod.REGISTER_REFEREE, params, agent_id=referee_id)
 
 
 def build_referee_register_response(
@@ -44,9 +48,10 @@ def build_referee_register_response(
     status: str = Status.ACCEPTED,
     reason: Optional[str] = None,
     conversation_id: Optional[str] = None,
+    request_id: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Build REFEREE_REGISTER_RESPONSE message."""
-    msg = {
+    result = {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.REFEREE_REGISTER_RESPONSE,
         Field.SENDER: "league_manager",
@@ -56,8 +61,10 @@ def build_referee_register_response(
         Field.REFEREE_ID: referee_id,
     }
     if reason:
-        msg[Field.REASON] = reason
-    return msg
+        result[Field.REASON] = reason
+    if request_id is not None:
+        return wrap_jsonrpc_response(result, request_id)
+    return wrap_jsonrpc_request(JSONRPCMethod.REGISTER_REFEREE_RESPONSE, result, agent_id="LM")
 
 
 def build_league_register_request(
@@ -69,7 +76,7 @@ def build_league_register_request(
     conversation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Build LEAGUE_REGISTER_REQUEST message."""
-    return {
+    params = {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.LEAGUE_REGISTER_REQUEST,
         Field.SENDER: format_sender("player", player_id),
@@ -82,6 +89,7 @@ def build_league_register_request(
             Field.CONTACT_ENDPOINT: contact_endpoint,
         },
     }
+    return wrap_jsonrpc_request(JSONRPCMethod.REGISTER_PLAYER, params, agent_id=player_id)
 
 
 def build_league_register_response(
@@ -89,9 +97,10 @@ def build_league_register_response(
     status: str = Status.ACCEPTED,
     reason: Optional[str] = None,
     conversation_id: Optional[str] = None,
+    request_id: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Build LEAGUE_REGISTER_RESPONSE message."""
-    msg = {
+    result = {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.LEAGUE_REGISTER_RESPONSE,
         Field.SENDER: "league_manager",
@@ -101,5 +110,7 @@ def build_league_register_response(
         Field.PLAYER_ID: player_id,
     }
     if reason:
-        msg[Field.REASON] = reason
-    return msg
+        result[Field.REASON] = reason
+    if request_id is not None:
+        return wrap_jsonrpc_response(result, request_id)
+    return wrap_jsonrpc_request(JSONRPCMethod.REGISTER_PLAYER_RESPONSE, result, agent_id="LM")

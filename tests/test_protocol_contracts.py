@@ -20,6 +20,7 @@ import pytest
 
 from SHARED.constants import PROTOCOL_VERSION, Field, MessageType, Status
 from SHARED.contracts.base_contract import create_game_message, validate_base_message
+from SHARED.contracts.jsonrpc_helpers import extract_jsonrpc_params
 from SHARED.contracts.league_manager_contracts import (
     build_league_register_request,
     build_league_register_response,
@@ -46,6 +47,12 @@ from SHARED.contracts.round_lifecycle_contracts import (
     build_round_announcement,
     build_round_completed,
 )
+from SHARED.protocol_constants import JSONRPC_VERSION
+
+
+def get_params(msg):
+    """Extract params from JSON-RPC message."""
+    return extract_jsonrpc_params(msg)
 
 
 class TestProtocolVersion:
@@ -64,7 +71,8 @@ class TestProtocolVersion:
             version="1.0.0",
             contact_endpoint="http://localhost:8001/mcp",
         )
-        assert msg[Field.PROTOCOL] == PROTOCOL_VERSION
+        assert msg["jsonrpc"] == JSONRPC_VERSION
+        assert get_params(msg)[Field.PROTOCOL] == PROTOCOL_VERSION
 
         msg = build_league_register_request(
             player_id="P01",
@@ -72,7 +80,8 @@ class TestProtocolVersion:
             version="1.0.0",
             contact_endpoint="http://localhost:8101/mcp",
         )
-        assert msg[Field.PROTOCOL] == PROTOCOL_VERSION
+        assert msg["jsonrpc"] == JSONRPC_VERSION
+        assert get_params(msg)[Field.PROTOCOL] == PROTOCOL_VERSION
 
 
 class TestBaseMessageContract:
@@ -167,11 +176,11 @@ class TestGameInvitationContract:
             role_in_match="player_a",
             game_type="even_odd",
         )
-        
-        assert msg[Field.MESSAGE_TYPE] == MessageType.GAME_INVITATION
-        assert msg[Field.OPPONENT_ID] == "P02"
-        assert msg[Field.ROLE_IN_MATCH] == "player_a"
-        assert msg[Field.GAME_TYPE] == "even_odd"
+        params = get_params(msg)
+        assert params[Field.MESSAGE_TYPE] == MessageType.GAME_INVITATION
+        assert params[Field.OPPONENT_ID] == "P02"
+        assert params[Field.ROLE_IN_MATCH] == "player_a"
+        assert params[Field.GAME_TYPE] == "even_odd"
 
 
 class TestGameJoinAckContract:
@@ -185,10 +194,10 @@ class TestGameJoinAckContract:
             conversation_id="conv-123",
             accept=True,
         )
-        
-        assert msg[Field.MESSAGE_TYPE] == MessageType.GAME_JOIN_ACK
-        assert msg[Field.ACCEPT] is True
-        assert Field.ARRIVAL_TIMESTAMP in msg
+        params = get_params(msg)
+        assert params[Field.MESSAGE_TYPE] == MessageType.GAME_JOIN_ACK
+        assert params[Field.ACCEPT] is True
+        assert Field.ARRIVAL_TIMESTAMP in params
 
 
 class TestChooseParityContract:
@@ -206,12 +215,12 @@ class TestChooseParityContract:
             player_standings={},
             timeout_seconds=30,
         )
-        
-        assert msg[Field.MESSAGE_TYPE] == MessageType.CHOOSE_PARITY_CALL
-        assert msg[Field.PLAYER_ID] == "P01"
-        assert Field.DEADLINE in msg
-        assert Field.CONTEXT in msg
-        assert msg[Field.CONTEXT]["opponent_id"] == "P02"
+        params = get_params(msg)
+        assert params[Field.MESSAGE_TYPE] == MessageType.CHOOSE_PARITY_CALL
+        assert params[Field.PLAYER_ID] == "P01"
+        assert Field.DEADLINE in params
+        assert Field.CONTEXT in params
+        assert params[Field.CONTEXT]["opponent_id"] == "P02"
 
     def test_choose_parity_response_has_required_fields(self):
         """CHOOSE_PARITY_RESPONSE must have all protocol-required fields."""
@@ -221,9 +230,9 @@ class TestChooseParityContract:
             parity_choice="EVEN",
             conversation_id="conv-123",
         )
-        
-        assert msg[Field.MESSAGE_TYPE] == MessageType.CHOOSE_PARITY_RESPONSE
-        assert msg[Field.PARITY_CHOICE] == "EVEN"
+        params = get_params(msg)
+        assert params[Field.MESSAGE_TYPE] == MessageType.CHOOSE_PARITY_RESPONSE
+        assert params[Field.PARITY_CHOICE] == "EVEN"
 
 
 class TestGameOverContract:
@@ -244,10 +253,10 @@ class TestGameOverContract:
             choices={"P01": "EVEN", "P02": "ODD"},
             reason="P01 chose correctly",
         )
-        
-        assert msg[Field.MESSAGE_TYPE] == MessageType.GAME_OVER
-        assert Field.GAME_RESULT in msg
-        assert msg[Field.GAME_RESULT]["winner_player_id"] == "P01"
+        params = get_params(msg)
+        assert params[Field.MESSAGE_TYPE] == MessageType.GAME_OVER
+        assert Field.GAME_RESULT in params
+        assert params[Field.GAME_RESULT]["winner_player_id"] == "P01"
 
 
 class TestMatchResultReportContract:
@@ -266,10 +275,10 @@ class TestMatchResultReportContract:
             drawn_number=4,
             choices={"P01": "EVEN", "P02": "ODD"},
         )
-        
-        assert msg[Field.MESSAGE_TYPE] == MessageType.MATCH_RESULT_REPORT
-        assert Field.RESULT in msg
-        assert msg[Field.RESULT]["winner"] == "P01"
+        params = get_params(msg)
+        assert params[Field.MESSAGE_TYPE] == MessageType.MATCH_RESULT_REPORT
+        assert Field.RESULT in params
+        assert params[Field.RESULT]["winner"] == "P01"
 
 
 if __name__ == "__main__":

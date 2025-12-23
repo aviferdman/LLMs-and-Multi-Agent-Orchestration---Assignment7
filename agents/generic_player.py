@@ -26,6 +26,7 @@ from SHARED.constants import (
     StrategyType,
 )
 from SHARED.contracts import build_league_register_request
+from SHARED.contracts.jsonrpc_helpers import extract_jsonrpc_params, is_jsonrpc_response
 from SHARED.league_sdk.agent_comm import send_with_retry
 from SHARED.league_sdk.config_loader import load_agent_config, load_system_config
 from SHARED.league_sdk.logger import LeagueLogger
@@ -77,11 +78,20 @@ class GenericPlayer:
                 timeout=_system_config.timeouts["http_request"],
                 retry_delay=_system_config.retry_policy["retry_delay"],
             )
-            if resp and resp.get(Field.STATUS) == Status.REGISTERED:
-                self.auth_token = resp.get(Field.AUTH_TOKEN)
-                self.logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: self.player_id})
+            # Extract content from JSON-RPC response (result or params)
+            if resp:
+                if is_jsonrpc_response(resp):
+                    inner = resp.get("result", {})
+                else:
+                    inner = extract_jsonrpc_params(resp)
+                status = inner.get(Field.STATUS)
+                if status in (Status.ACCEPTED, Status.REGISTERED):
+                    self.auth_token = inner.get(Field.AUTH_TOKEN)
+                    self.logger.log_message(LogEvent.PLAYER_REGISTERED, {Field.PLAYER_ID: self.player_id})
+                else:
+                    self.logger.log_error(LogEvent.ERROR, f"Registration failed: {resp}")
             else:
-                self.logger.log_error(LogEvent.ERROR, f"Registration failed: {resp}")
+                self.logger.log_error(LogEvent.ERROR, "Registration failed: No response")
         except Exception as e:
             self.logger.log_error("REGISTRATION_EXCEPTION", f"{type(e).__name__}: {e}")
 

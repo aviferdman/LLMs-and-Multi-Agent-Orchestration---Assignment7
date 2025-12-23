@@ -6,7 +6,9 @@ Handles round announcement and completion messages.
 from typing import Any, Dict, List, Optional
 
 from SHARED.constants import PROTOCOL_VERSION, Field, MessageType
-from SHARED.protocol_constants import generate_conversation_id, generate_timestamp
+from SHARED.protocol_constants import JSONRPCMethod, generate_conversation_id, generate_timestamp
+
+from .jsonrpc_helpers import wrap_jsonrpc_request
 
 
 def build_round_announcement(
@@ -18,22 +20,8 @@ def build_round_announcement(
     """Build ROUND_ANNOUNCEMENT message.
 
     Sent by league manager to all agents when a new round begins.
-
-    Args:
-        league_id: League identifier
-        round_id: Round number (1-based)
-        matches: List of match objects with:
-            - match_id: Match identifier
-            - game_type: Type of game
-            - player_A_id: Player A identifier
-            - player_B_id: Player B identifier
-            - referee_endpoint: Referee HTTP endpoint
-        conversation_id: Optional conversation ID
-
-    Returns:
-        ROUND_ANNOUNCEMENT message dictionary
     """
-    return {
+    params = {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.ROUND_ANNOUNCEMENT,
         Field.SENDER: "league_manager",
@@ -43,6 +31,7 @@ def build_round_announcement(
         Field.ROUND_ID: round_id,
         Field.MATCHES: matches,
     }
+    return wrap_jsonrpc_request(JSONRPCMethod.ROUND_ANNOUNCEMENT, params, agent_id="LM")
 
 
 def build_round_completed(
@@ -56,23 +45,8 @@ def build_round_completed(
     """Build ROUND_COMPLETED message.
 
     Sent by league manager to players when all matches in round are complete.
-
-    Args:
-        league_id: League identifier
-        round_id: Completed round number
-        matches_completed: Number of matches completed
-        summary: Round summary with:
-            - total_matches: Total matches in round
-            - wins: Number of decisive wins
-            - draws: Number of draws
-            - technical_losses: Number of technical losses
-        next_round_id: Next round number (None if league completed)
-        conversation_id: Optional conversation ID
-
-    Returns:
-        ROUND_COMPLETED message dictionary
     """
-    msg = {
+    params = {
         Field.PROTOCOL: PROTOCOL_VERSION,
         Field.MESSAGE_TYPE: MessageType.ROUND_COMPLETED,
         Field.SENDER: "league_manager",
@@ -84,5 +58,5 @@ def build_round_completed(
         Field.SUMMARY: summary,
     }
     if next_round_id is not None:
-        msg[Field.NEXT_ROUND_ID] = next_round_id
-    return msg
+        params[Field.NEXT_ROUND_ID] = next_round_id
+    return wrap_jsonrpc_request(JSONRPCMethod.ROUND_COMPLETED, params, agent_id="LM")

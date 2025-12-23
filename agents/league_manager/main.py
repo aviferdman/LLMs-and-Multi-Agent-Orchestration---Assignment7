@@ -1,23 +1,16 @@
 """League Manager - Main HTTP server."""
-
 import sys
 from pathlib import Path
-
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi.responses import JSONResponse
 from agents.league_manager.handlers import handle_league_register, handle_match_result_report, handle_referee_register
 from agents.league_manager.match_orchestration import run_league_matches
-
 from SHARED.constants import MCP_PATH, AgentID, Field, GameStatus, LogEvent, MessageType, Status
 from SHARED.contracts import build_league_status
-from SHARED.league_sdk.config_loader import (
-    load_agent_config,
-    load_league_config,
-    load_system_config,
-)
+from SHARED.contracts.jsonrpc_helpers import extract_jsonrpc_params, get_jsonrpc_id, is_jsonrpc_request
+from SHARED.league_sdk.config_loader import load_agent_config, load_league_config, load_system_config
 from SHARED.league_sdk.logger import LeagueLogger
 from SHARED.league_sdk.repositories import StandingsRepository
 from SHARED.league_sdk.session_manager import AgentType, get_session_manager
@@ -25,7 +18,6 @@ from SHARED.league_sdk.session_manager import AgentType, get_session_manager
 app = FastAPI(title="League Manager")
 logger = LeagueLogger(AgentID.LEAGUE_MANAGER)
 system_config = load_system_config()
-# Load league ID from system config - game-agnostic approach
 active_league_id = system_config.active_league_id
 league_config = load_league_config(active_league_id)
 agents_config = load_agent_config()
@@ -91,16 +83,18 @@ async def _maybe_start_league(background_tasks: BackgroundTasks) -> None:
 async def mcp_endpoint(request: Request, background_tasks: BackgroundTasks) -> JSONResponse:
     """Handle all MCP protocol messages."""
     try:
-        message = await request.json()
-        logger.log_message(LogEvent.RECEIVED, message)
+        raw = await request.json()
+        logger.log_message(LogEvent.RECEIVED, raw)
+        message = extract_jsonrpc_params(raw) if is_jsonrpc_request(raw) else raw
+        request_id = get_jsonrpc_id(raw)  # Extract JSON-RPC request ID for responses
         msg_type = message.get(Field.MESSAGE_TYPE)
 
         if msg_type == MessageType.REFEREE_REGISTER_REQUEST:
-            response = handle_referee_register(message, logger)
+            response = handle_referee_register(message, logger, request_id=request_id)
             # Check if all agents are now registered and auto-start league
             await _maybe_start_league(background_tasks)
         elif msg_type == MessageType.LEAGUE_REGISTER_REQUEST:
-            response = handle_league_register(message, league_config, logger)
+            response = handle_league_register(message, league_config, logger, request_id=request_id)
             # Check if all agents are now registered and auto-start league
             await _maybe_start_league(background_tasks)
         elif msg_type == MessageType.LEAGUE_STATUS:
@@ -110,9 +104,10 @@ async def mcp_endpoint(request: Request, background_tasks: BackgroundTasks) -> J
                 league_state["current_round"],
                 league_config.total_rounds,
                 league_state["matches_completed"],
+                request_id=request_id,
             )
         elif msg_type == MessageType.MATCH_RESULT_REPORT:
-            response = handle_match_result_report(message, league_config, logger)
+            response = handle_match_result_report(message, league_config, logger, request_id=request_id)
         else:
             response = {Field.STATUS: Status.ERROR, "message": "Unknown message type"}
 

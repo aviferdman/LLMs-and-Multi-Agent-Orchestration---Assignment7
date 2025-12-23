@@ -4,6 +4,48 @@
 
 ---
 
+## JSON-RPC 2.0 Transport Layer
+
+All protocol messages are wrapped in JSON-RPC 2.0 envelopes for transport. The application-level message content is placed in the `params` field.
+
+### Request Format (Outgoing Messages)
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "<message_type>",
+  "params": {
+    "protocol": "league.v2",
+    "message_type": "...",
+    "sender": "...",
+    "timestamp": "...",
+    ...
+  },
+  "id": <sequential_integer>
+}
+```
+
+### Response Format (Acknowledging Requests)
+```json
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "protocol": "league.v2",
+    "message_type": "...",
+    ...
+  },
+  "id": <matching_request_id>
+}
+```
+
+### Key Points:
+- **Version**: Always `"2.0"`
+- **Method**: Maps to the `message_type` of the inner message (e.g., `"game_invitation"`, `"choose_parity_call"`)
+- **Params**: Contains the full protocol message as documented below
+- **ID**: Sequential integer per agent, used for request/response correlation
+- **Error Format**: `{"jsonrpc": "2.0", "error": {"code": <int>, "message": "<string>"}, "id": <int>}`
+
+---
+
 ## 1. LEAGUE_MANAGER SOURCE
 
 ### 1.1 ROUND_ANNOUNCEMENT

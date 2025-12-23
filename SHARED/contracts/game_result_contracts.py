@@ -3,8 +3,10 @@
 from typing import Any, Dict, Optional
 
 from SHARED.constants import Field, MessageType
+from SHARED.protocol_constants import JSONRPCMethod
 
 from .base_contract import create_base_message, create_game_message
+from .jsonrpc_helpers import wrap_jsonrpc_request, wrap_jsonrpc_response
 
 
 def build_game_over(
@@ -22,15 +24,15 @@ def build_game_over(
     conversation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Build GAME_OVER message sent by referee to both players when game finishes."""
-    msg = create_base_message(
+    params = create_base_message(
         message_type=MessageType.GAME_OVER,
         sender_type="referee",
         sender_id=referee_id,
         conversation_id=conversation_id,
     )
-    msg[Field.MATCH_ID] = match_id
-    msg[Field.GAME_TYPE] = game_type
-    msg[Field.GAME_RESULT] = {
+    params[Field.MATCH_ID] = match_id
+    params[Field.GAME_TYPE] = game_type
+    params[Field.GAME_RESULT] = {
         "status": status,
         "winner_player_id": winner_player_id,
         "drawn_number": drawn_number,
@@ -38,7 +40,7 @@ def build_game_over(
         "choices": choices,
         "reason": reason,
     }
-    return msg
+    return wrap_jsonrpc_request(JSONRPCMethod.GAME_OVER, params, agent_id=referee_id)
 
 
 def build_match_result_report(
@@ -54,7 +56,7 @@ def build_match_result_report(
     conversation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Build MATCH_RESULT_REPORT message sent by referee to LM after game completion."""
-    msg = create_game_message(
+    params = create_game_message(
         message_type=MessageType.MATCH_RESULT_REPORT,
         sender_type="referee",
         sender_id=referee_id,
@@ -63,13 +65,13 @@ def build_match_result_report(
         match_id=match_id,
         conversation_id=conversation_id,
     )
-    msg[Field.GAME_TYPE] = game_type
-    msg[Field.RESULT] = {
+    params[Field.GAME_TYPE] = game_type
+    params[Field.RESULT] = {
         "winner": winner,
         "score": score,
         "details": {"drawn_number": drawn_number, "choices": choices},
     }
-    return msg
+    return wrap_jsonrpc_request(JSONRPCMethod.MATCH_RESULT_REPORT, params, agent_id=referee_id)
 
 
 def build_game_error(
@@ -84,22 +86,22 @@ def build_game_error(
     conversation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Build GAME_ERROR message sent by referee when a game-level error occurs."""
-    msg = create_base_message(
+    params = create_base_message(
         message_type=MessageType.GAME_ERROR,
         sender_type="referee",
         sender_id=referee_id,
         conversation_id=conversation_id,
     )
-    msg[Field.MATCH_ID] = match_id
-    msg[Field.ERROR_CODE] = error_code
-    msg[Field.ERROR_DESCRIPTION] = error_description
-    msg[Field.AFFECTED_PLAYER] = affected_player
-    msg[Field.ACTION_REQUIRED] = action_required
+    params[Field.MATCH_ID] = match_id
+    params[Field.ERROR_CODE] = error_code
+    params[Field.ERROR_DESCRIPTION] = error_description
+    params[Field.AFFECTED_PLAYER] = affected_player
+    params[Field.ACTION_REQUIRED] = action_required
     if retry_info:
-        msg[Field.RETRY_INFO] = retry_info
+        params[Field.RETRY_INFO] = retry_info
     if consequence:
-        msg[Field.CONSEQUENCE] = consequence
-    return msg
+        params[Field.CONSEQUENCE] = consequence
+    return wrap_jsonrpc_request(JSONRPCMethod.GAME_ERROR, params, agent_id=referee_id)
 
 
 def build_run_match_ack(
@@ -107,14 +109,17 @@ def build_run_match_ack(
     referee_id: str,
     status: str = "acknowledged",
     conversation_id: Optional[str] = None,
+    request_id: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Build RUN_MATCH_ACK message sent by referee acknowledging match assignment."""
-    msg = create_base_message(
+    result = create_base_message(
         message_type=MessageType.RUN_MATCH_ACK,
         sender_type="referee",
         sender_id=referee_id,
         conversation_id=conversation_id,
     )
-    msg[Field.MATCH_ID] = match_id
-    msg[Field.STATUS] = status
-    return msg
+    result[Field.MATCH_ID] = match_id
+    result[Field.STATUS] = status
+    if request_id is not None:
+        return wrap_jsonrpc_response(result, request_id)
+    return wrap_jsonrpc_request(JSONRPCMethod.RUN_MATCH_ACK, result, agent_id=referee_id)

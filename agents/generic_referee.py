@@ -1,37 +1,26 @@
 """Generic referee agent - supports all game types."""
-
 import sys
 from pathlib import Path
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
-import argparse
-import asyncio
-
+import argparse, asyncio, os
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi.responses import JSONResponse
-
 from agents.referee_game_logic import get_game_rules
 from agents.referee_http_handlers import (
-    handle_broadcast_message,
-    handle_game_join_ack,
-    handle_parity_choice,
-    handle_round_announcement,
-)
+    handle_broadcast_message, handle_game_join_ack, handle_parity_choice, handle_round_announcement)
 from agents.referee_match_runner import run_match_phases
 from SHARED.constants import (
-    AGENT_VERSION,
-    HTTP_PROTOCOL,
-    LOCALHOST,
-    MCP_PATH,
-    SERVER_HOST,
-    Field,
-    GameID,
-    LogEvent,
-    MessageType,
-    Status,
-)
+    AGENT_VERSION, HTTP_PROTOCOL, LOCALHOST, MCP_PATH, SERVER_HOST,
+    Field, GameID, LogEvent, MessageType, Status)
 from SHARED.contracts import build_referee_register_request
+from SHARED.contracts.jsonrpc_helpers import (
+    extract_jsonrpc_params,
+    get_jsonrpc_id,
+    is_jsonrpc_request,
+    is_jsonrpc_response,
+    wrap_jsonrpc_response,
+)
 from SHARED.league_sdk.agent_comm import send_with_retry
 from SHARED.league_sdk.config_loader import load_agent_config, load_system_config
 from SHARED.league_sdk.logger import LeagueLogger
@@ -57,23 +46,26 @@ class GenericReferee:
         @self.app.post(MCP_PATH)
         async def mcp_endpoint(request: Request, background_tasks: BackgroundTasks) -> JSONResponse:
             try:
-                message = await request.json()
-                self.logger.log_message(LogEvent.RECEIVED, message)
+                raw = await request.json()
+                self.logger.log_message(LogEvent.RECEIVED, raw)
+                message = extract_jsonrpc_params(raw) if is_jsonrpc_request(raw) else raw
+                request_id = get_jsonrpc_id(raw) if is_jsonrpc_request(raw) else None
                 msg_type = message.get(Field.MESSAGE_TYPE)
                 if msg_type == MessageType.ROUND_ANNOUNCEMENT:
-                    response = handle_round_announcement(message, self, background_tasks)
+                    response = handle_round_announcement(message, self, background_tasks, request_id)
                 elif msg_type == MessageType.GAME_JOIN_ACK:
-                    response = handle_game_join_ack(message, self)
+                    response = handle_game_join_ack(message, self, request_id)
                 elif msg_type == MessageType.PARITY_CHOICE:
-                    response = handle_parity_choice(message, self)
+                    response = handle_parity_choice(message, self, request_id)
                 elif msg_type in (MessageType.ROUND_COMPLETED, MessageType.LEAGUE_STANDINGS_UPDATE,
                                   MessageType.LEAGUE_COMPLETED):
-                    response = handle_broadcast_message(message, self)
+                    response = handle_broadcast_message(message, self, request_id)
                     if msg_type == MessageType.LEAGUE_COMPLETED:
                         asyncio.create_task(self._shutdown_gracefully())
                 elif msg_type == MessageType.SHUTDOWN_COMMAND:
                     self.logger.log_message("SHUTDOWN_RECEIVED", {})
-                    response = {Field.STATUS: Status.ACKNOWLEDGED}
+                    result = {Field.STATUS: Status.ACKNOWLEDGED}
+                    response = wrap_jsonrpc_response(result, request_id) if request_id else result
                     asyncio.create_task(self._shutdown_gracefully())
                 else:
                     response = {Field.STATUS: Status.ERROR, "message": "Unknown message type"}
@@ -110,13 +102,22 @@ class GenericReferee:
                 timeout=_system_config.timeouts["http_request"],
                 retry_delay=_system_config.retry_policy["retry_delay"],
             )
-            if response and response.get(Field.STATUS) == Status.REGISTERED:
-                self.auth_token = response.get(Field.AUTH_TOKEN)
-                self.logger.log_message(
-                    LogEvent.REFEREE_REGISTERED, {Field.REFEREE_ID: self.referee_id}
-                )
+            # Extract content from JSON-RPC response (result or params)
+            if response:
+                if is_jsonrpc_response(response):
+                    inner = response.get("result", {})
+                else:
+                    inner = extract_jsonrpc_params(response)
+                status = inner.get(Field.STATUS)
+                if status in (Status.ACCEPTED, Status.REGISTERED):
+                    self.auth_token = inner.get(Field.AUTH_TOKEN)
+                    self.logger.log_message(
+                        LogEvent.REFEREE_REGISTERED, {Field.REFEREE_ID: self.referee_id}
+                    )
+                else:
+                    self.logger.log_error(LogEvent.ERROR, f"Registration failed: {response}")
             else:
-                self.logger.log_error(LogEvent.ERROR, f"Registration failed: {response}")
+                self.logger.log_error(LogEvent.ERROR, "Registration failed: No response")
         except Exception as e:
             self.logger.log_error("REGISTRATION_EXCEPTION", f"{type(e).__name__}: {e}")
 
@@ -126,7 +127,6 @@ class GenericReferee:
     async def _shutdown_gracefully(self):
         await asyncio.sleep(1)
         self.logger.log_message("SHUTDOWN_INITIATED", {Field.REFEREE_ID: self.referee_id})
-        import os
         os._exit(0)
 
     def run(self):
@@ -141,7 +141,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--referee-id", required=True)
     parser.add_argument("--port", type=int, required=True)
-    parser.add_argument("--game-type", default=GameID.EVEN_ODD, help="Game type to referee")
+    parser.add_argument("--game-type", default=GameID.EVEN_ODD)
     args = parser.parse_args()
     GenericReferee(args.referee_id, args.port, args.game_type).run()
 

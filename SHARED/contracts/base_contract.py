@@ -7,6 +7,15 @@ from typing import Any, Dict, Optional
 from SHARED.constants import PROTOCOL_VERSION, Field
 from SHARED.protocol_constants import format_sender, generate_conversation_id, generate_timestamp
 
+# Re-export JSON-RPC helpers for backward compatibility
+from .jsonrpc_helpers import (
+    extract_jsonrpc_params,
+    get_jsonrpc_id,
+    wrap_jsonrpc_error,
+    wrap_jsonrpc_request,
+    wrap_jsonrpc_response,
+)
+
 
 def create_base_message(
     message_type: str,

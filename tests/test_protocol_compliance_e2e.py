@@ -44,6 +44,13 @@ from SHARED.contracts.round_lifecycle_contracts import (
     build_league_completed,
 )
 from SHARED.contracts.base_contract import validate_base_message
+from SHARED.contracts.jsonrpc_helpers import extract_jsonrpc_params
+from SHARED.protocol_constants import JSONRPC_VERSION
+
+
+def get_params(msg):
+    """Extract params from JSON-RPC message."""
+    return extract_jsonrpc_params(msg)
 
 
 class TestCompleteGameLifecycle:
@@ -53,210 +60,157 @@ class TestCompleteGameLifecycle:
         """Test player and referee registration message flow."""
         # Player registration request
         player_reg = build_league_register_request(
-            player_id="P01",
-            display_name="Test Player 1",
-            version="1.0.0",
-            contact_endpoint="http://localhost:8101/mcp",
+            player_id="P01", display_name="Test Player 1",
+            version="1.0.0", contact_endpoint="http://localhost:8101/mcp",
         )
-        assert player_reg[Field.MESSAGE_TYPE] == MessageType.LEAGUE_REGISTER_REQUEST
-        assert Field.PLAYER_META in player_reg
-        assert validate_base_message(player_reg)
+        params = get_params(player_reg)
+        assert params[Field.MESSAGE_TYPE] == MessageType.LEAGUE_REGISTER_REQUEST
+        assert Field.PLAYER_META in params
+        assert validate_base_message(params)
 
         # Player registration response
-        player_resp = build_league_register_response(
-            player_id="P01",
-            status=Status.ACCEPTED,
-        )
-        assert player_resp[Field.MESSAGE_TYPE] == MessageType.LEAGUE_REGISTER_RESPONSE
-        assert player_resp[Field.STATUS] == Status.ACCEPTED
-        assert validate_base_message(player_resp)
+        player_resp = build_league_register_response(player_id="P01", status=Status.ACCEPTED)
+        params = get_params(player_resp)
+        assert params[Field.MESSAGE_TYPE] == MessageType.LEAGUE_REGISTER_RESPONSE
+        assert params[Field.STATUS] == Status.ACCEPTED
+        assert validate_base_message(params)
 
         # Referee registration request
         ref_reg = build_referee_register_request(
-            referee_id="REF01",
-            display_name="Test Referee 1",
-            version="1.0.0",
-            contact_endpoint="http://localhost:8001/mcp",
+            referee_id="REF01", display_name="Test Referee 1",
+            version="1.0.0", contact_endpoint="http://localhost:8001/mcp",
         )
-        assert ref_reg[Field.MESSAGE_TYPE] == MessageType.REFEREE_REGISTER_REQUEST
-        assert Field.REFEREE_META in ref_reg
-        assert validate_base_message(ref_reg)
+        params = get_params(ref_reg)
+        assert params[Field.MESSAGE_TYPE] == MessageType.REFEREE_REGISTER_REQUEST
+        assert Field.REFEREE_META in params
+        assert validate_base_message(params)
 
         # Referee registration response
-        ref_resp = build_referee_register_response(
-            referee_id="REF01",
-            status=Status.ACCEPTED,
-        )
-        assert ref_resp[Field.MESSAGE_TYPE] == MessageType.REFEREE_REGISTER_RESPONSE
-        assert validate_base_message(ref_resp)
+        ref_resp = build_referee_register_response(referee_id="REF01", status=Status.ACCEPTED)
+        params = get_params(ref_resp)
+        assert params[Field.MESSAGE_TYPE] == MessageType.REFEREE_REGISTER_RESPONSE
+        assert validate_base_message(params)
 
     def test_match_invitation_flow(self):
         """Test match invitation and join message flow."""
         # Game invitation from referee
         invitation = build_game_invitation(
-            league_id="league_2025",
-            round_id=1,
-            match_id="R1M1",
-            referee_id="REF01",
-            player_id="P01",
-            opponent_id="P02",
-            role_in_match="player_a",
-            game_type="even_odd",
+            league_id="league_2025", round_id=1, match_id="R1M1",
+            referee_id="REF01", player_id="P01", opponent_id="P02",
+            role_in_match="player_a", game_type="even_odd",
         )
-        assert invitation[Field.MESSAGE_TYPE] == MessageType.GAME_INVITATION
-        assert invitation[Field.ROLE_IN_MATCH] == "player_a"
-        assert invitation[Field.GAME_TYPE] == "even_odd"
-        assert validate_base_message(invitation)
+        params = get_params(invitation)
+        assert params[Field.MESSAGE_TYPE] == MessageType.GAME_INVITATION
+        assert params[Field.ROLE_IN_MATCH] == "player_a"
+        assert params[Field.GAME_TYPE] == "even_odd"
+        assert validate_base_message(params)
 
         # Player join acknowledgment
         join_ack = build_game_join_ack(
-            match_id="R1M1",
-            player_id="P01",
-            conversation_id=invitation[Field.CONVERSATION_ID],
-            accept=True,
+            match_id="R1M1", player_id="P01",
+            conversation_id=params[Field.CONVERSATION_ID], accept=True,
         )
-        assert join_ack[Field.MESSAGE_TYPE] == MessageType.GAME_JOIN_ACK
-        assert join_ack[Field.ACCEPT] is True
-        assert Field.ARRIVAL_TIMESTAMP in join_ack
-        assert validate_base_message(join_ack)
+        params2 = get_params(join_ack)
+        assert params2[Field.MESSAGE_TYPE] == MessageType.GAME_JOIN_ACK
+        assert params2[Field.ACCEPT] is True
+        assert Field.ARRIVAL_TIMESTAMP in params2
+        assert validate_base_message(params2)
 
     def test_parity_choice_flow(self):
         """Test parity choice collection message flow."""
         # Parity call from referee
         parity_call = build_choose_parity_call(
-            league_id="league_2025",
-            round_id=1,
-            match_id="R1M1",
-            referee_id="REF01",
-            player_id="P01",
-            opponent_id="P02",
-            player_standings={"wins": 0, "losses": 0, "draws": 0},
-            timeout_seconds=30,
+            league_id="league_2025", round_id=1, match_id="R1M1",
+            referee_id="REF01", player_id="P01", opponent_id="P02",
+            player_standings={"wins": 0, "losses": 0, "draws": 0}, timeout_seconds=30,
         )
-        assert parity_call[Field.MESSAGE_TYPE] == MessageType.CHOOSE_PARITY_CALL
-        assert Field.DEADLINE in parity_call
-        assert Field.CONTEXT in parity_call
-        assert parity_call[Field.CONTEXT]["opponent_id"] == "P02"
-        assert validate_base_message(parity_call)
+        params = get_params(parity_call)
+        assert params[Field.MESSAGE_TYPE] == MessageType.CHOOSE_PARITY_CALL
+        assert Field.DEADLINE in params
+        assert Field.CONTEXT in params
+        assert params[Field.CONTEXT]["opponent_id"] == "P02"
+        assert validate_base_message(params)
 
         # Player parity response
         parity_response = build_choose_parity_response(
-            match_id="R1M1",
-            player_id="P01",
-            parity_choice="EVEN",
-            conversation_id=parity_call[Field.CONVERSATION_ID],
+            match_id="R1M1", player_id="P01",
+            parity_choice="EVEN", conversation_id=params[Field.CONVERSATION_ID],
         )
-        assert parity_response[Field.MESSAGE_TYPE] == MessageType.CHOOSE_PARITY_RESPONSE
-        assert parity_response[Field.PARITY_CHOICE] == "EVEN"
-        assert validate_base_message(parity_response)
+        params2 = get_params(parity_response)
+        assert params2[Field.MESSAGE_TYPE] == MessageType.CHOOSE_PARITY_RESPONSE
+        assert params2[Field.PARITY_CHOICE] == "EVEN"
+        assert validate_base_message(params2)
 
     def test_game_resolution_flow(self):
         """Test game resolution message flow."""
         # Game over notification
         game_over = build_game_over(
-            league_id="league_2025",
-            round_id=1,
-            match_id="R1M1",
-            referee_id="REF01",
-            status="WIN",
-            winner_player_id="P01",
-            drawn_number=4,
-            number_parity="even",
-            choices={"P01": "EVEN", "P02": "ODD"},
-            reason="P01 correctly predicted even parity",
+            league_id="league_2025", round_id=1, match_id="R1M1", referee_id="REF01",
+            status="WIN", winner_player_id="P01", drawn_number=4, number_parity="even",
+            choices={"P01": "EVEN", "P02": "ODD"}, reason="P01 correctly predicted even parity",
         )
-        assert game_over[Field.MESSAGE_TYPE] == MessageType.GAME_OVER
-        assert Field.GAME_RESULT in game_over
-        assert game_over[Field.GAME_RESULT]["status"] == "WIN"
-        assert game_over[Field.GAME_RESULT]["winner_player_id"] == "P01"
-        assert game_over[Field.GAME_RESULT]["drawn_number"] == 4
-        assert validate_base_message(game_over)
+        params = get_params(game_over)
+        assert params[Field.MESSAGE_TYPE] == MessageType.GAME_OVER
+        assert Field.GAME_RESULT in params
+        assert params[Field.GAME_RESULT]["status"] == "WIN"
+        assert params[Field.GAME_RESULT]["winner_player_id"] == "P01"
+        assert params[Field.GAME_RESULT]["drawn_number"] == 4
+        assert validate_base_message(params)
 
         # Match result report to LM
         result_report = build_match_result_report(
-            league_id="league_2025",
-            round_id=1,
-            match_id="R1M1",
-            referee_id="REF01",
-            winner="P01",
-            score={"P01": 1, "P02": 0},
-            drawn_number=4,
-            choices={"P01": "EVEN", "P02": "ODD"},
+            league_id="league_2025", round_id=1, match_id="R1M1", referee_id="REF01",
+            winner="P01", score={"P01": 1, "P02": 0}, drawn_number=4, choices={"P01": "EVEN", "P02": "ODD"},
         )
-        assert result_report[Field.MESSAGE_TYPE] == MessageType.MATCH_RESULT_REPORT
-        assert Field.RESULT in result_report
-        assert result_report[Field.RESULT]["winner"] == "P01"
-        assert validate_base_message(result_report)
+        params = get_params(result_report)
+        assert params[Field.MESSAGE_TYPE] == MessageType.MATCH_RESULT_REPORT
+        assert Field.RESULT in params
+        assert params[Field.RESULT]["winner"] == "P01"
+        assert validate_base_message(params)
 
         # Match result acknowledgment
-        result_ack = build_match_result_ack(
-            match_id="R1M1",
-            conversation_id=result_report[Field.CONVERSATION_ID],
-        )
-        assert result_ack[Field.MESSAGE_TYPE] == MessageType.MATCH_RESULT_ACK
-        assert validate_base_message(result_ack)
+        result_ack = build_match_result_ack(match_id="R1M1", conversation_id=params[Field.CONVERSATION_ID])
+        params = get_params(result_ack)
+        assert params[Field.MESSAGE_TYPE] == MessageType.MATCH_RESULT_ACK
+        assert validate_base_message(params)
 
     def test_round_lifecycle_flow(self):
         """Test round and league lifecycle message flow."""
         # Round announcement
-        matches = [
-            {
-                "match_id": "R1M1",
-                "player_A_id": "P01",
-                "player_B_id": "P02",
-                "game_type": "even_odd",
-                "referee_endpoint": "http://localhost:8001/mcp",
-            },
-        ]
-        round_ann = build_round_announcement(
-            league_id="league_2025",
-            round_id=1,
-            matches=matches,
-        )
-        assert round_ann[Field.MESSAGE_TYPE] == MessageType.ROUND_ANNOUNCEMENT
-        assert Field.MATCHES in round_ann
-        assert validate_base_message(round_ann)
+        matches = [{"match_id": "R1M1", "player_A_id": "P01", "player_B_id": "P02",
+                    "game_type": "even_odd", "referee_endpoint": "http://localhost:8001/mcp"}]
+        round_ann = build_round_announcement(league_id="league_2025", round_id=1, matches=matches)
+        params = get_params(round_ann)
+        assert params[Field.MESSAGE_TYPE] == MessageType.ROUND_ANNOUNCEMENT
+        assert Field.MATCHES in params
+        assert validate_base_message(params)
 
         # Round completed
         summary = {"total_matches": 1, "wins": 1, "draws": 0, "technical_losses": 0}
         round_comp = build_round_completed(
-            league_id="league_2025",
-            round_id=1,
-            matches_completed=1,
-            summary=summary,
-            next_round_id=2,
-        )
-        assert round_comp[Field.MESSAGE_TYPE] == MessageType.ROUND_COMPLETED
-        assert validate_base_message(round_comp)
+            league_id="league_2025", round_id=1, matches_completed=1, summary=summary, next_round_id=2)
+        params = get_params(round_comp)
+        assert params[Field.MESSAGE_TYPE] == MessageType.ROUND_COMPLETED
+        assert validate_base_message(params)
 
         # Standings update
-        standings = [
-            {"player_id": "P01", "wins": 1, "losses": 0, "draws": 0, "points": 3},
-            {"player_id": "P02", "wins": 0, "losses": 1, "draws": 0, "points": 0},
-        ]
-        standings_update = build_league_standings_update(
-            league_id="league_2025",
-            round_id=1,
-            standings=standings,
-        )
-        assert standings_update[Field.MESSAGE_TYPE] == MessageType.LEAGUE_STANDINGS_UPDATE
-        assert Field.STANDINGS in standings_update
-        assert validate_base_message(standings_update)
+        standings = [{"player_id": "P01", "wins": 1, "losses": 0, "draws": 0, "points": 3},
+                     {"player_id": "P02", "wins": 0, "losses": 1, "draws": 0, "points": 0}]
+        standings_update = build_league_standings_update(league_id="league_2025", round_id=1, standings=standings)
+        params = get_params(standings_update)
+        assert params[Field.MESSAGE_TYPE] == MessageType.LEAGUE_STANDINGS_UPDATE
+        assert Field.STANDINGS in params
+        assert validate_base_message(params)
 
         # League completed
-        final_standings = standings
         champion = {"player_id": "P01", "total_wins": 3, "total_points": 9}
         league_comp = build_league_completed(
-            league_id="league_2025",
-            final_standings=final_standings,
-            total_matches=3,
-            champion=champion,
-            total_rounds=3,
-        )
-        assert league_comp[Field.MESSAGE_TYPE] == MessageType.LEAGUE_COMPLETED
-        assert Field.CHAMPION in league_comp
-        assert league_comp[Field.CHAMPION]["player_id"] == "P01"
-        assert validate_base_message(league_comp)
+            league_id="league_2025", final_standings=standings, total_matches=3, champion=champion, total_rounds=3)
+        params = get_params(league_comp)
+        assert params[Field.MESSAGE_TYPE] == MessageType.LEAGUE_COMPLETED
+        assert Field.CHAMPION in params
+        assert params[Field.CHAMPION]["player_id"] == "P01"
+        assert validate_base_message(params)
 
 
 class TestProtocolCompliance:
@@ -274,10 +228,10 @@ class TestProtocolCompliance:
             build_game_over("lg", 1, "R1M1", "REF01", "WIN", "P01", 4, "even", {}, "normal"),
             build_match_result_report("lg", 1, "R1M1", "REF01", "P01", {}, 4, {}),
         ]
-
         for msg in messages:
-            assert msg[Field.PROTOCOL] == PROTOCOL_VERSION, \
-                f"{msg[Field.MESSAGE_TYPE]} has wrong protocol version"
+            params = get_params(msg)
+            assert params[Field.PROTOCOL] == PROTOCOL_VERSION, \
+                f"{params[Field.MESSAGE_TYPE]} has wrong protocol version"
 
     def test_all_messages_have_utc_timestamp(self):
         """All messages must have UTC timestamp ending with Z."""
@@ -286,22 +240,24 @@ class TestProtocolCompliance:
             build_game_invitation("lg", 1, "R1M1", "REF01", "P01", "P02", "player_a"),
             build_choose_parity_response("R1M1", "P01", "EVEN", "conv-1"),
         ]
-
         for msg in messages:
-            assert msg[Field.TIMESTAMP].endswith("Z"), \
-                f"{msg[Field.MESSAGE_TYPE]} timestamp doesn't end with Z"
+            params = get_params(msg)
+            assert params[Field.TIMESTAMP].endswith("Z"), \
+                f"{params[Field.MESSAGE_TYPE]} timestamp doesn't end with Z"
 
     def test_sender_format_compliance(self):
         """Sender field must use prefixed format (e.g., 'player:P01')."""
         # Player messages
         player_msg = build_game_join_ack("R1M1", "P01", "conv-1", True)
-        assert player_msg[Field.SENDER].startswith("player:"), \
-            f"Player sender should start with 'player:' but got {player_msg[Field.SENDER]}"
+        params = get_params(player_msg)
+        assert params[Field.SENDER].startswith("player:"), \
+            f"Player sender should start with 'player:' but got {params[Field.SENDER]}"
 
         # Referee messages
         ref_msg = build_game_invitation("lg", 1, "R1M1", "REF01", "P01", "P02", "player_a")
-        assert ref_msg[Field.SENDER].startswith("referee:"), \
-            f"Referee sender should start with 'referee:' but got {ref_msg[Field.SENDER]}"
+        params = get_params(ref_msg)
+        assert params[Field.SENDER].startswith("referee:"), \
+            f"Referee sender should start with 'referee:' but got {params[Field.SENDER]}"
 
 
 class TestEdgeCases:
@@ -310,49 +266,34 @@ class TestEdgeCases:
     def test_draw_game_result(self):
         """Test GAME_OVER with draw result."""
         game_over = build_game_over(
-            league_id="league_2025",
-            round_id=1,
-            match_id="R1M1",
-            referee_id="REF01",
-            status="DRAW",
-            winner_player_id=None,
-            drawn_number=4,
-            number_parity="even",
-            choices={"P01": "EVEN", "P02": "EVEN"},
-            reason="Both players chose the same parity",
+            league_id="league_2025", round_id=1, match_id="R1M1", referee_id="REF01",
+            status="DRAW", winner_player_id=None, drawn_number=4, number_parity="even",
+            choices={"P01": "EVEN", "P02": "EVEN"}, reason="Both players chose the same parity",
         )
-        assert game_over[Field.GAME_RESULT]["status"] == "DRAW"
-        assert game_over[Field.GAME_RESULT]["winner_player_id"] is None
-        assert validate_base_message(game_over)
+        params = get_params(game_over)
+        assert params[Field.GAME_RESULT]["status"] == "DRAW"
+        assert params[Field.GAME_RESULT]["winner_player_id"] is None
+        assert validate_base_message(params)
 
     def test_timeout_game_result(self):
         """Test GAME_OVER with timeout result."""
         game_over = build_game_over(
-            league_id="league_2025",
-            round_id=1,
-            match_id="R1M1",
-            referee_id="REF01",
-            status="TECHNICAL_LOSS",
-            winner_player_id="P02",
-            drawn_number=0,
-            number_parity="even",
-            choices={"P01": "NO_RESPONSE", "P02": "ODD"},
-            reason="P01 timed out",
+            league_id="league_2025", round_id=1, match_id="R1M1", referee_id="REF01",
+            status="TECHNICAL_LOSS", winner_player_id="P02", drawn_number=0, number_parity="even",
+            choices={"P01": "NO_RESPONSE", "P02": "ODD"}, reason="P01 timed out",
         )
-        assert game_over[Field.GAME_RESULT]["status"] == "TECHNICAL_LOSS"
-        assert game_over[Field.GAME_RESULT]["reason"] == "P01 timed out"
-        assert validate_base_message(game_over)
+        params = get_params(game_over)
+        assert params[Field.GAME_RESULT]["status"] == "TECHNICAL_LOSS"
+        assert params[Field.GAME_RESULT]["reason"] == "P01 timed out"
+        assert validate_base_message(params)
 
     def test_rejected_registration(self):
         """Test rejected registration response."""
-        response = build_league_register_response(
-            player_id="P99",
-            status=Status.REJECTED,
-            reason="League is full",
-        )
-        assert response[Field.STATUS] == Status.REJECTED
-        assert response.get(Field.REASON) == "League is full"
-        assert validate_base_message(response)
+        response = build_league_register_response(player_id="P99", status=Status.REJECTED, reason="League is full")
+        params = get_params(response)
+        assert params[Field.STATUS] == Status.REJECTED
+        assert params.get(Field.REASON) == "League is full"
+        assert validate_base_message(params)
 
 
 if __name__ == "__main__":
