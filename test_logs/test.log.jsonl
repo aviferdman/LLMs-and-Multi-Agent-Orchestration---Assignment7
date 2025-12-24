@@ -7,3 +7,6 @@
 {"timestamp": "2025-12-24T14:32:27.475Z", "level": "INFO", "agent_id": "test", "event_type": "PLAYER_JOINED", "data": {"player_id": "P01", "match_id": "M1"}}
 {"timestamp": "2025-12-24T14:32:27.477Z", "level": "INFO", "agent_id": "test", "event_type": "CHOICE_RECEIVED", "data": {"player_id": "P01", "parity_choice": "even"}}
 {"timestamp": "2025-12-24T14:32:27.479Z", "level": "ERROR", "agent_id": "test", "event_type": "ERROR", "error_type": "INVALID_CHOICE", "message": "Player P01: BLUE", "details": {}}
+{"timestamp": "2025-12-24T14:48:16.631Z", "level": "INFO", "agent_id": "test", "event_type": "PLAYER_JOINED", "data": {"player_id": "P01", "match_id": "M1"}}
+{"timestamp": "2025-12-24T14:48:16.634Z", "level": "INFO", "agent_id": "test", "event_type": "CHOICE_RECEIVED", "data": {"player_id": "P01", "parity_choice": "even"}}
+{"timestamp": "2025-12-24T14:48:16.636Z", "level": "ERROR", "agent_id": "test", "event_type": "ERROR", "error_type": "INVALID_CHOICE", "message": "Player P01: BLUE", "details": {}}
