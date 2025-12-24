@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "league_register_request.schema.json",
+  "title": "LEAGUE_REGISTER_REQUEST",
+  "description": "Player → League Manager: Player starts up",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "LEAGUE_REGISTER_REQUEST"
+    },
+    "sender": {
+      "type": "string",
+      "pattern": "^player:.+$",
+      "description": "Player sender in format 'player:ID'"
+    },
+    "player_meta": {
+      "type": "object",
+      "properties": {
+        "display_name": {
+          "type": "string",
+          "description": "Human-readable name for the player"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Player agent version (semver format)"
+        },
+        "game_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Game types this player can play"
+        },
+        "contact_endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "HTTP endpoint for receiving messages"
+        }
+      },
+      "required": ["display_name", "version", "game_types", "contact_endpoint"],
+      "description": "Player metadata"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "player_meta"]
+}

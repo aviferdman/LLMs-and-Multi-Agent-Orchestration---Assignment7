@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "league_query.schema.json",
+  "title": "LEAGUE_QUERY",
+  "description": "Player/Referee → League Manager: Request league information",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "LEAGUE_QUERY"
+    },
+    "sender": {
+      "type": "string",
+      "pattern": "^(player:|referee:).+$",
+      "description": "Player or referee sender"
+    },
+    "auth_token": {
+      "type": "string",
+      "description": "Authentication token for the requesting agent"
+    },
+    "league_id": {
+      "type": "string"
+    },
+    "query_type": {
+      "type": "string",
+      "enum": ["GET_NEXT_MATCH", "GET_STANDINGS", "GET_PLAYER_STATS", "GET_SCHEDULE"],
+      "description": "Type of query"
+    },
+    "query_params": {
+      "type": "object",
+      "description": "Optional query parameters"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "auth_token", "league_id", "query_type"]
+}

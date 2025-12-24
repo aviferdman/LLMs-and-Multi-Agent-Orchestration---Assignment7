@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "choose_parity_response.schema.json",
+  "title": "CHOOSE_PARITY_RESPONSE",
+  "description": "Player → Referee: Received CHOOSE_PARITY_CALL (must respond within 30s)",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "CHOOSE_PARITY_RESPONSE"
+    },
+    "sender": {
+      "type": "string",
+      "pattern": "^player:.+$"
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "player_id": {
+      "type": "string",
+      "description": "Player ID making the choice"
+    },
+    "parity_choice": {
+      "type": "string",
+      "enum": ["even", "odd"],
+      "description": "Player's parity choice"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "match_id", "player_id", "parity_choice"]
+}

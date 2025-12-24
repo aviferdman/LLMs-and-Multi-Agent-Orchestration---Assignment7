@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "game_invitation.schema.json",
+  "title": "GAME_INVITATION",
+  "description": "Referee → Player: Match about to start (5s timeout for response)",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "GAME_INVITATION"
+    },
+    "sender": {
+      "type": "string",
+      "pattern": "^referee:.+$",
+      "description": "Referee sender"
+    },
+    "league_id": {
+      "type": "string"
+    },
+    "round_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "game_type": {
+      "type": "string",
+      "enum": ["even_odd"],
+      "description": "Type of game to be played"
+    },
+    "role_in_match": {
+      "type": "string",
+      "enum": ["PLAYER_A", "PLAYER_B"],
+      "description": "Player's role in this match"
+    },
+    "opponent_id": {
+      "type": "string",
+      "description": "Opponent player ID"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "league_id", "round_id", "match_id", "game_type", "role_in_match", "opponent_id"]
+}

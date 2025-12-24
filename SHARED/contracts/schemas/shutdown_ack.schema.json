@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "shutdown_ack.schema.json",
+  "title": "SHUTDOWN_ACK",
+  "description": "Agent → League Manager: Shutdown acknowledgment",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "SHUTDOWN_ACK"
+    },
+    "sender": {
+      "type": "string",
+      "pattern": "^(player:|referee:).+$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["acknowledged", "error"],
+      "description": "Shutdown acknowledgment status"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "status"]
+}

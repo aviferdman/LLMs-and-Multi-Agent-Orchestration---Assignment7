@@ -554,29 +554,46 @@ class MatchData:
 ### 7.2 Message Flow
 
 ```
-1. REGISTRATION
-   Referee → League: REFEREE_REGISTER_REQUEST
-   League → Referee: REFEREE_REGISTER_RESPONSE
-   Player → League: LEAGUE_REGISTER_REQUEST
-   League → Player: LEAGUE_REGISTER_RESPONSE
+1. STARTUP (Launcher)
+   Launcher: Starts all agent processes (LM, Referees, Players)
 
-2. ROUND START
-   League → All Players: ROUND_ANNOUNCEMENT
+2. SELF-REGISTRATION (Agents → LM)
+   Each agent registers itself on startup:
+     Referee → LM: REFEREE_REGISTER_REQUEST
+     LM → Referee: REFEREE_REGISTER_RESPONSE (with auth_token)
+     Player → LM: LEAGUE_REGISTER_REQUEST
+     LM → Player: LEAGUE_REGISTER_RESPONSE (with auth_token)
 
-3. GAME FLOW
-   Referee → Players: GAME_INVITATION
-   Players → Referee: GAME_JOIN_ACK (5s)
-   Referee → Players: CHOOSE_PARITY_CALL
-   Players → Referee: PARITY_CHOICE (30s)
-   Referee → Players: GAME_OVER
-   Referee → League: MATCH_RESULT_REPORT
+3. LEAGUE START (Launcher → LM)
+   Launcher → LM: START_LEAGUE
+   LM → Launcher: LEAGUE_STATUS (started)
 
-4. ROUND END
-   League → All: ROUND_COMPLETED
-   League → All: LEAGUE_STANDINGS_UPDATE
+4. MATCH EXECUTION (LM → Referee → Players)
+   For each match in schedule:
+     LM → Referee: RUN_MATCH (with player endpoints)
+     Referee → LM: RUN_MATCH_ACK
+     
+     Referee → Player A: GAME_INVITATION
+     Player A → Referee: GAME_JOIN_ACK
+     Referee → Player B: GAME_INVITATION
+     Player B → Referee: GAME_JOIN_ACK
+     
+     Referee → Player A: CHOOSE_PARITY_CALL
+     Player A → Referee: PARITY_CHOICE (30s timeout)
+     Referee → Player B: CHOOSE_PARITY_CALL
+     Player B → Referee: PARITY_CHOICE (30s timeout)
+     
+     Referee: Determines winner (draws number, compares choices)
+     
+     Referee → Player A: GAME_OVER
+     Referee → Player B: GAME_OVER
+     Referee → LM: MATCH_RESULT_REPORT
+     LM → Referee: MATCH_RESULT_ACK
+     LM: Updates standings
 
-5. LEAGUE END
-   League → All: LEAGUE_COMPLETED
+5. LEAGUE COMPLETION
+   LM: All rounds complete
+   LM: Finalizes standings
 ```
 
 ---

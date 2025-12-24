@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "shutdown_command.schema.json",
+  "title": "SHUTDOWN_COMMAND",
+  "description": "League Manager → Agents: Graceful shutdown request",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "SHUTDOWN_COMMAND"
+    },
+    "sender": {
+      "const": "league_manager"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason for shutdown"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id"]
+}

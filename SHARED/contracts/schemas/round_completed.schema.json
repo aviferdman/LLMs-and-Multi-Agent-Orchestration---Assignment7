@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "round_completed.schema.json",
+  "title": "ROUND_COMPLETED",
+  "description": "League Manager → Players: All matches in round completed",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "ROUND_COMPLETED"
+    },
+    "sender": {
+      "const": "league_manager"
+    },
+    "league_id": {
+      "type": "string"
+    },
+    "round_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "matches_completed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of matches completed in this round"
+    },
+    "next_round_id": {
+      "type": ["integer", "null"],
+      "description": "Next round number, null if league completed"
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total_matches": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wins": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "draws": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "technical_losses": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["total_matches", "wins", "draws", "technical_losses"],
+      "description": "Round summary statistics"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "league_id", "round_id", "matches_completed", "summary"]
+}

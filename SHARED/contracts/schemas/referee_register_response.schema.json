@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "referee_register_response.schema.json",
+  "title": "REFEREE_REGISTER_RESPONSE",
+  "description": "League Manager → Referee: Response to registration request",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "REFEREE_REGISTER_RESPONSE"
+    },
+    "sender": {
+      "const": "league_manager"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ACCEPTED", "REJECTED"],
+      "description": "Registration result"
+    },
+    "referee_id": {
+      "type": "string",
+      "description": "Assigned referee ID"
+    },
+    "reason": {
+      "type": ["string", "null"],
+      "description": "Reason for rejection if status is REJECTED"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "status", "referee_id"]
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "run_match.schema.json",
+  "title": "RUN_MATCH",
+  "description": "League Manager → Referee: Assign a match to referee",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "RUN_MATCH"
+    },
+    "sender": {
+      "const": "league_manager"
+    },
+    "league_id": {
+      "type": "string"
+    },
+    "round_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "game_type": {
+      "type": "string",
+      "enum": ["even_odd"]
+    },
+    "player_A_id": {
+      "type": "string",
+      "description": "Player A identifier"
+    },
+    "player_A_endpoint": {
+      "type": "string",
+      "format": "uri",
+      "description": "Player A HTTP endpoint"
+    },
+    "player_B_id": {
+      "type": "string",
+      "description": "Player B identifier"
+    },
+    "player_B_endpoint": {
+      "type": "string",
+      "format": "uri",
+      "description": "Player B HTTP endpoint"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "league_id", "round_id", "match_id", "game_type", "player_A_id", "player_A_endpoint", "player_B_id", "player_B_endpoint"]
+}

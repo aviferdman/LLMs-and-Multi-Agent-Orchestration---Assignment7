@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "league_standings_update.schema.json",
+  "title": "LEAGUE_STANDINGS_UPDATE",
+  "description": "League Manager → Players: After each round completion",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "LEAGUE_STANDINGS_UPDATE"
+    },
+    "sender": {
+      "const": "league_manager"
+    },
+    "league_id": {
+      "type": "string"
+    },
+    "round_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "standings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "player_id": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "played": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "wins": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "draws": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "losses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "points": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": ["rank", "player_id", "played", "wins", "draws", "losses", "points"]
+      },
+      "description": "Current standings sorted by rank"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "league_id", "round_id", "standings"]
+}

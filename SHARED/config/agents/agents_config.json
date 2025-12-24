@@ -1,0 +1,81 @@
+{
+  "league_manager": {
+    "agent_id": "LM01",
+    "display_name": "League Manager",
+    "endpoint": "http://localhost:8000/mcp",
+    "port": 8000,
+    "version": "1.0.0"
+  },
+  "referees": [
+    {
+      "referee_id": "REF01",
+      "display_name": "Referee 01",
+      "endpoint": "http://localhost:8001/mcp",
+      "port": 8001,
+      "version": "1.0.0",
+      "game_types": ["even_odd"],
+      "max_concurrent_matches": 1,
+      "active": true
+    },
+    {
+      "referee_id": "REF02",
+      "display_name": "Referee 02",
+      "endpoint": "http://localhost:8002/mcp",
+      "port": 8002,
+      "version": "1.0.0",
+      "game_types": ["even_odd"],
+      "max_concurrent_matches": 1,
+      "active": true
+    }
+  ],
+  "players": [
+    {
+      "player_id": "P01",
+      "display_name": "Player 01",
+      "endpoint": "http://localhost:8101/mcp",
+      "port": 8101,
+      "version": "1.0.0",
+      "preferred_leagues": ["league_2025_even_odd"],
+      "game_types": ["even_odd"],
+      "default_endpoint": "http://localhost:8101/mcp",
+      "strategy": "random",
+      "active": true
+    },
+    {
+      "player_id": "P02",
+      "display_name": "Player 02",
+      "endpoint": "http://localhost:8102/mcp",
+      "port": 8102,
+      "version": "1.0.0",
+      "preferred_leagues": ["league_2025_even_odd"],
+      "game_types": ["even_odd"],
+      "default_endpoint": "http://localhost:8102/mcp",
+      "strategy": "frequency",
+      "active": true
+    },
+    {
+      "player_id": "P03",
+      "display_name": "Player 03",
+      "endpoint": "http://localhost:8103/mcp",
+      "port": 8103,
+      "version": "1.0.0",
+      "preferred_leagues": ["league_2025_even_odd"],
+      "game_types": ["even_odd"],
+      "default_endpoint": "http://localhost:8103/mcp",
+      "strategy": "pattern",
+      "active": true
+    },
+    {
+      "player_id": "P04",
+      "display_name": "Player 04",
+      "endpoint": "http://localhost:8104/mcp",
+      "port": 8104,
+      "version": "1.0.0",
+      "preferred_leagues": ["league_2025_even_odd"],
+      "game_types": ["even_odd"],
+      "default_endpoint": "http://localhost:8104/mcp",
+      "strategy": "random",
+      "active": true
+    }
+  ]
+}

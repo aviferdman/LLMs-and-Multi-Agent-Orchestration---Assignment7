@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+    <style>
+      .title { font: bold 24px sans-serif; fill: #333; }
+      .subtitle { font: 14px sans-serif; fill: #666; }
+      .box-title { font: bold 14px sans-serif; fill: #fff; }
+      .box-text { font: 12px sans-serif; fill: #333; }
+      .label { font: 11px sans-serif; fill: #666; }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="400" y="35" text-anchor="middle" class="title">League System Architecture</text>
+  <text x="400" y="55" text-anchor="middle" class="subtitle">Protocol Version: league.v2</text>
+  
+  <!-- League Manager Box -->
+  <rect x="300" y="80" width="200" height="80" rx="8" fill="#2196F3"/>
+  <text x="400" y="110" text-anchor="middle" class="box-title">League Manager</text>
+  <text x="400" y="130" text-anchor="middle" style="font: 11px sans-serif; fill: #fff;">Orchestrator</text>
+  <text x="400" y="145" text-anchor="middle" style="font: 10px sans-serif; fill: #cce5ff;">Port: 8000</text>
+  
+  <!-- Referee Boxes -->
+  <rect x="150" y="220" width="140" height="70" rx="6" fill="#4CAF50"/>
+  <text x="220" y="250" text-anchor="middle" class="box-title">Referee REF01</text>
+  <text x="220" y="270" text-anchor="middle" style="font: 10px sans-serif; fill: #c8e6c9;">Port: 8001</text>
+  
+  <rect x="330" y="220" width="140" height="70" rx="6" fill="#4CAF50"/>
+  <text x="400" y="250" text-anchor="middle" class="box-title">Referee REF02</text>
+  <text x="400" y="270" text-anchor="middle" style="font: 10px sans-serif; fill: #c8e6c9;">Port: 8002</text>
+  
+  <rect x="510" y="220" width="140" height="70" rx="6" fill="#9E9E9E"/>
+  <text x="580" y="255" text-anchor="middle" class="box-title">...</text>
+  
+  <!-- Player Boxes -->
+  <rect x="80" y="360" width="120" height="60" rx="6" fill="#FF9800"/>
+  <text x="140" y="385" text-anchor="middle" class="box-title">Player P01</text>
+  <text x="140" y="405" text-anchor="middle" style="font: 10px sans-serif; fill: #fff3e0;">Port: 8101</text>
+  
+  <rect x="220" y="360" width="120" height="60" rx="6" fill="#FF9800"/>
+  <text x="280" y="385" text-anchor="middle" class="box-title">Player P02</text>
+  <text x="280" y="405" text-anchor="middle" style="font: 10px sans-serif; fill: #fff3e0;">Port: 8102</text>
+  
+  <rect x="460" y="360" width="120" height="60" rx="6" fill="#FF9800"/>
+  <text x="520" y="385" text-anchor="middle" class="box-title">Player P03</text>
+  <text x="520" y="405" text-anchor="middle" style="font: 10px sans-serif; fill: #fff3e0;">Port: 8103</text>
+  
+  <rect x="600" y="360" width="120" height="60" rx="6" fill="#FF9800"/>
+  <text x="660" y="385" text-anchor="middle" class="box-title">Player P04</text>
+  <text x="660" y="405" text-anchor="middle" style="font: 10px sans-serif; fill: #fff3e0;">Port: 8104</text>
+  
+  <!-- Connections: LM to Referees -->
+  <line x1="350" y1="160" x2="220" y2="220" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="160" x2="400" y2="220" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="450" y1="160" x2="580" y2="220" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Connections: REF01 to Players -->
+  <line x1="180" y1="290" x2="140" y2="360" stroke="#666" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <line x1="260" y1="290" x2="280" y2="360" stroke="#666" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  
+  <!-- Connections: REF02 to Players -->
+  <line x1="360" y1="290" x2="520" y2="360" stroke="#666" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <line x1="440" y1="290" x2="660" y2="360" stroke="#666" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  
+  <!-- Legend -->
+  <rect x="50" y="480" width="700" height="100" rx="8" fill="#fff" stroke="#ddd"/>
+  <text x="400" y="505" text-anchor="middle" style="font: bold 14px sans-serif; fill: #333;">Communication Protocol</text>
+  
+  <rect x="80" y="520" width="20" height="20" fill="#2196F3"/>
+  <text x="110" y="535" class="label">League Manager - Orchestrates leagues and rounds</text>
+  
+  <rect x="80" y="545" width="20" height="20" fill="#4CAF50"/>
+  <text x="110" y="560" class="label">Referee - Manages matches and enforces rules</text>
+  
+  <rect x="420" y="520" width="20" height="20" fill="#FF9800"/>
+  <text x="450" y="535" class="label">Player - Participates in matches</text>
+  
+  <line x1="420" y1="555" x2="440" y2="555" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="450" y="560" class="label">JSON-RPC 2.0 over HTTP</text>
+</svg>

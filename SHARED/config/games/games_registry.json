@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "games": {
+    "even_odd": {
+      "game_name": "Even-Odd Parity Game",
+      "rules_module": "game_logic.even_odd",
+      "rules_version": "1.0.0",
+      "max_round_time_sec": 30,
+      "min_players": 2,
+      "max_players": 2,
+      "description": "Players predict parity of a random number 1-10",
+      "metadata": {
+        "draw_range": [1, 10],
+        "choices": ["even", "odd"]
+      }
+    }
+  }
+}

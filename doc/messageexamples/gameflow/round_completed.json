@@ -1,0 +1,29 @@
+{
+  "jsonrpc": "2.0",
+  "method": "round_completed",
+  "params": {
+    "protocol": "league.v2",
+    "message_type": "ROUND_COMPLETED",
+    "sender": "league_manager",
+    "timestamp": "2025-12-24T10:02:00Z",
+    "conversation_id": "conv_round1_complete",
+    "league_id": "LEAGUE_20251224_100000",
+    "round_id": 1,
+    "total_rounds": 3,
+    "results": [
+      {
+        "match_id": "M001_R1",
+        "winner": "P01",
+        "player_a_id": "P01",
+        "player_b_id": "P02"
+      },
+      {
+        "match_id": "M002_R1",
+        "winner": "P03",
+        "player_a_id": "P03",
+        "player_b_id": "P04"
+      }
+    ]
+  },
+  "id": 20
+}

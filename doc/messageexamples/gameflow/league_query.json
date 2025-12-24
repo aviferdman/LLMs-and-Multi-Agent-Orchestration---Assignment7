@@ -1,0 +1,14 @@
+{
+  "jsonrpc": "2.0",
+  "method": "league_query",
+  "params": {
+    "protocol": "league.v2",
+    "message_type": "LEAGUE_QUERY",
+    "sender": "player:P01",
+    "timestamp": "2025-12-24T10:05:00Z",
+    "conversation_id": "conv_query_001",
+    "league_id": "LEAGUE_20251224_100000",
+    "query_type": "standings"
+  },
+  "id": 50
+}

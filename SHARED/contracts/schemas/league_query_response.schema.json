@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "league_query_response.schema.json",
+  "title": "LEAGUE_QUERY_RESPONSE",
+  "description": "League Manager → Player/Referee: Response to LEAGUE_QUERY",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "LEAGUE_QUERY_RESPONSE"
+    },
+    "sender": {
+      "const": "league_manager"
+    },
+    "query_type": {
+      "type": "string",
+      "description": "Echo of the query type requested"
+    },
+    "success": {
+      "type": "boolean",
+      "description": "Whether the query was successful"
+    },
+    "data": {
+      "type": ["object", "null"],
+      "description": "Query result data, null if query failed"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "query_type", "success"]
+}

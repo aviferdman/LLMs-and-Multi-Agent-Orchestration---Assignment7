@@ -1,0 +1,14 @@
+{
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32000,
+    "message": "Connection refused to player endpoint",
+    "data": {
+      "player_id": "P02",
+      "endpoint": "http://localhost:8102/mcp",
+      "error_type": "CONNECTION_REFUSED",
+      "retry_count": 3
+    }
+  },
+  "id": 17
+}

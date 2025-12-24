@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "referee_register_request.schema.json",
+  "title": "REFEREE_REGISTER_REQUEST",
+  "description": "Referee → League Manager: Referee starts up",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "REFEREE_REGISTER_REQUEST"
+    },
+    "sender": {
+      "type": "string",
+      "pattern": "^referee:.+$",
+      "description": "Referee sender in format 'referee:ID'"
+    },
+    "referee_meta": {
+      "type": "object",
+      "properties": {
+        "display_name": {
+          "type": "string",
+          "description": "Human-readable name for the referee"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Referee version (semver format)"
+        },
+        "game_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Game types this referee can handle"
+        },
+        "contact_endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "HTTP endpoint for receiving messages"
+        },
+        "max_concurrent_matches": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Maximum matches this referee can handle simultaneously"
+        }
+      },
+      "required": ["display_name", "version", "game_types", "contact_endpoint"],
+      "description": "Referee metadata"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "referee_meta"]
+}

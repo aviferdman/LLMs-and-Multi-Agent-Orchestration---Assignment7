@@ -1,0 +1,22 @@
+{
+  "jsonrpc": "2.0",
+  "method": "match_result_report",
+  "params": {
+    "protocol": "league.v2",
+    "message_type": "MATCH_RESULT_REPORT",
+    "sender": "referee:REF01",
+    "timestamp": "2025-12-24T10:01:30Z",
+    "conversation_id": "conv_match_M001_R1",
+    "league_id": "LEAGUE_20251224_100000",
+    "round_id": 1,
+    "match_id": "M001_R1",
+    "player_a_id": "P01",
+    "player_b_id": "P02",
+    "winner": "P01",
+    "player_a_choice": "even",
+    "player_b_choice": "odd",
+    "drawn_number": 42,
+    "reason": "P01 chose even, drawn number 42 is even"
+  },
+  "id": 15
+}

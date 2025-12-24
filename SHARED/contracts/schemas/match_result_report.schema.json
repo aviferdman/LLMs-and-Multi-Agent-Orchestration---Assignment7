@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "match_result_report.schema.json",
+  "title": "MATCH_RESULT_REPORT",
+  "description": "Referee → League Manager: Game completed, reporting result",
+  "allOf": [
+    { "$ref": "_base_message.schema.json" }
+  ],
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "const": "MATCH_RESULT_REPORT"
+    },
+    "sender": {
+      "type": "string",
+      "pattern": "^referee:.+$"
+    },
+    "league_id": {
+      "type": "string"
+    },
+    "round_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "game_type": {
+      "type": "string",
+      "enum": ["even_odd"]
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "winner": {
+          "type": ["string", "null"],
+          "description": "Winner player ID, null if draw"
+        },
+        "score": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Map of player_id to points earned"
+        },
+        "details": {
+          "type": "object",
+          "properties": {
+            "drawn_number": {
+              "type": "integer"
+            },
+            "choices": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "enum": ["even", "odd"]
+              }
+            }
+          },
+          "description": "Match details"
+        }
+      },
+      "required": ["winner", "score", "details"],
+      "description": "Match result"
+    }
+  },
+  "required": ["protocol", "message_type", "sender", "timestamp", "conversation_id", "league_id", "round_id", "match_id", "game_type", "result"]
+}
