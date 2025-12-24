@@ -52,3 +52,9 @@
 {"timestamp": "2025-12-23T23:29:19.460Z", "agent_id": "test", "event_type": "PLAYER_JOINED", "data": {"player_id": "P01", "match_id": "M1"}}
 {"timestamp": "2025-12-23T23:29:19.465Z", "agent_id": "test", "event_type": "CHOICE_RECEIVED", "data": {"player_id": "P01", "parity_choice": "even"}}
 {"timestamp": "2025-12-23T23:29:19.470Z", "agent_id": "test", "event_type": "ERROR", "error_type": "INVALID_CHOICE", "message": "Player P01: BLUE", "details": {}}
+{"timestamp": "2025-12-24T07:35:39.886Z", "agent_id": "test", "event_type": "PLAYER_JOINED", "data": {"player_id": "P01", "match_id": "M1"}}
+{"timestamp": "2025-12-24T07:35:39.886Z", "agent_id": "test", "event_type": "CHOICE_RECEIVED", "data": {"player_id": "P01", "parity_choice": "even"}}
+{"timestamp": "2025-12-24T07:35:39.894Z", "agent_id": "test", "event_type": "ERROR", "error_type": "INVALID_CHOICE", "message": "Player P01: BLUE", "details": {}}
+{"timestamp": "2025-12-24T07:37:50.864Z", "agent_id": "test", "event_type": "PLAYER_JOINED", "data": {"player_id": "P01", "match_id": "M1"}}
+{"timestamp": "2025-12-24T07:37:50.864Z", "agent_id": "test", "event_type": "CHOICE_RECEIVED", "data": {"player_id": "P01", "parity_choice": "even"}}
+{"timestamp": "2025-12-24T07:37:50.872Z", "agent_id": "test", "event_type": "ERROR", "error_type": "INVALID_CHOICE", "message": "Player P01: BLUE", "details": {}}
