@@ -8,6 +8,8 @@ from itertools import combinations
 from math import ceil
 from typing import Any, Dict, List, Optional
 
+from SHARED.constants import AgentID
+
 # Re-export RoundState for backward compatibility
 from agents.league_manager.round_state import RoundState, check_round_complete, start_round
 
@@ -102,15 +104,15 @@ def get_match_schedule(
     for backward compatibility.
 
     Args:
-        players: List of player IDs. Defaults to ["P01", "P02", "P03", "P04"]
-        referees: List of referee IDs. Defaults to ["REF01", "REF02"]
+        players: List of player IDs. Defaults to [P01, P02, P03, P04]
+        referees: List of referee IDs. Defaults to [REF01, REF02]
 
     Returns:
         List of rounds, each containing list of match dictionaries
     """
     if players is None:
-        players = ["P01", "P02", "P03", "P04"]
+        players = [AgentID.PLAYER_01, AgentID.PLAYER_02, AgentID.PLAYER_03, AgentID.PLAYER_04]
     if referees is None:
-        referees = ["REF01", "REF02"]
+        referees = [AgentID.REFEREE_01, AgentID.REFEREE_02]
 
     return generate_round_robin_schedule(players, referees)

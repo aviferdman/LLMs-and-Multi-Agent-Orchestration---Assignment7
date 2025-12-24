@@ -13,7 +13,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from SHARED.constants import PROTOCOL_VERSION, MessageType, Port, ParityChoice
+from SHARED.constants import PROTOCOL_VERSION, MessageType, ParityChoice
+from SHARED.league_sdk.config_loader import load_agent_config
 
 
 class TestLeagueManagerRegistration:
@@ -203,23 +204,28 @@ class TestErrorHandling:
 
 
 class TestPortAssignments:
-    """Test agent port assignments."""
+    """Test agent port assignments from config."""
 
     def test_league_manager_port(self):
         """Test League Manager port is 8000."""
-        assert Port.LEAGUE_MANAGER == 8000
+        config = load_agent_config()
+        assert config["league_manager"]["port"] == 8000
 
     def test_referee_ports(self):
         """Test referee ports are 8001-8002."""
-        assert Port.REFEREE_01 == 8001
-        assert Port.REFEREE_02 == 8002
+        config = load_agent_config()
+        referee_ports = {r["referee_id"]: r["port"] for r in config["referees"]}
+        assert referee_ports["REF01"] == 8001
+        assert referee_ports["REF02"] == 8002
 
     def test_player_ports(self):
         """Test player ports are 8101-8104."""
-        assert Port.PLAYER_01 == 8101
-        assert Port.PLAYER_02 == 8102
-        assert Port.PLAYER_03 == 8103
-        assert Port.PLAYER_04 == 8104
+        config = load_agent_config()
+        player_ports = {p["player_id"]: p["port"] for p in config["players"]}
+        assert player_ports["P01"] == 8101
+        assert player_ports["P02"] == 8102
+        assert player_ports["P03"] == 8103
+        assert player_ports["P04"] == 8104
 
 
 class TestAgentEndpoints:
@@ -235,7 +241,8 @@ class TestAgentEndpoints:
         """Test endpoint URL construction."""
         from SHARED.constants import HTTP_PROTOCOL, LOCALHOST
         
-        port = Port.REFEREE_01
+        config = load_agent_config()
+        port = config["referees"][0]["port"]  # REF01 port
         endpoint = f"{HTTP_PROTOCOL}://{LOCALHOST}:{port}/mcp"
         
         assert "localhost" in endpoint

@@ -1,6 +1,6 @@
 """Player invitation logic for referee matches."""
 
-from SHARED.constants import Field, LogEvent, MessageType
+from SHARED.constants import Field, GameID, LogEvent, MessageType
 from SHARED.contracts import build_game_invitation
 from SHARED.contracts.jsonrpc_helpers import extract_jsonrpc_params, is_jsonrpc_request
 from SHARED.league_sdk.agent_comm import send
@@ -27,7 +27,7 @@ async def invite_players(
         player_id=player_a,
         opponent_id=player_b,
         role_in_match="player_a",
-        game_type="even_odd",
+        game_type=GameID.EVEN_ODD,
     )
     inv_b = build_game_invitation(
         league_id=league_id,
@@ -37,7 +37,7 @@ async def invite_players(
         player_id=player_b,
         opponent_id=player_a,
         role_in_match="player_b",
-        game_type="even_odd",
+        game_type=GameID.EVEN_ODD,
     )
     resp_a = await send(ep_a, inv_a)
     resp_b = await send(ep_b, inv_b)

@@ -3,7 +3,7 @@
 import asyncio
 import subprocess
 
-from SHARED.constants import AgentType, Field, LogEvent
+from SHARED.constants import AGENT_VERSION, AgentType, Field, GameID, LogEvent
 from SHARED.league_sdk.agent_comm import send
 from SHARED.league_sdk.config_loader import load_agent_config
 from SHARED.league_sdk.logger import LeagueLogger
@@ -47,9 +47,9 @@ async def register_referee(referee_id: str, endpoint: str, logger: LeagueLogger)
     message = build_referee_register_request(
         referee_id=referee_id,
         display_name=f"Referee {referee_id}",
-        version="1.0.0",
+        version=AGENT_VERSION,
         contact_endpoint=endpoint,
-        game_types=["even_odd"],
+        game_types=[GameID.EVEN_ODD],
     )
     response = await send(_lm_endpoint, message)
     logger.log_message(
@@ -65,9 +65,9 @@ async def register_player(player_id: str, endpoint: str, logger: LeagueLogger):
     message = build_league_register_request(
         player_id=player_id,
         display_name=f"Player {player_id}",
-        version="1.0.0",
+        version=AGENT_VERSION,
         contact_endpoint=endpoint,
-        game_types=["even_odd"],
+        game_types=[GameID.EVEN_ODD],
     )
     response = await send(_lm_endpoint, message)
     logger.log_message(

@@ -2,6 +2,7 @@
 
 from typing import Any, Dict, List
 
+from SHARED.constants import Winner
 from SHARED.league_sdk.config_models import LeagueConfig
 from SHARED.league_sdk.repositories import StandingsRepository
 
@@ -29,25 +30,25 @@ def update_standings(
 
     scoring = league_config.scoring
 
-    # Normalize winner value - could be "PLAYER_A", "PLAYER_B", "DRAW", 
+    # Normalize winner value - could be Winner.PLAYER_A, Winner.PLAYER_B, Winner.DRAW, 
     # or an actual player ID (like "P01", "P02")
-    if winner == player_a or winner == "PLAYER_A":
-        winner_normalized = "PLAYER_A"
-    elif winner == player_b or winner == "PLAYER_B":
-        winner_normalized = "PLAYER_B"
-    elif winner == "DRAW" or winner is None:
-        winner_normalized = "DRAW"
+    if winner == player_a or winner == Winner.PLAYER_A:
+        winner_normalized = Winner.PLAYER_A
+    elif winner == player_b or winner == Winner.PLAYER_B:
+        winner_normalized = Winner.PLAYER_B
+    elif winner == Winner.DRAW or winner is None:
+        winner_normalized = Winner.DRAW
     else:
         # Unknown winner value, treat as draw
-        winner_normalized = "DRAW"
+        winner_normalized = Winner.DRAW
 
     # Update player statistics
     for player in standings["standings"]:
         if player["player_id"] == player_a:
-            if winner_normalized == "PLAYER_A":
+            if winner_normalized == Winner.PLAYER_A:
                 player["wins"] += 1
                 player["points"] += scoring["win_points"]
-            elif winner_normalized == "DRAW":
+            elif winner_normalized == Winner.DRAW:
                 player["draws"] += 1
                 player["points"] += scoring["draw_points"]
             else:
@@ -55,10 +56,10 @@ def update_standings(
             player["games_played"] += 1
 
         elif player["player_id"] == player_b:
-            if winner_normalized == "PLAYER_B":
+            if winner_normalized == Winner.PLAYER_B:
                 player["wins"] += 1
                 player["points"] += scoring["win_points"]
-            elif winner_normalized == "DRAW":
+            elif winner_normalized == Winner.DRAW:
                 player["draws"] += 1
                 player["points"] += scoring["draw_points"]
             else:

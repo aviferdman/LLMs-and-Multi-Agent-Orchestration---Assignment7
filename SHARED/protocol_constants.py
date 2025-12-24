@@ -80,7 +80,6 @@ def reset_request_id_counter(agent_id: str = None) -> None:
 # Re-export from split modules
 from .protocol_types import MessageType, Status, Timeout
 from .protocol_fields import Field
-from .protocol_network import Port, Endpoint
 
 
 def generate_timestamp() -> str:

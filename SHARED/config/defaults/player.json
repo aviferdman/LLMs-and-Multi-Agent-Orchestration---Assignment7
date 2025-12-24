@@ -1,10 +1,6 @@
 {
   "default_strategy": "random",
   "logging_level": "INFO",
-  "response_timeouts": {
-    "game_join_ack": 5,
-    "parity_choice": 30
-  },
   "strategy_settings": {
     "random": {
       "seed": null
@@ -27,15 +23,6 @@
       "ACTIVE": ["SUSPENDED", "SHUTDOWN"],
       "SUSPENDED": ["ACTIVE", "SHUTDOWN"],
       "SHUTDOWN": []
-    }
-  },
-  "communication": {
-    "protocol_version": "league.v2",
-    "retry_policy": {
-      "max_retries": 3,
-      "base_delay": 1.0,
-      "use_exponential_backoff": true,
-      "jitter_range": 0.5
     }
   }
 }
