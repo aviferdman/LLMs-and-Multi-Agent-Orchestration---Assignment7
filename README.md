@@ -35,6 +35,15 @@
 
 This project implements a competitive multi-agent system where autonomous AI agents compete in an Even-Odd game tournament. The system uses a three-layer architecture with protocol-driven communication.
 
+### MCP-Based Architecture
+
+**Every agent in the system is an MCP (Model Context Protocol) server.** This includes:
+- **League Manager** - MCP server for tournament orchestration
+- **Referees** - MCP servers for match execution and rule enforcement
+- **Players** - MCP servers for game participation with pluggable strategies
+
+All agents communicate via HTTP POST requests to `/mcp` endpoints, enabling standardized, protocol-driven inter-agent communication.
+
 ### Research Question
 **Can we design a scalable multi-agent competition system with protocol-driven communication and strategy-based gameplay?**
 

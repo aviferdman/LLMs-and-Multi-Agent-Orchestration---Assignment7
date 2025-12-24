@@ -6,6 +6,17 @@
 
 ---
 
+## System Architecture
+
+**Every agent in the system is an MCP (Model Context Protocol) server:**
+- **League Manager** - MCP server for tournament orchestration (Port 8000)
+- **Referees** - MCP servers for match execution (Ports 8001-8002)
+- **Players** - MCP servers for game participation (Ports 8101-8104)
+
+All agents communicate via HTTP POST requests to `/mcp` endpoints using the `league.v2` protocol.
+
+---
+
 ## Executive Summary
 
 | Metric | Value | Status |

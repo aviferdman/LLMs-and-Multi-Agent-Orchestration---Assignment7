@@ -31,6 +31,8 @@
 
 Design and implement a **competitive multi-agent system** where autonomous AI agents compete in an Even-Odd game following a standardized MCP (Model Context Protocol) over HTTP communication.
 
+**Key Architecture**: Every agent (League Manager, Referees, and Players) is implemented as an **MCP server** exposing an `/mcp` HTTP endpoint for protocol-driven communication.
+
 **Key Objectives**:
 - Demonstrate decoupled architecture enabling complete modularity
 - Implement protocol-driven communication with strict JSON schema compliance
@@ -39,7 +41,10 @@ Design and implement a **competitive multi-agent system** where autonomous AI ag
 
 ### 1.2 Key Innovation
 
-**Total Decoupling Between Layers**: The protocol enables agents to participate in any future league regardless of specific game rules. An agent built for this protocol can join new games without modification to core logic.
+**MCP Server-Based Multi-Agent Architecture**: Every agent in the system is an independent MCP server. This design enables:
+- **Total Decoupling Between Layers**: The protocol enables agents to participate in any future league regardless of specific game rules
+- **Agent Interchangeability**: An agent built for this protocol can join new games without modification to core logic
+- **Scalability**: New MCP servers can be added dynamically without system changes
 
 ### 1.3 Success Criteria
 

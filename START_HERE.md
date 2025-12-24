@@ -45,6 +45,8 @@ If you want to verify quality:
 ### What Is This?
 A **Multi-Agent Even-Odd Game Competition System** where autonomous AI agents compete in tournaments.
 
+**Every agent is an MCP (Model Context Protocol) server** - including the League Manager, Referees, and Players. All inter-agent communication happens via HTTP POST requests to `/mcp` endpoints using the `league.v2` protocol.
+
 ### Key Components
 
 | Component | Description | Port |

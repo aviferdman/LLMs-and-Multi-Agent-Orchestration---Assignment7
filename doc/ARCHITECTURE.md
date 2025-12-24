@@ -9,6 +9,20 @@
 
 The AI Agent League Competition System implements a multi-agent architecture for running Even-Odd game tournaments. The system uses a three-layer design with clear separation of concerns.
 
+### MCP Server Architecture
+
+**Every agent in the system is an MCP (Model Context Protocol) server.** Each agent:
+- Runs as an independent HTTP server exposing an `/mcp` endpoint
+- Communicates using the `league.v2` protocol wrapped in JSON-RPC 2.0
+- Processes incoming protocol messages and sends responses
+- Maintains its own state and handles requests asynchronously
+
+This MCP-based design enables:
+- **Decoupling**: Agents are completely independent and interchangeable
+- **Scalability**: New agents can be added without system changes
+- **Interoperability**: Any MCP-compliant agent can participate
+- **Extensibility**: Future games can reuse the same agent infrastructure
+
 ---
 
 ## Architecture Diagram
@@ -52,7 +66,9 @@ The AI Agent League Competition System implements a multi-agent architecture for
 
 ## Three-Layer Design
 
-### Layer 1: Orchestration (League Manager)
+Each layer consists of one or more MCP servers communicating via the `league.v2` protocol.
+
+### Layer 1: Orchestration (League Manager MCP Server)
 - **Role**: Central coordinator for tournament management
 - **Responsibilities**:
   - Accept referee and player registrations
@@ -62,7 +78,7 @@ The AI Agent League Competition System implements a multi-agent architecture for
   - Maintain and broadcast standings
   - Signal round/league completion
 
-### Layer 2: Execution (Referees)
+### Layer 2: Execution (Referee MCP Servers)
 - **Role**: Match execution and rule enforcement
 - **Responsibilities**:
   - Invite players to matches
@@ -71,7 +87,7 @@ The AI Agent League Competition System implements a multi-agent architecture for
   - Determine match winners
   - Report results to League Manager
 
-### Layer 3: Participation (Players)
+### Layer 3: Participation (Player MCP Servers)
 - **Role**: Game participation with strategy
 - **Responsibilities**:
   - Register with League Manager

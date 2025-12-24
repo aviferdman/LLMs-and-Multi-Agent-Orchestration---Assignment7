@@ -19,11 +19,19 @@
 
 ## Overview
 
-The League Protocol (`league.v2`) defines the communication standard between agents in a multi-agent game league system. The protocol supports:
+The League Protocol (`league.v2`) defines the communication standard between agents in a multi-agent game league system.
 
-- **League Manager**: Orchestrates leagues, rounds, and standings
-- **Referees**: Manage individual matches and enforce game rules
-- **Players**: Participate in matches and make game decisions
+### MCP Server Architecture
+
+**Every agent in the system is an MCP (Model Context Protocol) server**, exposing an `/mcp` HTTP endpoint that receives and processes protocol messages.
+
+The protocol supports three types of MCP servers:
+
+- **League Manager (MCP Server)**: Orchestrates leagues, rounds, and standings
+- **Referees (MCP Servers)**: Manage individual matches and enforce game rules
+- **Players (MCP Servers)**: Participate in matches and make game decisions
+
+All agents communicate via HTTP POST to each other's `/mcp` endpoints.
 
 ### Architecture
 
