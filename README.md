@@ -3,8 +3,8 @@
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Protocol](https://img.shields.io/badge/Protocol-league.v2-purple)
-![Coverage](https://img.shields.io/badge/Coverage-70%25+-brightgreen)
-![Tests](https://img.shields.io/badge/Tests-228%20Passing-success)
+![Coverage](https://img.shields.io/badge/Coverage-47%25+-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-283%20Passing-success)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-blue)
 ![ISO 25010](https://img.shields.io/badge/ISO%2025010-Compliant-brightgreen)
 ![Documentation](https://img.shields.io/badge/Documentation-Complete-brightgreen)
@@ -57,7 +57,7 @@ All agents communicate via HTTP POST requests to `/mcp` endpoints, enabling stan
 | REST API | FastAPI with WebSocket | ✅ Complete |
 | Streamlit GUI | Interactive dashboard | ✅ Complete |
 | Protocol | league.v2 specification | ✅ Complete |
-| Test Suite | 228 tests, 70%+ coverage | ✅ Complete |
+| Test Suite | 283 tests, 47%+ coverage | ✅ Complete |
 
 ---
 
@@ -84,8 +84,8 @@ All agents communicate via HTTP POST requests to `/mcp` endpoints, enabling stan
 - ✅ Performance metrics
 
 ### 🧪 Quality Assurance
-- ✅ 228 automated tests
-- ✅ 70%+ code coverage
+- ✅ 283 automated tests
+- ✅ 47%+ code coverage
 - ✅ CI/CD pipeline (GitHub Actions)
 - ✅ ISO 25010 compliance audit
 - ✅ Type hints throughout
@@ -202,67 +202,236 @@ python run_league.py
 ```
 .
 ├── README.md                    # This file
+├── START_HERE.md                # Quick start guide
+├── CONTRIBUTING.md              # Contribution guidelines
 ├── LICENSE                      # MIT License
 ├── requirements.txt             # Python dependencies
+├── pyproject.toml               # Package configuration
 ├── pytest.ini                   # Test configuration
 ├── setup.py                     # Package setup
 ├── run_api.py                   # Entry: API server
 ├── run_gui.py                   # Entry: GUI dashboard
-├── run_league.py                # Entry: League system
-├── run_tournament.py            # Entry: Tournament runner
-├── SHARED/
-│   ├── contracts/               # Protocol contracts
+├── run_league.py                # Entry: League orchestrator
+│
+├── SHARED/                      # Shared modules & configuration
+│   ├── __init__.py
+│   ├── constants.py             # Central constants re-export
+│   ├── agent_constants.py       # Agent IDs, game IDs, strategies
+│   ├── protocol_constants.py    # Protocol version, JSON-RPC methods
+│   ├── protocol_types.py        # MessageType, Status, Timeout enums
+│   ├── protocol_fields.py       # Field name constants
+│   ├── contracts/               # Protocol contracts (message schemas)
+│   │   ├── __init__.py
 │   │   ├── base_contract.py     # Base message structure (league.v2)
+│   │   ├── exceptions.py        # Contract exceptions
 │   │   ├── game_flow_contracts.py
 │   │   ├── game_result_contracts.py
+│   │   ├── jsonrpc_helpers.py   # JSON-RPC utilities
+│   │   ├── league_manager_contracts.py
 │   │   ├── match_control_contracts.py
+│   │   ├── message_validator.py
 │   │   ├── player_contracts.py
 │   │   ├── referee_contracts.py
 │   │   ├── registration_contracts.py
 │   │   ├── round_contracts.py
-│   │   └── standings_contracts.py
+│   │   ├── round_lifecycle_contracts.py
+│   │   ├── schema_loader.py
+│   │   ├── schema_validator.py
+│   │   ├── standings_contracts.py
+│   │   ├── validation_helpers.py
+│   │   └── schemas/             # JSON schemas
 │   ├── config/                  # Configuration files
-│   │   ├── system.json          # Protocol v2, timeouts
-│   │   ├── agents/              # Agent configurations
+│   │   ├── __init__.py
+│   │   ├── system.json          # Protocol version, timeouts
+│   │   ├── agents/              # Agent endpoints & ports
+│   │   │   └── agents_config.json
+│   │   ├── defaults/            # Default agent settings
+│   │   │   ├── player.json
+│   │   │   └── referee.json
 │   │   ├── leagues/             # League definitions
 │   │   └── games/               # Game registry
+│   ├── league_sdk/              # Python SDK
+│   │   ├── __init__.py
+│   │   ├── agent_comm.py        # Agent communication
+│   │   ├── circuit_breaker.py   # Fault tolerance
+│   │   ├── config_loader.py     # Configuration loading
+│   │   ├── config_models.py     # Pydantic config models
+│   │   ├── endpoint_cache.py    # Endpoint caching
+│   │   ├── endpoint_resolver.py # Endpoint resolution
+│   │   ├── http_client.py       # HTTP transport
+│   │   ├── logger.py            # JSONL structured logging
+│   │   ├── messages.py          # Message builders
+│   │   ├── repositories.py      # Data persistence
+│   │   ├── session_manager.py   # Session management
+│   │   ├── transport.py         # Transport layer
+│   │   └── validation.py        # Protocol validation
 │   ├── data/                    # Runtime data (gitignored)
-│   ├── logs/                    # JSONL logs (gitignored)
-│   └── league_sdk/              # Python SDK
-│       ├── circuit_breaker.py   # Fault tolerance
-│       ├── config_loader.py     # Configuration
-│       ├── http_client.py       # Transport
-│       ├── logger.py            # JSONL logging
-│       ├── messages.py          # Message builders
-│       ├── repositories.py      # Data persistence
-│       └── validation.py        # Protocol validation
-├── agents/
-│   ├── generic_player.py        # Generic player (all strategies)
-│   ├── generic_referee.py       # Generic referee (all game types)
+│   └── logs/                    # JSONL logs (gitignored)
+│
+├── agents/                      # Agent implementations (MCP servers)
+│   ├── __init__.py
+│   ├── generic_player.py        # Generic player agent
+│   ├── generic_referee.py       # Generic referee agent
 │   ├── player_strategies.py     # Strategy implementations
-│   ├── referee_game_logic.py    # Game logic
+│   ├── player_handlers.py       # Player HTTP handlers
+│   ├── player_message_handlers.py
+│   ├── referee_game_logic.py    # Even-Odd game rules
 │   ├── referee_match_state.py   # Match state machine
-│   └── league_manager/          # League orchestration
-│       ├── main.py              # League manager entry
+│   ├── referee_match_runner.py  # Match execution
+│   ├── referee_invite.py        # Player invitation logic
+│   ├── referee_choices.py       # Parity choice collection
+│   ├── referee_comm.py          # Referee communication
+│   ├── referee_http_handlers.py # Referee HTTP handlers
+│   ├── launch_player_01.py      # Player P01 launcher
+│   ├── launch_player_02.py      # Player P02 launcher
+│   ├── launch_player_03.py      # Player P03 launcher
+│   ├── launch_player_04.py      # Player P04 launcher
+│   ├── launch_player_timeout.py # Timeout test player
+│   ├── launch_referee_01.py     # Referee REF01 launcher
+│   ├── launch_referee_02.py     # Referee REF02 launcher
+│   ├── player_P01/              # Player P01 standalone agent
+│   │   ├── main.py              # Entry point
+│   │   ├── handlers.py          # HTTP handlers
+│   │   ├── strategy.py          # Strategy implementation
+│   │   └── requirements.txt     # Dependencies
+│   ├── player_P02/              # Player P02 standalone agent
+│   │   ├── main.py
+│   │   ├── handlers.py
+│   │   ├── strategy.py
+│   │   └── requirements.txt
+│   ├── player_P03/              # Player P03 standalone agent
+│   │   ├── main.py
+│   │   ├── handlers.py
+│   │   ├── strategy.py
+│   │   └── requirements.txt
+│   ├── player_P04/              # Player P04 standalone agent
+│   │   ├── main.py
+│   │   ├── handlers.py
+│   │   ├── strategy.py
+│   │   └── requirements.txt
+│   ├── referee_REF01/           # Referee REF01 standalone agent
+│   │   ├── main.py              # Entry point
+│   │   ├── handlers.py          # HTTP handlers
+│   │   ├── game_logic.py        # Game rules
+│   │   └── requirements.txt     # Dependencies
+│   ├── referee_REF02/           # Referee REF02 standalone agent
+│   │   ├── main.py
+│   │   ├── handlers.py
+│   │   ├── game_logic.py
+│   │   └── requirements.txt
+│   └── league_manager/          # League Manager (MCP server)
+│       ├── __init__.py
+│       ├── main.py              # LM entry point
+│       ├── orchestration.py     # Agent process management
+│       ├── handlers.py          # HTTP request handlers
+│       ├── broadcast.py         # Message broadcasting
+│       ├── scheduler.py         # Round-robin scheduling
 │       ├── ranking.py           # Standings calculation
-│       └── scheduler.py         # Round-robin scheduling
+│       ├── round_state.py       # Round state tracking
+│       ├── round_tracker.py     # Round progress tracking
+│       ├── round_execution.py   # Round execution logic
+│       ├── match_orchestration.py
+│       ├── match_execution.py
+│       └── league_completion.py # League finalization
+│
 ├── api/                         # REST API (FastAPI)
+│   ├── __init__.py
 │   ├── main.py                  # API entry point
 │   ├── routes/                  # API endpoints
+│   │   ├── __init__.py
+│   │   ├── games.py             # Game endpoints
+│   │   ├── league.py            # League endpoints
+│   │   ├── matches.py           # Match endpoints
+│   │   └── players.py           # Player endpoints
 │   ├── schemas/                 # Pydantic models
+│   │   ├── __init__.py
+│   │   ├── common.py            # Common schemas
+│   │   ├── games.py             # Game schemas
+│   │   ├── league.py            # League schemas
+│   │   ├── live.py              # Live update schemas
+│   │   ├── matches.py           # Match schemas
+│   │   └── players.py           # Player schemas
 │   ├── services/                # Business logic
+│   │   ├── __init__.py
+│   │   ├── game_service.py
+│   │   ├── league_helpers.py
+│   │   └── league_service.py
 │   └── websocket/               # WebSocket support
+│       ├── __init__.py
+│       ├── connection_manager.py
+│       └── events.py
+│
 ├── gui/                         # Streamlit GUI
+│   ├── __init__.py
 │   ├── app.py                   # GUI entry point
+│   ├── api_client.py            # API client
+│   ├── config.py                # GUI configuration
 │   ├── pages/                   # Dashboard pages
-│   └── components/              # Reusable components
+│   │   ├── __init__.py
+│   │   ├── launcher.py          # League launcher
+│   │   ├── live.py              # Live match view
+│   │   ├── matches.py           # Match history
+│   │   ├── players.py           # Player profiles
+│   │   └── standings.py         # Standings page
+│   ├── components/              # Reusable components
+│   │   ├── __init__.py
+│   │   ├── charts.py            # Chart components
+│   │   ├── header.py            # Header component
+│   │   ├── live_match_panel.py  # Live match panel
+│   │   ├── match_card.py        # Match card
+│   │   ├── match_history.py     # Match history
+│   │   ├── player_card.py       # Player card
+│   │   └── standings_table.py   # Standings table
+│   ├── styles/                  # CSS styling
+│   └── utils/                   # GUI utilities
+│
 ├── doc/                         # Documentation
-│   ├── specs/                   # Assignment requirements
+│   ├── ARCHITECTURE.md          # System architecture
+│   ├── protocol_spec.md         # Protocol specification
+│   ├── API.md                   # REST API docs
+│   ├── AGENT_STRATEGY.md        # Player strategies
+│   ├── PRD.md                   # Product requirements
+│   ├── TESTING.md               # Test strategy
+│   ├── EDGE_CASES.md            # Edge case handling
+│   ├── ISO_25010_COMPLIANCE.md  # Quality audit
+│   ├── SECURITY.md              # Security documentation
+│   ├── INSTALLATION.md          # Installation guide
+│   ├── RUNNING.md               # Running guide
+│   ├── DESIGN_DOCUMENT.md       # Design document
+│   ├── PROJECT_REPORT.md        # Project report
+│   ├── STATISTICAL_ANALYSIS.md  # Statistical analysis
+│   ├── ADRs/                    # Architecture Decision Records
+│   │   ├── 001-three-layer-architecture.md
+│   │   ├── 002-http-protocol-choice.md
+│   │   ├── 003-json-message-format.md
+│   │   ├── 004-file-based-persistence.md
+│   │   ├── 005-fastapi-framework.md
+│   │   └── 006-statistical-methods.md
 │   ├── protocol/                # Protocol documentation
 │   ├── messageexamples/         # JSON message examples
 │   ├── diagrams/                # Architecture diagrams
-│   └── PROJECT_REPORT.md        # Consolidated report
-└── tests/                       # Test suite (228 tests)
+│   └── results/                 # League results
+│
+├── tests/                       # Test suite (283 tests)
+│   ├── conftest.py              # Pytest fixtures
+│   ├── README.md                # Test documentation
+│   ├── test_agents.py           # Agent tests
+│   ├── test_circuit_breaker.py  # Circuit breaker tests
+│   ├── test_config_loader.py    # Config loader tests
+│   ├── test_contracts_*.py      # Contract tests
+│   ├── test_edge_cases_*.py     # Edge case tests
+│   ├── test_game_logic.py       # Game logic tests
+│   ├── test_integration*.py     # Integration tests
+│   ├── test_messages.py         # Message tests
+│   ├── test_protocol*.py        # Protocol tests
+│   ├── test_ranking.py          # Ranking tests
+│   ├── test_scheduler.py        # Scheduler tests
+│   ├── test_state_machine.py    # State machine tests
+│   ├── test_strategies.py       # Strategy tests
+│   └── test_validation_*.py     # Validation tests
+│
+└── notebooks/                   # Jupyter notebooks
+    └── comprehensive_analysis.ipynb
 ```
 
 ## Key Improvements (v2)
