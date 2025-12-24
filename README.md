@@ -1,5 +1,12 @@
 # AI Agent League Competition System
 
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Protocol](https://img.shields.io/badge/Protocol-league.v2-purple)
+![Coverage](https://img.shields.io/badge/Coverage-70%25+-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-Passing-success)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-blue)
+
 **Assignment 7**: Multi-Agent Even-Odd Game Competition  
 **Protocol**: league.v2  
 **Status**: Production Ready
