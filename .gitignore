@@ -55,3 +55,6 @@ Thumbs.db
 *.tmp
 *.bak
 nul
+
+# PDF files (specs are in markdown)
+*.pdf

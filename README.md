@@ -51,9 +51,7 @@ The GUI will open at `http://localhost:8501` with:
 - 📋 Matches (match history and filtering)
 - 👥 Players (player profiles and stats)
 
-**Option 2: Running a Tournament (CLI)
-
-**Option 1: Using Generic Agents (Recommended)**
+**Option 2: Command Line Only**
 
 ```bash
 # Start League Manager
@@ -79,31 +77,69 @@ python run_league.py
 ## Project Structure
 
 ```
-assignment7/
+.
+├── README.md                    # This file
+├── LICENSE                      # MIT License
+├── requirements.txt             # Python dependencies
+├── pytest.ini                   # Test configuration
+├── setup.py                     # Package setup
+├── run_api.py                   # Entry: API server
+├── run_gui.py                   # Entry: GUI dashboard
+├── run_league.py                # Entry: League system
+├── run_tournament.py            # Entry: Tournament runner
 ├── SHARED/
-│   ├── contracts/               # Protocol contracts (NEW!)
-│   │   ├── base_contract.py    # Base message structure (league.v2)
-│   │   ├── league_manager_contracts.py
+│   ├── contracts/               # Protocol contracts
+│   │   ├── base_contract.py     # Base message structure (league.v2)
+│   │   ├── game_flow_contracts.py
+│   │   ├── game_result_contracts.py
+│   │   ├── match_control_contracts.py
+│   │   ├── player_contracts.py
 │   │   ├── referee_contracts.py
-│   │   └── player_contracts.py
+│   │   ├── registration_contracts.py
+│   │   ├── round_contracts.py
+│   │   └── standings_contracts.py
 │   ├── config/                  # Configuration files
-│   │   ├── system.json         # Protocol v2, timeouts
-│   │   ├── agents/             # Agent configurations
-│   │   ├── leagues/            # League definitions
-│   │   └── games/              # Game registry
-│   ├── data/                    # Runtime data
-│   ├── logs/                    # JSONL logs
-│   └── league_sdk/             # Python SDK (7 modules)
+│   │   ├── system.json          # Protocol v2, timeouts
+│   │   ├── agents/              # Agent configurations
+│   │   ├── leagues/             # League definitions
+│   │   └── games/               # Game registry
+│   ├── data/                    # Runtime data (gitignored)
+│   ├── logs/                    # JSONL logs (gitignored)
+│   └── league_sdk/              # Python SDK
+│       ├── circuit_breaker.py   # Fault tolerance
+│       ├── config_loader.py     # Configuration
+│       ├── http_client.py       # Transport
+│       ├── logger.py            # JSONL logging
+│       ├── messages.py          # Message builders
+│       ├── repositories.py      # Data persistence
+│       └── validation.py        # Protocol validation
 ├── agents/
-│   ├── generic_player.py       # Generic player (all strategies)
-│   ├── generic_referee.py      # Generic referee (all game types)
-│   ├── league_manager/         # League orchestration (4 modules)
-│   ├── referee_REF01/          # Shared referee logic
-│   └── player_P01/             # Shared strategy implementations
-├── tests/                       # Test suite
+│   ├── generic_player.py        # Generic player (all strategies)
+│   ├── generic_referee.py       # Generic referee (all game types)
+│   ├── player_strategies.py     # Strategy implementations
+│   ├── referee_game_logic.py    # Game logic
+│   ├── referee_match_state.py   # Match state machine
+│   └── league_manager/          # League orchestration
+│       ├── main.py              # League manager entry
+│       ├── ranking.py           # Standings calculation
+│       └── scheduler.py         # Round-robin scheduling
+├── api/                         # REST API (FastAPI)
+│   ├── main.py                  # API entry point
+│   ├── routes/                  # API endpoints
+│   ├── schemas/                 # Pydantic models
+│   ├── services/                # Business logic
+│   └── websocket/               # WebSocket support
+├── gui/                         # Streamlit GUI
+│   ├── app.py                   # GUI entry point
+│   ├── pages/                   # Dashboard pages
+│   └── components/              # Reusable components
 ├── doc/                         # Documentation
-├── run_league.py               # Orchestrator
-└── README.md
+│   ├── specs/                   # Assignment requirements
+│   ├── protocol/                # Protocol documentation
+│   ├── messageexamples/         # JSON message examples
+│   ├── diagrams/                # Architecture diagrams
+│   └── PROJECT_REPORT.md        # Consolidated report
+└── tests/                       # Test suite (228 tests)
 ```
 
 ## Key Improvements (v2)
