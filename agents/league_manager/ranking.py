@@ -29,13 +29,25 @@ def update_standings(
 
     scoring = league_config.scoring
 
+    # Normalize winner value - could be "PLAYER_A", "PLAYER_B", "DRAW", 
+    # or an actual player ID (like "P01", "P02")
+    if winner == player_a or winner == "PLAYER_A":
+        winner_normalized = "PLAYER_A"
+    elif winner == player_b or winner == "PLAYER_B":
+        winner_normalized = "PLAYER_B"
+    elif winner == "DRAW" or winner is None:
+        winner_normalized = "DRAW"
+    else:
+        # Unknown winner value, treat as draw
+        winner_normalized = "DRAW"
+
     # Update player statistics
     for player in standings["standings"]:
         if player["player_id"] == player_a:
-            if winner == "PLAYER_A":
+            if winner_normalized == "PLAYER_A":
                 player["wins"] += 1
                 player["points"] += scoring["win_points"]
-            elif winner == "DRAW":
+            elif winner_normalized == "DRAW":
                 player["draws"] += 1
                 player["points"] += scoring["draw_points"]
             else:
@@ -43,10 +55,10 @@ def update_standings(
             player["games_played"] += 1
 
         elif player["player_id"] == player_b:
-            if winner == "PLAYER_B":
+            if winner_normalized == "PLAYER_B":
                 player["wins"] += 1
                 player["points"] += scoring["win_points"]
-            elif winner == "DRAW":
+            elif winner_normalized == "DRAW":
                 player["draws"] += 1
                 player["points"] += scoring["draw_points"]
             else:

@@ -27,13 +27,16 @@ def list_matches(data_dir: Path, league_id: str) -> List[Dict[str, Any]]:
         with open(match_file, "r", encoding="utf-8") as f:
             data = json.load(f)
             # Map actual field names to expected field names
+            # Support multiple field naming conventions: player_A_id, player_a, player1_id
+            player1 = data.get("player_A_id") or data.get("player_a") or data.get("player1_id", "")
+            player2 = data.get("player_B_id") or data.get("player_b") or data.get("player2_id", "")
             match = {
                 "match_id": data.get("match_id", ""),
-                "player1_id": data.get("player_a", data.get("player1_id", "")),
-                "player2_id": data.get("player_b", data.get("player2_id", "")),
+                "player1_id": player1,
+                "player2_id": player2,
                 "round_number": data.get("round_id", data.get("round_number", 0)),
                 "status": data.get("status", "completed"),
-                "winner_id": _map_winner(data),
+                "winner_id": _map_winner(data, player1, player2),
                 "player1_score": data.get("player1_score", 0),
                 "player2_score": data.get("player2_score", 0),
                 "timestamp": data.get("timestamp"),
@@ -42,15 +45,15 @@ def list_matches(data_dir: Path, league_id: str) -> List[Dict[str, Any]]:
     return matches
 
 
-def _map_winner(data: Dict[str, Any]) -> str:
+def _map_winner(data: Dict[str, Any], player1: str = "", player2: str = "") -> str:
     """Map winner field from data format to player ID."""
     winner = data.get("winner", data.get("winner_id"))
     if not winner:
         return None
     if winner == "PLAYER_A":
-        return data.get("player_a", data.get("player1_id", ""))
+        return player1 or data.get("player_A_id") or data.get("player_a") or data.get("player1_id", "")
     if winner == "PLAYER_B":
-        return data.get("player_b", data.get("player2_id", ""))
+        return player2 or data.get("player_B_id") or data.get("player_b") or data.get("player2_id", "")
     if winner == "DRAW":
         return None
     return winner
@@ -84,9 +87,13 @@ def parse_standings_to_response(standings: Dict, league_id: str) -> List[PlayerS
     """Parse standings dict to PlayerStanding objects."""
     player_standings = []
     for idx, player in enumerate(standings.get("standings", []), 1):
+        # Skip entries with null/empty player_id
+        player_id = player.get("player_id")
+        if not player_id:
+            continue
         player_standings.append(
             PlayerStanding(
-                player_id=player.get("player_id", ""),
+                player_id=player_id,
                 rank=idx,
                 wins=player.get("wins", 0),
                 losses=player.get("losses", 0),

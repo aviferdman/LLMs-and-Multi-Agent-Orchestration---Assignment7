@@ -9,20 +9,16 @@ from gui.config import PAGE_ICON, PAGE_TITLE
 
 # Page configuration
 st.set_page_config(page_title=f"{PAGE_TITLE} - Launcher", page_icon=PAGE_ICON, layout="wide")
-
-# Render header
 render_header("Launcher")
-
-# Title
 st.title("🚀 League Launcher")
 st.markdown("Configure and launch a new AI agent league competition.")
-
-# API client
 api_client = get_api_client()
 
 # Initialize session state
 if "league_launched" not in st.session_state:
     st.session_state.league_launched = False
+if "current_league_id" not in st.session_state:
+    st.session_state.current_league_id = None
 
 # Redirect to Live page if league was just launched
 if st.session_state.league_launched:
@@ -64,8 +60,6 @@ with st.expander("🤖 Agent Status", expanded=False):
 # Configuration form
 st.markdown("---")
 st.subheader("⚙️ League Configuration")
-
-# Fetch available games
 games = api_client.list_games()
 
 if not games:
@@ -74,39 +68,24 @@ if not games:
 
 # Game selection
 game_options = {game["game_id"]: game["name"] for game in games}
-selected_game_id = st.selectbox(
-    "Select Game",
-    options=list(game_options.keys()),
-    format_func=lambda x: game_options[x],
-    help="Choose the game type for this league",
-)
-
-# Get game details
+selected_game_id = st.selectbox("Select Game", options=list(game_options.keys()),
+    format_func=lambda x: game_options[x], help="Choose the game type for this league")
 game_details = api_client.get_game(selected_game_id)
 
 if game_details:
     st.info(f"**{game_details['name']}**: {game_details['description']}")
-
-    # Show game rules
     with st.expander("📖 Game Rules"):
-        rules = game_details.get("rules", "No rules available.")
-        st.markdown(rules)
+        st.markdown(game_details.get("rules", "No rules available."))
 
-# Player count - currently only 4 players is supported
+# Player count - fixed at 4
 st.markdown("**Number of Players:** 4 (fixed)")
-st.caption("⚠️ Currently only 4-player leagues are supported.")
 num_players = 4
 
-# League name - Get existing leagues for validation
+# League name
 existing_leagues_data = api_client.list_leagues()
 existing_leagues = existing_leagues_data.get("leagues", []) if existing_leagues_data else []
-
-league_name = st.text_input(
-    "League Name *",
-    placeholder="e.g., 'Spring Championship 2025'",
-    help="Custom name for your league (must be unique)",
-    key="league_name_input",
-)
+league_name = st.text_input("League Name *", placeholder="e.g., 'Spring Championship 2025'",
+    help="Custom name for your league (must be unique)", key="league_name_input")
 
 # Validation messages
 if league_name:
@@ -142,6 +121,7 @@ if st.button("🚀 Launch League", type="primary", use_container_width=True):
                     st.info("Redirecting to Live page...")
                     time.sleep(2)
                     st.session_state.league_launched = True
+                    st.session_state.current_league_id = result.get("league_id", league_id)
                     st.rerun()
                 else:
                     error_msg = result.get("message", "Unknown error") if result else "No response from API"

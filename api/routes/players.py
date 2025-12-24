@@ -31,6 +31,10 @@ async def list_players(league_id: str = DEFAULT_LEAGUE_ID):
 
     players = []
     for player in standings.get("standings", []):
+        player_id = player.get("player_id")
+        # Skip entries with null or empty player_id
+        if not player_id:
+            continue
         games = player.get("games_played", 0)
         wins = player.get("wins", 0)
         # Win rate as decimal (0-1), not percentage
@@ -38,8 +42,8 @@ async def list_players(league_id: str = DEFAULT_LEAGUE_ID):
 
         players.append(
             PlayerResponse(
-                player_id=player.get("player_id", ""),
-                name=player.get("player_id", ""),
+                player_id=player_id,
+                name=player_id,
                 is_registered=True,
                 is_active=True,
                 wins=wins,
