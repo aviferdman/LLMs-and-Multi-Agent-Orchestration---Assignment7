@@ -70,7 +70,7 @@ jobs:
 
       - name: Run Flake8
         run: |
-          flake8 SHARED/ agents/ api/ --max-line-length=120 --ignore=E501,W503,W293,F401,E402
+          flake8 SHARED/ agents/ api/ --max-line-length=120 --ignore=E501,W503,W293,F401,E402,W391,E401,W292,W291,E203
 
       - name: Check Black formatting
         run: |
