@@ -65,7 +65,7 @@ async def notify_game_over(
 async def report_result(referee, league_id, round_id, match_id, player_a, player_b, winner):
     """Report match result to League Manager with retry."""
     from SHARED.constants import Winner
-    
+
     try:
         # Map PLAYER_A/PLAYER_B/draw to actual player ID
         if winner == Winner.PLAYER_A:
@@ -74,7 +74,7 @@ async def report_result(referee, league_id, round_id, match_id, player_a, player
             actual_winner = player_b
         else:
             actual_winner = None  # draw case
-        
+
         msg = build_match_result_report(
             league_id=league_id,
             round_id=round_id,
