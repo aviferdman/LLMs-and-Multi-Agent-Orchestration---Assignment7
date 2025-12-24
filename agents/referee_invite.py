@@ -1,6 +1,5 @@
 """Player invitation logic for referee matches."""
 
-from agents.referee_match_state import MatchContext
 from SHARED.constants import Field, LogEvent, MessageType
 from SHARED.contracts import build_game_invitation
 from SHARED.contracts.jsonrpc_helpers import extract_jsonrpc_params, is_jsonrpc_request
