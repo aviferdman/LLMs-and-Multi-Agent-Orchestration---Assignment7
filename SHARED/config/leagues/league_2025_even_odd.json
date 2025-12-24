@@ -1,14 +1,20 @@
 {
+  "schema_version": "1.0.0",
   "league_id": "league_2025_even_odd",
+  "display_name": "Even-Odd League 2025",
   "game_type": "even_odd",
   "status": "ACTIVE",
   "scoring": {
-    "win_points": 3,
+    "win_points": 2,
     "draw_points": 1,
     "loss_points": 0
   },
   "participants": {
     "min_players": 2,
     "max_players": 10000
+  },
+  "schedule": {
+    "algorithm": "round_robin",
+    "total_rounds": 3
   }
 }

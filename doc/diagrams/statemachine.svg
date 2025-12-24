@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+    <style>
+      .state { fill: #f5f5f5; stroke: #333; stroke-width: 2; }
+      .initial { stroke: #009988; stroke-width: 3; }
+      .final { stroke: #333; stroke-width: 3; }
+      .final-inner { fill: none; stroke: #333; stroke-width: 2; }
+      .error { stroke: #CC3311; stroke-width: 2; }
+      .text { font-family: Arial, sans-serif; font-size: 14px; fill: #333; }
+      .title { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #333; }
+      .label { font-family: Arial, sans-serif; font-size: 11px; fill: #555; }
+      .arrow { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" class="title">Even-Odd Game State Machine</text>
+  
+  <!-- Initial State: WAITING_FOR_PLAYERS -->
+  <rect x="50" y="80" width="200" height="70" rx="10" class="state initial"/>
+  <text x="150" y="110" text-anchor="middle" class="text" font-weight="bold">WAITING_FOR_PLAYERS</text>
+  <text x="150" y="130" text-anchor="middle" class="label">Wait for GAME_JOIN_ACK</text>
+  <text x="150" y="145" text-anchor="middle" class="label">(5s timeout)</text>
+  
+  <!-- State: COLLECTING_CHOICES -->
+  <rect x="300" y="80" width="200" height="70" rx="10" class="state"/>
+  <text x="400" y="110" text-anchor="middle" class="text" font-weight="bold">COLLECTING_CHOICES</text>
+  <text x="400" y="130" text-anchor="middle" class="label">Send CHOOSE_PARITY_CALL</text>
+  <text x="400" y="145" text-anchor="middle" class="label">(30s timeout)</text>
+  
+  <!-- State: DRAWING_NUMBER -->
+  <rect x="550" y="80" width="200" height="70" rx="10" class="state"/>
+  <text x="650" y="110" text-anchor="middle" class="text" font-weight="bold">DRAWING_NUMBER</text>
+  <text x="650" y="130" text-anchor="middle" class="label">Draw number 1-10</text>
+  <text x="650" y="145" text-anchor="middle" class="label">Determine winner</text>
+  
+  <!-- Final State: FINISHED -->
+  <rect x="350" y="220" width="200" height="70" rx="10" class="state final"/>
+  <rect x="358" y="228" width="184" height="54" rx="6" class="final-inner"/>
+  <text x="450" y="250" text-anchor="middle" class="text" font-weight="bold">FINISHED</text>
+  <text x="450" y="270" text-anchor="middle" class="label">Send GAME_OVER</text>
+  <text x="450" y="285" text-anchor="middle" class="label">Send MATCH_RESULT_REPORT</text>
+  
+  <!-- Error State: TIMEOUT/ERROR -->
+  <rect x="50" y="220" width="200" height="70" rx="10" class="state error"/>
+  <text x="150" y="250" text-anchor="middle" class="text" font-weight="bold" fill="#CC3311">ERROR</text>
+  <text x="150" y="270" text-anchor="middle" class="label">TIMEOUT_ERROR or</text>
+  <text x="150" y="285" text-anchor="middle" class="label">INVALID_MOVE_ERROR</text>
+  
+  <!-- Arrows -->
+  <!-- WAITING -> COLLECTING -->
+  <path d="M250,115 L295,115" class="arrow"/>
+  <text x="272" y="105" text-anchor="middle" class="label">Both joined</text>
+  
+  <!-- COLLECTING -> DRAWING -->
+  <path d="M500,115 L545,115" class="arrow"/>
+  <text x="522" y="105" text-anchor="middle" class="label">Both chose</text>
+  
+  <!-- DRAWING -> FINISHED -->
+  <path d="M650,150 L650,200 L555,200 L555,220" class="arrow"/>
+  <text x="620" y="190" text-anchor="middle" class="label">Winner determined</text>
+  
+  <!-- WAITING -> ERROR (timeout) -->
+  <path d="M100,150 L100,215" class="arrow"/>
+  <text x="60" y="185" text-anchor="start" class="label">5s timeout</text>
+  
+  <!-- COLLECTING -> ERROR (timeout) -->
+  <path d="M350,150 L200,220" class="arrow"/>
+  <text x="280" y="175" text-anchor="middle" class="label">30s timeout</text>
+  
+  <!-- ERROR -> FINISHED -->
+  <path d="M250,255 L345,255" class="arrow"/>
+  <text x="297" y="245" text-anchor="middle" class="label">Report forfeit</text>
+  
+  <!-- Start indicator -->
+  <circle cx="30" cy="115" r="8" fill="#333"/>
+  <path d="M38,115 L45,115" class="arrow"/>
+  
+  <!-- Legend -->
+  <rect x="50" y="350" width="700" height="120" rx="5" fill="#fafafa" stroke="#ddd"/>
+  <text x="400" y="375" text-anchor="middle" class="text" font-weight="bold">Legend</text>
+  
+  <rect x="70" y="395" width="30" height="20" rx="3" class="state initial"/>
+  <text x="110" y="410" class="label">Initial State</text>
+  
+  <rect x="200" y="395" width="30" height="20" rx="3" class="state"/>
+  <text x="240" y="410" class="label">Normal State</text>
+  
+  <rect x="330" y="393" width="34" height="24" rx="3" class="state final"/>
+  <rect x="334" y="397" width="26" height="16" rx="2" class="final-inner"/>
+  <text x="375" y="410" class="label">Final State</text>
+  
+  <rect x="470" y="395" width="30" height="20" rx="3" class="state error"/>
+  <text x="510" y="410" class="label">Error State</text>
+  
+  <line x1="600" y1="405" x2="650" y2="405" class="arrow"/>
+  <text x="660" y="410" class="label">Transition</text>
+  
+  <!-- Timeouts note -->
+  <text x="400" y="450" text-anchor="middle" class="label">Timeouts: GAME_JOIN_ACK = 5s | PARITY_CHOICE = 30s</text>
+</svg>

@@ -78,7 +78,7 @@ def test_load_game_config():
 
     assert config is not None
     assert config.game_id == game_type
-    assert config.game_name == "Even-Odd Game"
+    assert config.game_name == "Even-Odd Parity Game"
     assert hasattr(config, "rules_version")
     assert config.max_players == 2
 
