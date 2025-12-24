@@ -1,0 +1,16 @@
+{
+  "jsonrpc": "2.0",
+  "method": "league_error",
+  "params": {
+    "protocol": "league.v2",
+    "message_type": "LEAGUE_ERROR",
+    "sender": "league_manager",
+    "timestamp": "2025-12-24T10:00:30Z",
+    "conversation_id": "conv_error_001",
+    "league_id": "LEAGUE_20251224_100000",
+    "error_code": "REGISTRATION_CLOSED",
+    "error_message": "Registration period has ended. League already started.",
+    "severity": "ERROR"
+  },
+  "id": 5
+}

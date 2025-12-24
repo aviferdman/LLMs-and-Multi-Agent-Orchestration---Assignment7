@@ -1,0 +1,31 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "protocol": "league.v2",
+    "message_type": "LEAGUE_QUERY_RESPONSE",
+    "timestamp": "2025-12-24T10:05:01Z",
+    "league_id": "LEAGUE_20251224_100000",
+    "query_type": "standings",
+    "data": {
+      "current_round": 2,
+      "total_rounds": 3,
+      "standings": [
+        {
+          "rank": 1,
+          "player_id": "P01",
+          "wins": 2,
+          "losses": 0,
+          "points": 6
+        },
+        {
+          "rank": 2,
+          "player_id": "P03",
+          "wins": 1,
+          "losses": 1,
+          "points": 3
+        }
+      ]
+    }
+  },
+  "id": 50
+}

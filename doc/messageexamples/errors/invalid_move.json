@@ -1,0 +1,27 @@
+{
+  "jsonrpc": "2.0",
+  "method": "game_error",
+  "params": {
+    "protocol": "league.v2",
+    "message_type": "GAME_ERROR",
+    "sender": "referee:REF01",
+    "timestamp": "2025-01-15T10:30:12Z",
+    "conversation_id": "conv-r1m1-001",
+    "match_id": "R1M1",
+    "error_code": "E004",
+    "error_description": "INVALID_PARITY_CHOICE",
+    "affected_player": "P02",
+    "action_required": "CHOOSE_PARITY_RESPONSE",
+    "retry_info": {
+      "retry_count": 1,
+      "max_retries": 3,
+      "next_retry_at": "2025-01-15T10:30:14Z"
+    },
+    "consequence": "Must provide valid choice: 'even' or 'odd'",
+    "context": {
+      "invalid_value": "maybe",
+      "valid_options": ["even", "odd"]
+    }
+  },
+  "id": 8
+}

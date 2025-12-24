@@ -1,0 +1,11 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "protocol": "league.v2",
+    "message_type": "REFEREE_REGISTER_RESPONSE",
+    "status": "ACCEPTED",
+    "referee_id": "REF01",
+    "timestamp": "2025-12-24T10:00:01Z"
+  },
+  "id": 1
+}

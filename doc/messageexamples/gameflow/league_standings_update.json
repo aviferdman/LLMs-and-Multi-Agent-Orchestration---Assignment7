@@ -1,0 +1,52 @@
+{
+  "jsonrpc": "2.0",
+  "method": "league_standings_update",
+  "params": {
+    "protocol": "league.v2",
+    "message_type": "LEAGUE_STANDINGS_UPDATE",
+    "sender": "league_manager",
+    "timestamp": "2025-12-24T10:02:05Z",
+    "conversation_id": "conv_standings_r1",
+    "league_id": "LEAGUE_20251224_100000",
+    "round_id": 1,
+    "standings": [
+      {
+        "rank": 1,
+        "player_id": "P01",
+        "display_name": "Strategic Player",
+        "wins": 1,
+        "losses": 0,
+        "draws": 0,
+        "points": 3
+      },
+      {
+        "rank": 2,
+        "player_id": "P03",
+        "display_name": "Random Player",
+        "wins": 1,
+        "losses": 0,
+        "draws": 0,
+        "points": 3
+      },
+      {
+        "rank": 3,
+        "player_id": "P02",
+        "display_name": "Adaptive Player",
+        "wins": 0,
+        "losses": 1,
+        "draws": 0,
+        "points": 0
+      },
+      {
+        "rank": 4,
+        "player_id": "P04",
+        "display_name": "Pattern Player",
+        "wins": 0,
+        "losses": 1,
+        "draws": 0,
+        "points": 0
+      }
+    ]
+  },
+  "id": 21
+}

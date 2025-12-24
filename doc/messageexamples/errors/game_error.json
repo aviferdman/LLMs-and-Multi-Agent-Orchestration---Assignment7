@@ -1,0 +1,17 @@
+{
+  "jsonrpc": "2.0",
+  "method": "game_error",
+  "params": {
+    "protocol": "league.v2",
+    "message_type": "GAME_ERROR",
+    "sender": "referee:REF01",
+    "timestamp": "2025-12-24T10:01:45Z",
+    "conversation_id": "conv_match_M001_R1",
+    "match_id": "M001_R1",
+    "player_id": "P02",
+    "error_code": "INVALID_CHOICE",
+    "error_message": "Invalid parity choice 'maybe'. Must be 'even' or 'odd'.",
+    "severity": "ERROR"
+  },
+  "id": 16
+}

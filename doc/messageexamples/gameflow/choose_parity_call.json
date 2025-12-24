@@ -1,0 +1,15 @@
+{
+  "jsonrpc": "2.0",
+  "method": "choose_parity",
+  "params": {
+    "protocol": "league.v2",
+    "message_type": "CHOOSE_PARITY_CALL",
+    "sender": "referee:REF01",
+    "timestamp": "2025-12-24T10:01:10Z",
+    "conversation_id": "conv_match_M001_R1",
+    "match_id": "M001_R1",
+    "player_id": "P01",
+    "timeout_seconds": 30
+  },
+  "id": 13
+}
