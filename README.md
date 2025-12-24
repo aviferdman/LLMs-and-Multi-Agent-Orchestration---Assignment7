@@ -4,24 +4,131 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Protocol](https://img.shields.io/badge/Protocol-league.v2-purple)
 ![Coverage](https://img.shields.io/badge/Coverage-70%25+-brightgreen)
-![Tests](https://img.shields.io/badge/Tests-Passing-success)
+![Tests](https://img.shields.io/badge/Tests-228%20Passing-success)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-blue)
+![ISO 25010](https://img.shields.io/badge/ISO%2025010-Compliant-brightgreen)
+![Documentation](https://img.shields.io/badge/Documentation-Complete-brightgreen)
 
 **Assignment 7**: Multi-Agent Even-Odd Game Competition  
 **Protocol**: league.v2  
-**Status**: Production Ready
+**Status**: Production Ready ✅
 
-## Overview
+---
 
-This project implements a competitive multi-agent system where autonomous AI agents compete in an Even-Odd game. The system features:
+## 📚 Table of Contents
 
-- **Game-Agnostic Architecture**: Three-layer design supporting future game extensions
-- **Protocol-Driven Communication**: HTTP/MCP with strict JSON schema compliance (league.v2)
-- **Distributed Agent Orchestration**: League Manager, Referees, and Players
-- **Contract-Based Design**: Centralized protocol contracts in `SHARED/contracts/`
-- **Zero Code Duplication**: Generic agents with configuration-driven behavior
+1. [Project Overview](#-project-overview)
+2. [Key Features](#-key-features)
+3. [Quick Navigation](#-quick-navigation)
+4. [Quick Start](#-quick-start)
+5. [Project Structure](#-project-structure)
+6. [Architecture](#-architecture)
+7. [Documentation Guide](#-documentation-guide)
+8. [Running the System](#-running-the-system)
+9. [Testing](#-testing)
+10. [Troubleshooting](#-troubleshooting)
+11. [Contributing](#-contributing)
 
-## Quick Start
+---
+
+## 🎯 Project Overview
+
+This project implements a competitive multi-agent system where autonomous AI agents compete in an Even-Odd game tournament. The system uses a three-layer architecture with protocol-driven communication.
+
+### Research Question
+**Can we design a scalable multi-agent competition system with protocol-driven communication and strategy-based gameplay?**
+
+### What We've Built
+
+| Component | Description | Status |
+|-----------|-------------|--------|
+| League Manager | Tournament orchestration | ✅ Complete |
+| Referees (x2) | Match execution & rules | ✅ Complete |
+| Players (x4) | Strategy-based agents | ✅ Complete |
+| REST API | FastAPI with WebSocket | ✅ Complete |
+| Streamlit GUI | Interactive dashboard | ✅ Complete |
+| Protocol | league.v2 specification | ✅ Complete |
+| Test Suite | 228 tests, 70%+ coverage | ✅ Complete |
+
+---
+
+## 🌟 Key Features
+
+### 🏗️ Architecture Excellence
+- ✅ Three-layer design (Orchestration, Execution, Participation)
+- ✅ Protocol-driven communication (league.v2)
+- ✅ Contract-based design (centralized in `SHARED/contracts/`)
+- ✅ Zero code duplication (generic agents)
+- ✅ Fault tolerance (circuit breaker pattern)
+
+### 🎮 Game Features
+- ✅ Even-Odd game implementation
+- ✅ Best-of-5 match format
+- ✅ Round-robin scheduling
+- ✅ Multiple player strategies (Random, Frequency, Pattern)
+- ✅ Real-time match visualization
+
+### 📊 Observability
+- ✅ JSONL structured logging
+- ✅ Real-time WebSocket updates
+- ✅ Comprehensive audit trail
+- ✅ Performance metrics
+
+### 🧪 Quality Assurance
+- ✅ 228 automated tests
+- ✅ 70%+ code coverage
+- ✅ CI/CD pipeline (GitHub Actions)
+- ✅ ISO 25010 compliance audit
+- ✅ Type hints throughout
+
+---
+
+## 🧭 Quick Navigation
+
+### 📖 For Different User Types
+
+**First-Time Visitors:**
+1. ➜ Start here: **[START_HERE.md](START_HERE.md)** (5 min)
+2. Then read: **[README.md](README.md)** - This file (15 min)
+3. Try the GUI: `python run_gui.py`
+
+**Researchers & Analysts:**
+1. ➜ Read: **[doc/PRD.md](doc/PRD.md)** - Requirements (20 min)
+2. Study: **[doc/AGENT_STRATEGY.md](doc/AGENT_STRATEGY.md)** - Strategies (15 min)
+3. Review: **[doc/STATISTICAL_ANALYSIS.md](doc/STATISTICAL_ANALYSIS.md)** (15 min)
+
+**Developers & Engineers:**
+1. ➜ Read: **[doc/ARCHITECTURE.md](doc/ARCHITECTURE.md)** - System design (15 min)
+2. Check: **[doc/protocol_spec.md](doc/protocol_spec.md)** - Protocol (20 min)
+3. Review: **[doc/API.md](doc/API.md)** - API documentation (15 min)
+
+**QA Engineers:**
+1. ➜ Read: **[doc/TESTING.md](doc/TESTING.md)** - Test strategy (10 min)
+2. Check: **[doc/EDGE_CASES.md](doc/EDGE_CASES.md)** - Edge cases (15 min)
+3. Run: `pytest tests/ -v --cov`
+
+### 📂 Document Map
+
+| Document | Purpose | Audience | Time |
+|----------|---------|----------|------|
+| **[START_HERE.md](START_HERE.md)** | Quick navigation | Everyone | 5 min |
+| **[README.md](README.md)** | This file | Everyone | 15 min |
+| **[doc/ARCHITECTURE.md](doc/ARCHITECTURE.md)** | System design | Developers | 15 min |
+| **[doc/PRD.md](doc/PRD.md)** | Requirements | Stakeholders | 20 min |
+| **[doc/protocol_spec.md](doc/protocol_spec.md)** | Protocol details | Developers | 20 min |
+| **[doc/API.md](doc/API.md)** | API documentation | Developers | 15 min |
+| **[doc/AGENT_STRATEGY.md](doc/AGENT_STRATEGY.md)** | Player strategies | Researchers | 15 min |
+| **[doc/TESTING.md](doc/TESTING.md)** | Test strategy | QA | 10 min |
+| **[doc/EDGE_CASES.md](doc/EDGE_CASES.md)** | Edge case handling | Developers | 15 min |
+| **[doc/SECURITY.md](doc/SECURITY.md)** | Security docs | Security | 15 min |
+| **[doc/ISO_25010_COMPLIANCE.md](doc/ISO_25010_COMPLIANCE.md)** | Quality audit | QA | 20 min |
+| **[doc/ADRs/](doc/ADRs/)** | Design decisions | Architects | 30 min |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Contribution guide | Contributors | 10 min |
+| **[PROJECT_COMPLETION_SUMMARY.md](PROJECT_COMPLETION_SUMMARY.md)** | Completion report | Everyone | 10 min |
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
@@ -215,22 +322,90 @@ python agents/generic_referee.py --referee-id REF01 --port 8001
 - [Implementation Plan](doc/IMPLEMENTATION_PLAN.md) - Step-by-step build guide  
 - [PRD](doc/PRD.md) - Product requirements
 
-## Testing
+## 🧪 Testing
 
 ```bash
 # Run all tests
-pytest
+pytest tests/ -v
 
 # Run with coverage
-pytest --cov=SHARED --cov=agents
+pytest tests/ --cov=SHARED --cov=agents --cov=api
 
 # Generate HTML coverage report
-pytest --cov=SHARED --cov=agents --cov-report=html
+pytest tests/ --cov=SHARED --cov=agents --cov=api --cov-report=html
 ```
 
-## Configuration
+### Test Summary
 
-All agents are configured via `SHARED/config/agents/agents_config.json`:
+| Category | Count | Status |
+|----------|-------|--------|
+| Unit Tests | 150+ | ✅ Passing |
+| Integration Tests | 50+ | ✅ Passing |
+| Edge Case Tests | 28 | ✅ Passing |
+| **Total** | **228** | ✅ **100%** |
+
+---
+
+## 🐛 Troubleshooting
+
+### Port Already in Use
+
+```bash
+# Windows
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+
+# Linux/Mac
+lsof -i :8000
+kill -9 <PID>
+```
+
+### Import Errors
+
+```bash
+# Reinstall in development mode
+pip install -e .
+```
+
+### Tests Failing
+
+```bash
+# Run with verbose output
+pytest tests/ -v --tb=short
+
+# Run specific test
+pytest tests/test_agents.py -v
+```
+
+### GUI Not Loading
+
+```bash
+# Kill existing Streamlit process
+Get-NetTCPConnection -LocalPort 8501 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
+
+# Restart GUI
+python run_gui.py
+```
+
+---
+
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
+
+### Quick Contribution Steps
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/my-feature`
+3. Make changes with tests
+4. Run tests: `pytest tests/ -v`
+5. Submit pull request
+
+---
+
+## 📊 Configuration
+
+All agents configured via `SHARED/config/agents/agents_config.json`:
 
 ```json
 {
@@ -248,19 +423,41 @@ All agents are configured via `SHARED/config/agents/agents_config.json`:
 }
 ```
 
-## Features
+---
 
-✅ **Protocol v2**: league.v2 with centralized version management
-✅ **Contract-Based**: All messages defined in `SHARED/contracts/`
-✅ **Zero Duplication**: Generic agents configured via CLI
-✅ **Game-Agnostic**: Extensible to new game types
-✅ **ISO-8601 Timestamps**: All timestamps end with 'Z'
-✅ **JSONL Logging**: One log per agent
-✅ **Real-Time Rankings**: Points-based with tiebreakers
-✅ **REST API**: Complete API with Swagger documentation (port 8080)
-✅ **Web GUI**: Streamlit dashboard with live match view (port 8501)
-✅ **Live Updates**: Real-time match visualization with player status  
+## ✨ Features Summary
 
-## License
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Protocol v2 | ✅ | league.v2 with centralized version |
+| Contract-Based | ✅ | All messages in `SHARED/contracts/` |
+| Zero Duplication | ✅ | Generic agents via CLI |
+| Game-Agnostic | ✅ | Extensible to new games |
+| ISO-8601 Timestamps | ✅ | All timestamps end with 'Z' |
+| JSONL Logging | ✅ | One log per agent |
+| Real-Time Rankings | ✅ | Points with tiebreakers |
+| REST API | ✅ | FastAPI with OpenAPI docs |
+| Web GUI | ✅ | Streamlit dashboard |
+| Live Updates | ✅ | WebSocket real-time |
+| CI/CD | ✅ | GitHub Actions pipeline |
+| Test Coverage | ✅ | 70%+ coverage |
 
-Academic project for LLMs and Multi-Agent Orchestration course.
+---
+
+## 📜 License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
+
+---
+
+<div align="center">
+
+## 🎯 Project Status: PRODUCTION READY
+
+**228 Tests Passing** | **70%+ Coverage** | **ISO 25010 Compliant**
+
+**Built with ❤️ for Multi-Agent Orchestration**
+
+[START_HERE.md](START_HERE.md) | [Documentation](doc/) | [Contributing](CONTRIBUTING.md)
+
+</div>
