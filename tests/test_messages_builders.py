@@ -1,6 +1,6 @@
-"""Unit tests for SHARED.league_sdk.messages module.
+"""Unit tests for message builder functions.
 
-Tests message creation, validation, and formatting utilities.
+Tests message builder functions for protocol messages.
 These tests verify protocol-compliant message structures.
 """
 
@@ -8,8 +8,6 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
-import re
 
 from SHARED.constants import Field, MessageType
 from SHARED.contracts import (
@@ -20,34 +18,12 @@ from SHARED.contracts import (
     build_game_over,
     build_match_result_report,
 )
-from SHARED.contracts.base_contract import create_base_message, create_game_message
 from SHARED.contracts.jsonrpc_helpers import extract_jsonrpc_params
-from SHARED.protocol_constants import generate_timestamp as format_timestamp
 
 
 def get_params(msg):
     """Extract params from JSON-RPC message."""
     return extract_jsonrpc_params(msg)
-
-
-def test_create_game_message():
-    """Test creating a game message with required fields."""
-    msg = create_game_message(
-        message_type=MessageType.GAME_INVITATION,
-        sender_type="referee",
-        sender_id="REF01",
-        league_id="league_2025",
-        round_id=1,
-        match_id="R1M1",
-    )
-    assert all(k in msg for k in [Field.PROTOCOL, Field.TIMESTAMP, Field.CONVERSATION_ID, Field.MESSAGE_TYPE])
-    assert msg[Field.MESSAGE_TYPE] == MessageType.GAME_INVITATION and msg[Field.TIMESTAMP].endswith("Z")
-
-
-def test_format_timestamp():
-    """Test timestamp formatting to ISO-8601 with Z."""
-    ts = format_timestamp()
-    assert re.match(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z", ts) and ts.endswith("Z")
 
 
 def test_build_game_invitation():
@@ -122,12 +98,10 @@ def test_build_match_result_report():
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("MESSAGE UTILITIES TESTS")
+    print("MESSAGE BUILDER TESTS")
     print("=" * 60)
 
     tests = [
-        ("create_game_message", test_create_game_message),
-        ("format_timestamp", test_format_timestamp),
         ("build_game_invitation", test_build_game_invitation),
         ("build_game_join_ack", test_build_game_join_ack),
         ("build_choose_parity_call", test_build_choose_parity_call),
@@ -155,6 +129,6 @@ if __name__ == "__main__":
     print("=" * 60)
 
     if failed == 0:
-        print("\n✅ ALL MESSAGE TESTS PASSED!")
+        print("\n✅ ALL MESSAGE BUILDER TESTS PASSED!")
     else:
         print(f"\n❌ {failed} test(s) failed")

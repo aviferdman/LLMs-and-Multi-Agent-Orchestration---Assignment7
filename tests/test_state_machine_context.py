@@ -1,6 +1,6 @@
-"""Unit tests for agents.referee_match_state module.
+"""Unit tests for match context management.
 
-Tests match state machine and context management.
+Tests match context initialization and player handling.
 """
 
 import sys
@@ -10,58 +10,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from agents.referee_match_state import (
     MatchContext,
-    MatchState,
-    MatchStateMachine,
     handle_game_join_ack,
     handle_parity_choice,
 )
 from SHARED.league_sdk.logger import LeagueLogger
-
-
-def test_match_state_machine_initialization():
-    """Test state machine initializes to WAITING_FOR_PLAYERS."""
-    assert MatchStateMachine().current_state == MatchState.WAITING_FOR_PLAYERS
-
-
-def test_valid_state_transitions():
-    """Test valid state transitions work."""
-    sm = MatchStateMachine()
-    assert (
-        sm.transition(MatchState.COLLECTING_CHOICES)
-        and sm.current_state == MatchState.COLLECTING_CHOICES
-    )
-    assert (
-        sm.transition(MatchState.DRAWING_NUMBER) and sm.current_state == MatchState.DRAWING_NUMBER
-    )
-    assert sm.transition(MatchState.FINISHED) and sm.current_state == MatchState.FINISHED
-
-
-def test_invalid_state_transitions():
-    """Test invalid state transitions are rejected."""
-    sm = MatchStateMachine()
-    assert (
-        not sm.transition(MatchState.FINISHED)
-        and sm.current_state == MatchState.WAITING_FOR_PLAYERS
-    )
-
-
-def test_finished_state_no_transitions():
-    """Test finished state allows no transitions."""
-    sm = MatchStateMachine()
-    sm.transition(MatchState.COLLECTING_CHOICES)
-    sm.transition(MatchState.DRAWING_NUMBER)
-    sm.transition(MatchState.FINISHED)
-    assert not sm.transition(MatchState.WAITING_FOR_PLAYERS)
-
-
-def test_is_finished():
-    """Test is_finished method."""
-    sm = MatchStateMachine()
-    assert not sm.is_finished()
-    sm.transition(MatchState.COLLECTING_CHOICES)
-    sm.transition(MatchState.DRAWING_NUMBER)
-    sm.transition(MatchState.FINISHED)
-    assert sm.is_finished()
 
 
 def test_match_context_initialization():
@@ -133,14 +85,9 @@ def test_handle_parity_choice_invalid():
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("STATE MACHINE TESTS")
+    print("STATE MACHINE CONTEXT TESTS")
     print("=" * 60)
     tests = [
-        ("sm_init", test_match_state_machine_initialization),
-        ("valid_trans", test_valid_state_transitions),
-        ("invalid_trans", test_invalid_state_transitions),
-        ("finished_no_trans", test_finished_state_no_transitions),
-        ("is_finished", test_is_finished),
         ("ctx_init", test_match_context_initialization),
         ("record_join", test_record_join),
         ("both_joined", test_both_players_joined),
@@ -162,5 +109,5 @@ if __name__ == "__main__":
             failed += 1
     print(f"\n{'='*60}\nSUMMARY: {passed}/{len(tests)} tests passed\n{'='*60}")
     print(
-        f"\n{'✅ ALL STATE MACHINE TESTS PASSED!' if failed == 0 else f'❌ {failed} test(s) failed'}"
+        f"\n{'✅ ALL CONTEXT TESTS PASSED!' if failed == 0 else f'❌ {failed} test(s) failed'}"
     )

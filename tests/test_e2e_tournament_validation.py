@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""End-to-End Testing Script for League System.
+"""End-to-End Testing Script for League System - Validation.
 
-This script performs automated end-to-end testing of the full league system.
-It runs multiple tournaments and validates the results.
+This script validates tournament results including standings and matches.
 
 Usage:
-    python tests/test_e2e_tournament.py
+    python tests/test_e2e_tournament_validation.py
 
 Note: These tests require spawning the full league system and may timeout
 in CI environments. They are marked as skip unless explicitly run.
@@ -15,7 +14,6 @@ import json
 import os
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 import pytest
@@ -76,29 +74,6 @@ def run_tournament(timeout: int = 120) -> dict:
     return result
 
 
-def validate_tournament_result(result: dict) -> list:
-    """Validate tournament result and return list of issues."""
-    issues = []
-    if not result["success"]:
-        issues.append(f"Tournament did not complete: {result.get('error', 'Unknown')}")
-    if result.get("exit_code", 1) != 0:
-        issues.append(f"Non-zero exit code: {result.get('exit_code')}")
-    if not any(log.get("event_type") == "LEAGUE_COMPLETED_SENT" for log in result["logs"]):
-        issues.append("Missing LEAGUE_COMPLETED_SENT event")
-    return issues
-
-
-def test_single_tournament():
-    """Run a single tournament E2E test."""
-    if not E2E_ENABLED:
-        pytest.skip("E2E tests skipped. Set RUN_E2E_TESTS=true to run.")
-    print("Running single tournament E2E test...")
-    result = run_tournament()
-    issues = validate_tournament_result(result)
-    assert len(issues) == 0, f"Tournament validation failed: {issues}"
-    print("✅ Single tournament test passed")
-
-
 def test_tournament_produces_standings():
     """Verify tournament produces valid standings."""
     if not E2E_ENABLED:
@@ -126,11 +101,10 @@ def test_all_matches_completed():
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("END-TO-END TOURNAMENT TESTING")
+    print("END-TO-END TOURNAMENT VALIDATION TESTING")
     print("=" * 60)
 
     tests = [
-        ("single_tournament", test_single_tournament),
         ("standings_output", test_tournament_produces_standings),
         ("all_matches", test_all_matches_completed),
     ]

@@ -21,9 +21,9 @@ def get_all_python_files():
     """Get all Python files in the project."""
     files = []
     for root, dirs, filenames in os.walk(project_root):
-        # Skip venv, hidden dirs, pycache, htmlcov, and tests
+        # Skip venv, hidden dirs, pycache, htmlcov only
         if any(
-            skip in root for skip in [".venv", ".git", "__pycache__", ".pytest", "htmlcov", "tests"]
+            skip in root for skip in [".venv", ".git", "__pycache__", ".pytest", "htmlcov"]
         ):
             continue
         for filename in filenames:

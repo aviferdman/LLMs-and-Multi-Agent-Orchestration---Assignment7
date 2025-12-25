@@ -101,7 +101,7 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = ["agents", "api", "gui", "SHARED"]
+source = ["agents", "SHARED"]
 branch = true
 omit = [
     "*/tests/*",
@@ -109,8 +109,6 @@ omit = [
     "agents/launch_*.py",
     "agents/league_manager/main.py",
     "agents/league_manager/orchestration.py",
-    "api/*",
-    "gui/*",
     "run_*.py",
 ]
 
@@ -122,7 +120,7 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
-fail_under = 40
+fail_under = 50
 show_missing = true
 
 [tool.black]
