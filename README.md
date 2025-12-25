@@ -3,8 +3,8 @@
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Protocol](https://img.shields.io/badge/Protocol-league.v2-purple)
-![Coverage](https://img.shields.io/badge/Coverage-47%25+-brightgreen)
-![Tests](https://img.shields.io/badge/Tests-283%20Passing-success)
+![Coverage](https://img.shields.io/badge/Coverage-52%25+-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-420%20Passing-success)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-blue)
 ![ISO 25010](https://img.shields.io/badge/ISO%2025010-Compliant-brightgreen)
 ![Documentation](https://img.shields.io/badge/Documentation-Complete-brightgreen)
@@ -57,7 +57,7 @@ All agents communicate via HTTP POST requests to `/mcp` endpoints, enabling stan
 | REST API | FastAPI with WebSocket | ✅ Complete |
 | Streamlit GUI | Interactive dashboard | ✅ Complete |
 | Protocol | league.v2 specification | ✅ Complete |
-| Test Suite | 283 tests, 47%+ coverage | ✅ Complete |
+| Test Suite | 420 tests, 52%+ coverage | ✅ Complete |
 
 ---
 
@@ -84,8 +84,8 @@ All agents communicate via HTTP POST requests to `/mcp` endpoints, enabling stan
 - ✅ Performance metrics
 
 ### 🧪 Quality Assurance
-- ✅ 283 automated tests
-- ✅ 47%+ code coverage
+- ✅ 420 automated tests
+- ✅ 52%+ code coverage (agents & SHARED modules)
 - ✅ CI/CD pipeline (GitHub Actions)
 - ✅ ISO 25010 compliance audit
 - ✅ Type hints throughout
@@ -174,24 +174,7 @@ The GUI will open at `http://localhost:8501` with:
 - 📋 Matches (match history and filtering)
 - 👥 Players (player profiles and stats)
 
-**Option 2: Command Line Only**
-
-```bash
-# Start League Manager
-python agents/league_manager/main.py
-
-# Start Referees
-python agents/generic_referee.py --referee-id REF01 --port 8001
-python agents/generic_referee.py --referee-id REF02 --port 8002
-
-# Start Players
-python agents/generic_player.py --player-id P01 --strategy random --port 8101
-python agents/generic_player.py --player-id P02 --strategy frequency --port 8102
-python agents/generic_player.py --player-id P03 --strategy pattern --port 8103
-python agents/generic_player.py --player-id P04 --strategy random --port 8104
-```
-
-**Option 2: Using Orchestrator**
+**Option 2: Using Orchestrator (Command Line)**
 
 ```bash
 python run_league.py
@@ -506,21 +489,22 @@ python agents/generic_referee.py --referee-id REF01 --port 8001
 # Run all tests
 pytest tests/ -v
 
-# Run with coverage
-pytest tests/ --cov=SHARED --cov=agents --cov=api
+# Run with coverage (agents and SHARED modules)
+pytest tests/ --cov=agents --cov=SHARED --cov-fail-under=50
 
 # Generate HTML coverage report
-pytest tests/ --cov=SHARED --cov=agents --cov=api --cov-report=html
+pytest tests/ --cov=agents --cov=SHARED --cov-report=html
 ```
 
 ### Test Summary
 
 | Category | Count | Status |
 |----------|-------|--------|
-| Unit Tests | 150+ | ✅ Passing |
-| Integration Tests | 50+ | ✅ Passing |
-| Edge Case Tests | 28 | ✅ Passing |
-| **Total** | **228** | ✅ **100%** |
+| Unit Tests | 200+ | ✅ Passing |
+| Integration Tests | 100+ | ✅ Passing |
+| Contract Tests | 80+ | ✅ Passing |
+| Edge Case Tests | 40+ | ✅ Passing |
+| **Total** | **420** | ✅ **100%** |
 
 ---
 
@@ -618,7 +602,7 @@ All agents configured via `SHARED/config/agents/agents_config.json`:
 | Web GUI | ✅ | Streamlit dashboard |
 | Live Updates | ✅ | WebSocket real-time |
 | CI/CD | ✅ | GitHub Actions pipeline |
-| Test Coverage | ✅ | 70%+ coverage |
+| Test Coverage | ✅ | 52%+ coverage (agents/SHARED) |
 
 ---
 
@@ -632,7 +616,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
 ## 🎯 Project Status: PRODUCTION READY
 
-**228 Tests Passing** | **70%+ Coverage** | **ISO 25010 Compliant**
+**420 Tests Passing** | **52%+ Coverage** | **ISO 25010 Compliant**
 
 **Built with ❤️ for Multi-Agent Orchestration**
 

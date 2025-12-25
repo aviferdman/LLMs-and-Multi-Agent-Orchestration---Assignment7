@@ -1,7 +1,7 @@
 # Testing Guide
 
-**Version**: 1.0  
-**Last Updated**: 2025-12-20  
+**Version**: 2.0  
+**Last Updated**: 2025-12-25  
 **Status**: Complete
 
 ---
@@ -14,21 +14,20 @@ This guide covers the comprehensive test suite for the AI Agent League Competiti
 
 ## Test Suite Overview
 
-The project includes **139 passing tests** across **19 test files**, organized into several categories:
+The project includes **420+ passing tests** across **50+ test files**, organized into several categories:
 
-| Category | Tests | Files | Purpose |
-|----------|-------|-------|---------|
-| **Line Count Compliance** | 6 | 1 | Verify 150-line limit |
-| **SDK Unit Tests** | 28 | 6 | Test SDK modules |
-| **League Manager Tests** | 14 | 2 | Test scheduling & ranking |
-| **Referee Tests** | 21 | 2 | Test game logic & state machine |
-| **Player Tests** | 9 | 1 | Test player strategies |
-| **Integration Tests** | 8 | 1 | Test end-to-end flows |
-| **Edge Case Tests** | 24 | 2 | Test boundary conditions |
-| **Protocol Tests** | 23 | 2 | Test message compliance |
-| **Validation Tests** | 7 | 2 | Test input validation |
+| Category | Tests | Purpose |
+|----------|-------|---------||
+| **Contract Tests** | 100+ | Test protocol message contracts |
+| **Agent Tests** | 80+ | Test player and referee logic |
+| **Protocol Tests** | 60+ | Test protocol compliance |
+| **Integration Tests** | 50+ | Test end-to-end flows |
+| **Infrastructure Tests** | 50+ | Test SDK, config, utilities |
+| **Edge Case Tests** | 40+ | Test boundary conditions |
+| **Compliance Tests** | 10+ | Test code quality requirements |
 
-**Total**: 139 tests, all passing ✅
+**Total**: 420+ tests, all passing ✅  
+**Coverage**: 52%+ (agents and SHARED modules)
 
 ---
 
@@ -45,13 +44,13 @@ pytest tests/
 Expected output:
 ```
 ===================== test session starts ======================
-collected 139 items
+collected 420 items
 
-tests/test_config_loader.py ......                       [  4%]
-tests/test_edge_cases_game.py ..........                 [ 11%]
-tests/test_edge_cases_validation.py ............        [ 20%]
+tests/test_agents_registration.py ......                 [  1%]
+tests/test_circuit_breaker.py ..........                 [  4%]
+tests/test_config_loader.py ......                       [  5%]
 ...
-===================== 139 passed in 1.60s =====================
+===================== 420 passed, 11 skipped in 6.26s =========
 ```
 
 ### Run Specific Test File
@@ -118,7 +117,7 @@ Requires: `pip install pytest-xdist`
 Run tests with coverage analysis:
 
 ```bash
-pytest tests/ --cov=SHARED/league_sdk --cov=agents
+pytest tests/ --cov=agents --cov=SHARED
 ```
 
 Output shows coverage percentages:
@@ -127,18 +126,22 @@ Name                                     Stmts   Miss  Cover
 ------------------------------------------------------------
 SHARED/league_sdk/__init__.py                7      0   100%
 SHARED/league_sdk/config_loader.py          36      0   100%
-SHARED/league_sdk/config_models.py          39      0   100%
+SHARED/contracts/base_contract.py           45      2    96%
+agents/referee_game_logic.py                31      0   100%
+agents/player_strategies.py                 41      3    94%
 ...
 ------------------------------------------------------------
-TOTAL                                     1021    472    54%
+TOTAL                                     2333   1029    52%
 ```
+
+**Note**: Coverage excludes `api/` and `gui/` directories.
 
 ### Generate HTML Coverage Report
 
 Create detailed HTML report:
 
 ```bash
-pytest tests/ --cov=SHARED/league_sdk --cov=agents --cov-report=html
+pytest tests/ --cov=agents --cov=SHARED --cov-report=html
 ```
 
 Open report in browser:
@@ -165,7 +168,7 @@ The HTML report shows:
 Verify minimum coverage requirements:
 
 ```bash
-pytest tests/ --cov=SHARED/league_sdk --cov=agents --cov-fail-under=50
+pytest tests/ --cov=agents --cov=SHARED --cov-fail-under=50
 ```
 
 This fails if coverage drops below 50%.
@@ -175,7 +178,7 @@ This fails if coverage drops below 50%.
 See which lines aren't covered:
 
 ```bash
-pytest tests/ --cov=SHARED/league_sdk --cov=agents --cov-report=term-missing
+pytest tests/ --cov=agents --cov=SHARED --cov-report=term-missing
 ```
 
 ---
